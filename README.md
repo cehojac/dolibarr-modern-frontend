@@ -33,7 +33,7 @@ Un frontend moderno y responsive para Dolibarr ERP/CRM construido con Laravel, V
 
 1. **Clonar el repositorio**
 ```bash
-git clone <repository-url>
+git clone https://github.com/cehojac/dolibarr-modern-frontend
 cd dolibar-modern-frontend
 ```
 
