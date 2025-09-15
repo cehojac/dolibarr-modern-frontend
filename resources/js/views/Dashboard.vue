@@ -1,33 +1,33 @@
 <template>
   <div class="min-h-screen p-6" :class="isDark ? 'bg-black' : 'bg-gray-50'">
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Panel Principal</h1>
-      <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Resumen de tu gestión empresarial</p>
+    <div class="mb-8 xl:mb-10 2xl:mb-12">
+      <h1 class="text-3xl xl:text-4xl 2xl:text-5xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Panel Principal</h1>
+      <p class="mt-2 xl:mt-3 2xl:mt-4 text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Resumen de tu gestión empresarial</p>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div class="grid grid-cols-1 gap-6 xl:gap-8 2xl:gap-10 sm:grid-cols-2 lg:grid-cols-4 mb-8 xl:mb-10 2xl:mb-12">
       <div
         v-for="module in modules"
         :key="module.name"
-        class="border rounded-xl p-6 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        class="border rounded-xl p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
         @click="$router.push(module.href)"
       >
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
               <svg
-                class="w-6 h-6 text-white"
+                class="w-6 h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white"
                 fill="none" viewBox="0 0 24 24" stroke="currentColor"
               >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="module.iconPath" />
               </svg>
             </div>
           </div>
-          <div class="ml-4">
-            <p class="text-sm font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ module.name }}</p>
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ module.count !== undefined ? module.count : '-' }}</p>
+          <div class="ml-4 xl:ml-6 2xl:ml-8">
+            <p class="text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ module.name }}</p>
+            <p class="text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ module.count !== undefined ? module.count : '-' }}</p>
           </div>
         </div>
       </div>
@@ -35,18 +35,18 @@
 
     <!-- To Do Table -->
     <div class="rounded-xl border overflow-hidden" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-      <div class="px-6 py-4 border-b" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+      <div class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-6 2xl:py-8 border-b" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Lista de Tareas Pendientes</h2>
-            <p class="mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tickets y tareas de proyectos que requieren atención</p>
+            <h2 class="text-xl xl:text-2xl 2xl:text-3xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Lista de Tareas Pendientes</h2>
+            <p class="mt-1 xl:mt-2 2xl:mt-3 text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tickets y tareas de proyectos que requieren atención</p>
           </div>
-          <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-3 xl:space-x-4 2xl:space-x-5">
             <!-- Filter by type -->
             <select
               v-model="typeFilter"
               @change="applyFilters"
-              class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
+              class="border rounded-lg px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500" :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
             >
               <option value="">Todos los tipos</option>
               <option value="ticket">Tickets</option>
@@ -60,9 +60,9 @@
                 @input="applyFilters"
                 type="text"
                 placeholder="Buscar en tareas..."
-                class="border rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'"
+                class="border rounded-lg px-4 xl:px-5 2xl:px-6 py-2 xl:py-3 2xl:py-3 pl-10 xl:pl-12 2xl:pl-14 text-sm xl:text-base 2xl:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'"
               >
-              <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="absolute left-3 xl:left-4 2xl:left-5 top-2.5 xl:top-3.5 2xl:top-4 h-4 w-4 xl:h-5 xl:w-5 2xl:h-6 2xl:w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -193,10 +193,10 @@
       <!-- Pagination -->
       <div class="px-6 py-4 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
         <div class="flex items-center justify-between">
-          <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+          <div class="text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
             Mostrando {{ startIndex + 1 }} a {{ Math.min(endIndex, filteredTodos.length) }} de {{ filteredTodos.length }} tareas
           </div>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2 xl:space-x-3 2xl:space-x-4">
             <button
               @click="previousPage"
               :disabled="currentPage === 1"
@@ -204,18 +204,18 @@
                 currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '',
                 isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               ]"
-              class="px-3 py-2 rounded-lg transition-colors"
+              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
             >
               Anterior
             </button>
             
-            <div class="flex items-center space-x-1">
+            <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
               <button
                 v-for="page in visiblePages"
                 :key="page"
                 @click="goToPage(page)"
                 :class="page === currentPage ? 'bg-blue-500 text-white' : (isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')"
-                class="px-3 py-2 rounded-lg transition-colors"
+                class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
               >
                 {{ page }}
               </button>
@@ -228,7 +228,7 @@
                 currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '',
                 isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               ]"
-              class="px-3 py-2 rounded-lg transition-colors"
+              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
             >
               Siguiente
             </button>

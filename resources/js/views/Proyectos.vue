@@ -53,62 +53,62 @@
     <div class="rounded-xl border overflow-hidden" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-50'">
+          <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-100'">
             <tr>
-              <th @click="sortBy('ref')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'">
-                <div class="flex items-center space-x-1">
+              <th @click="sortBy('ref')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'">
+                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
                   <span>Ref.</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th @click="sortBy('title')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'">
-                <div class="flex items-center space-x-1">
+              <th @click="sortBy('title')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'">
+                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
                   <span>Título</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                 Cliente
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                 Estado
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                 Fecha Inicio
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                 Fecha Fin
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="8" class="px-6 py-8 text-center text-gray-400">
-                <div class="flex items-center justify-center space-x-2">
-                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <span>Cargando proyectos...</span>
+              <td colspan="8" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center text-gray-400">
+                <div class="flex items-center justify-center space-x-2 xl:space-x-3 2xl:space-x-4">
+                  <div class="animate-spin rounded-full h-6 w-6 xl:h-8 xl:w-8 2xl:h-10 2xl:w-10 border-b-2 border-blue-500"></div>
+                  <span class="text-sm xl:text-base 2xl:text-lg">Cargando proyectos...</span>
                 </div>
               </td>
             </tr>
             <tr v-else-if="paginatedProjects.length === 0">
-              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
-                <div class="flex flex-col items-center space-y-2">
-                  <svg class="w-12 h-12" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <td colspan="8" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                <div class="flex flex-col items-center space-y-2 xl:space-y-3 2xl:space-y-4">
+                  <svg class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
-                  <span>No hay proyectos que coincidan con los filtros</span>
+                  <span class="text-sm xl:text-base 2xl:text-lg">No hay proyectos que coincidan con los filtros</span>
                 </div>
               </td>
             </tr>
             <tr v-else v-for="project in paginatedProjects" :key="project.id" class="transition-colors" :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg font-medium">
                 <button 
                   @click="viewProjectDetails(project)"
                   class="transition-colors cursor-pointer font-medium" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
@@ -116,38 +116,38 @@
                   {{ project.ref }}
                 </button>
               </td>
-              <td class="px-6 py-4 text-sm max-w-xs truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-sm xl:text-base 2xl:text-lg max-w-xs xl:max-w-sm 2xl:max-w-md truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ project.title }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ project.thirdparty_name || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full"
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
+                <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-1.5 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full"
                       :class="getStatusClass(project.fk_statut)">
                   {{ getStatusText(project.fk_statut) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(project.datec) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(project.date_end) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex items-center justify-end space-x-2">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-right text-sm xl:text-base 2xl:text-lg font-medium">
+                <div class="flex items-center justify-end space-x-2 xl:space-x-3 2xl:space-x-4">
                   <button 
                     @click="viewProjectDetails(project)"
                     class="transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
                     title="Ver detalles"
                   >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </button>
                   <button class="transition-colors" :class="isDark ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-800'" title="Editar">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
@@ -159,16 +159,16 @@
       </div>
       
       <!-- Pagination -->
-      <div class="px-6 py-4 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
+      <div class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
         <div class="flex items-center justify-between">
-          <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+          <div class="text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
             Mostrando {{ startIndex + 1 }} a {{ Math.min(endIndex, filteredProjects.length) }} de {{ filteredProjects.length }} proyectos
           </div>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2 xl:space-x-3 2xl:space-x-4">
             <button
               @click="previousPage"
               :disabled="currentPage === 1"
-              class="px-3 py-2 rounded-lg transition-colors"
+              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-2.5 2xl:py-3 rounded-lg transition-colors text-sm xl:text-base 2xl:text-lg"
               :class="[
                 currentPage === 1 ? 'opacity-50 cursor-not-allowed' : (isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-50'),
                 isDark ? 'bg-gray-700 text-white' : 'bg-white text-gray-700 border border-gray-300'
@@ -177,13 +177,13 @@
               Anterior
             </button>
             
-            <div class="flex items-center space-x-1">
+            <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
               <button
                 v-for="page in visiblePages"
                 :key="page"
                 @click="goToPage(page)"
                 :class="page === currentPage ? 'bg-blue-500 text-white' : (isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')"
-                class="px-3 py-2 rounded-lg transition-colors"
+                class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-2.5 2xl:py-3 rounded-lg transition-colors text-sm xl:text-base 2xl:text-lg"
               >
                 {{ page }}
               </button>
@@ -193,7 +193,7 @@
               @click="nextPage"
               :disabled="currentPage === totalPages"
               :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'"
-              class="px-3 py-2 rounded-lg bg-gray-700 text-white transition-colors"
+              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-2.5 2xl:py-3 rounded-lg bg-gray-700 text-white transition-colors text-sm xl:text-base 2xl:text-lg"
             >
               Siguiente
             </button>
@@ -375,24 +375,36 @@ const fetchProjects = async () => {
       terceros: terceros.value.length
     })
     
+    // Debug actual project structure
+    console.log('🔍 First project structure:', projectsData[0])
+    console.log('🔍 Project keys:', Object.keys(projectsData[0] || {}))
+    
     // Create terceros lookup map (same as Dashboard)
     const tercerosMap = {}
     terceros.value.forEach(tercero => {
+      // Store with both string and number keys to handle type mismatches
       tercerosMap[tercero.id] = tercero
+      tercerosMap[String(tercero.id)] = tercero
+      tercerosMap[Number(tercero.id)] = tercero
     })
     
-    // Enrich projects with terceros data (same pattern as Dashboard)
+    // Enrich projects with terceros data - check multiple possible field names
     const enrichedProjects = projectsData.map(project => {
-      const tercero = tercerosMap[project.fk_soc] || null
+      // Try different possible field names for client ID
+      const clientId = project.fk_soc || project.socid || project.fk_thirdparty || project.client_id || project.thirdparty_id
+      const tercero = tercerosMap[clientId] || tercerosMap[String(clientId)] || tercerosMap[Number(clientId)] || null
+      
       return {
         ...project,
-        thirdparty_name: tercero ? tercero.name : null
+        thirdparty_name: tercero ? tercero.name : null,
+        client_id: clientId // Store the found client ID for debugging
       }
     })
     
     console.log('✅ Enriched projects sample:', enrichedProjects.slice(0, 3).map(p => ({
       ref: p.ref,
       fk_soc: p.fk_soc,
+      client_id: p.client_id,
       thirdparty_name: p.thirdparty_name,
       title: p.title
     })))
@@ -403,6 +415,32 @@ const fetchProjects = async () => {
     
     // Sample terceros for debugging
     console.log('🏢 Sample terceros:', Object.keys(tercerosMap).slice(0, 5), 'Total:', Object.keys(tercerosMap).length)
+    
+    // Debug specific project fk_soc values
+    console.log('🔍 Project fk_soc values:', projectsData.slice(0, 5).map(p => ({ ref: p.ref, fk_soc: p.fk_soc, type: typeof p.fk_soc })))
+    
+    // Debug terceros IDs
+    console.log('🔍 Terceros IDs:', terceros.value.slice(0, 5).map(t => ({ id: t.id, name: t.name, type: typeof t.id })))
+    
+    // Debug the actual matching process
+    projectsData.slice(0, 3).forEach(project => {
+      const directMatch = tercerosMap[project.fk_soc]
+      const stringMatch = tercerosMap[String(project.fk_soc)]
+      const numberMatch = tercerosMap[Number(project.fk_soc)]
+      console.log(`🔍 Project ${project.ref} (fk_soc: ${project.fk_soc}):`, {
+        directMatch: !!directMatch,
+        stringMatch: !!stringMatch,
+        numberMatch: !!numberMatch,
+        finalMatch: directMatch || stringMatch || numberMatch,
+        fk_soc_value: project.fk_soc,
+        fk_soc_is_null: project.fk_soc === null,
+        fk_soc_is_zero: project.fk_soc === '0' || project.fk_soc === 0
+      })
+    })
+    
+    // Check if projects have null or 0 fk_soc
+    const projectsWithoutClient = projectsData.filter(p => !p.fk_soc || p.fk_soc === '0' || p.fk_soc === 0)
+    console.log(`📊 Projects without client: ${projectsWithoutClient.length}/${projectsData.length}`)
     
     projects.value = enrichedProjects
     

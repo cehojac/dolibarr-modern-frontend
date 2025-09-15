@@ -1,35 +1,35 @@
 <template>
   <div class="min-h-screen flex" :class="isDark ? 'bg-black' : 'bg-gray-100'">
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 z-50 w-64 shadow-xl flex flex-col" :class="isDark ? 'bg-gradient-to-b from-blue-600 to-blue-800' : 'bg-gradient-to-b from-blue-400 to-blue-500'">
+    <div class="fixed inset-y-0 left-0 z-50 w-64 xl:w-80 2xl:w-96 shadow-xl flex flex-col" :class="isDark ? 'bg-gradient-to-b from-blue-600 to-blue-800' : 'bg-gradient-to-b from-blue-400 to-blue-500'">
       <!-- Logo -->
-      <div class="flex items-center h-16 px-4 border-b border-opacity-30 flex-shrink-0" :class="isDark ? 'border-blue-500' : 'border-blue-300'">
-        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center mr-3 shadow-sm">
-          <span class="text-blue-600 font-bold text-lg">D</span>
+      <div class="flex items-center h-16 xl:h-20 2xl:h-24 px-4 xl:px-6 2xl:px-8 border-b border-opacity-30 flex-shrink-0" :class="isDark ? 'border-blue-500' : 'border-blue-300'">
+        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 bg-white rounded-lg flex items-center justify-center mr-3 shadow-sm">
+          <span class="text-blue-600 font-bold text-lg xl:text-xl 2xl:text-2xl">D</span>
         </div>
         <div class="flex flex-col">
-          <h1 class="text-lg font-bold text-white leading-tight">Dolibarr</h1>
-          <p class="text-xs text-blue-100 opacity-80">Modern Frontend</p>
+          <h1 class="text-lg xl:text-xl 2xl:text-2xl font-bold text-white leading-tight">Dolibarr</h1>
+          <p class="text-xs xl:text-sm 2xl:text-base text-blue-100 opacity-80">Modern Frontend</p>
         </div>
       </div>
       
       <!-- Navigation -->
-      <nav class="mt-8 px-4 flex-1 overflow-y-auto">
+      <nav class="mt-8 px-4 xl:px-6 2xl:px-8 flex-1 overflow-y-auto">
         <div class="space-y-2">
           <router-link
             v-for="item in navigation"
             :key="item.name"
             :to="item.href"
-            class="group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+            class="group flex items-center px-4 xl:px-5 2xl:px-6 py-3 xl:py-4 2xl:py-5 text-sm xl:text-base 2xl:text-lg font-medium rounded-xl transition-all duration-200"
             :class="$route.path === item.href 
               ? 'bg-white bg-opacity-20 text-blue-600 shadow-lg backdrop-blur-sm' 
               : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-blue-600 focus:bg-white focus:bg-opacity-10 focus:text-blue-600'"
           >
-            <svg class="mr-3 h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="mr-3 xl:mr-4 2xl:mr-5 h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
             </svg>
             {{ item.name }}
-            <span v-if="item.count && item.count > 0" class="ml-auto bg-white text-blue-600 text-xs font-bold px-2 py-1 rounded-full">
+            <span v-if="item.count && item.count > 0" class="ml-auto bg-white text-blue-600 text-xs xl:text-sm 2xl:text-base font-bold px-2 xl:px-3 2xl:px-4 py-1 xl:py-1.5 2xl:py-2 rounded-full">
               {{ item.count }}
             </span>
           </router-link>
@@ -37,23 +37,23 @@
       </nav>
 
       <!-- User info at bottom - Always visible -->
-      <div v-if="authStore.user" class="p-4 border-t border-blue-300 border-opacity-30 flex-shrink-0 mt-auto">
-        <div class="flex items-center space-x-3 mb-4">
-          <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <span class="text-white font-bold text-lg">{{ userInitials }}</span>
+      <div v-if="authStore.user" class="p-4 xl:p-6 2xl:p-8 border-t border-blue-300 border-opacity-30 flex-shrink-0 mt-auto">
+        <div class="flex items-center space-x-3 xl:space-x-4 2xl:space-x-5 mb-4">
+          <div class="w-12 h-12 xl:w-14 xl:h-14 2xl:w-16 2xl:h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
+            <span class="text-white font-bold text-lg xl:text-xl 2xl:text-2xl">{{ userInitials }}</span>
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-white truncate">
+            <p class="text-sm xl:text-base 2xl:text-lg font-semibold text-white truncate">
               {{ authStore.user.firstname || authStore.user.login }}
             </p>
-            <p class="text-xs text-blue-100 opacity-80 truncate">
+            <p class="text-xs xl:text-sm 2xl:text-base text-blue-100 opacity-80 truncate">
               {{ authStore.user.email || 'Usuario activo' }}
             </p>
           </div>
         </div>
         <button
           @click="handleLogout"
-          class="w-full px-4 py-2 text-sm rounded-xl transition-all duration-200 font-medium shadow-sm"
+          class="w-full px-4 xl:px-5 2xl:px-6 py-2 xl:py-3 2xl:py-4 text-sm xl:text-base 2xl:text-lg rounded-xl transition-all duration-200 font-medium shadow-sm"
           :class="isDark ? 'bg-white text-blue-600 hover:bg-blue-50' : 'bg-white text-blue-600 hover:bg-blue-50'"
         >
           Cerrar sesión
@@ -62,34 +62,34 @@
     </div>
 
     <!-- Main content -->
-    <div class="flex flex-col w-0 flex-1 overflow-hidden ml-64" :class="isDark ? 'bg-black' : 'bg-white'">
+    <div class="flex flex-col w-0 flex-1 overflow-hidden ml-64 xl:ml-80 2xl:ml-96" :class="isDark ? 'bg-black' : 'bg-white'">
       <!-- Top bar -->
-      <div class="relative z-10 flex-shrink-0 flex h-16 shadow-lg border-b" 
+      <div class="relative z-10 flex-shrink-0 flex h-16 xl:h-20 2xl:h-24 shadow-lg border-b" 
            :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-        <div class="flex-1 px-6 flex justify-between items-center">
+        <div class="flex-1 px-6 xl:px-8 2xl:px-12 flex justify-between items-center">
           <div class="flex-1 flex">
-            <h1 class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">
+            <h1 class="text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">
               {{ $route.name }}
             </h1>
           </div>
-          <div class="ml-4 flex items-center space-x-4">
+          <div class="ml-4 xl:ml-6 2xl:ml-8 flex items-center space-x-4 xl:space-x-6 2xl:space-x-8">
             <button 
-              class="px-4 py-2 rounded-xl font-medium transition-colors"
+              class="px-4 xl:px-6 2xl:px-8 py-2 xl:py-3 2xl:py-4 rounded-xl font-medium transition-colors text-sm xl:text-base 2xl:text-lg"
               :class="isDark ? 'bg-white text-blue-600 hover:bg-blue-50' : 'bg-white text-blue-600 hover:bg-blue-50'"
             >
               + Añadir nuevo
             </button>
             <button
               @click="toggleTheme"
-              class="p-2 rounded-xl focus:outline-none transition-colors"
+              class="p-2 xl:p-3 2xl:p-4 rounded-xl focus:outline-none transition-colors"
               :class="isDark ? 'bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-gray-800'"
             >
               <!-- Sun icon for dark mode (when clicked will switch to light) -->
-              <svg v-if="isDark" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg v-if="isDark" class="h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
               <!-- Moon icon for light mode (when clicked will switch to dark) -->
-              <svg v-else class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg v-else class="h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
               </svg>
             </button>
@@ -99,8 +99,8 @@
 
       <!-- Page content -->
       <main class="flex-1 relative overflow-y-auto focus:outline-none" :class="isDark ? 'bg-black' : 'bg-gray-50'">
-        <div class="py-8">
-          <div class="max-w-7xl mx-auto px-6">
+        <div class="py-8 xl:py-10 2xl:py-12">
+          <div class="max-w-7xl xl:max-w-full 2xl:max-w-full mx-auto px-6 xl:px-8 2xl:px-12">
             <router-view />
           </div>
         </div>

@@ -141,81 +141,81 @@
         <table class="min-w-full">
           <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-100'">
             <tr>
-              <th @click="sortBy('ref')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1">
+              <th @click="sortBy('ref')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
                   <span>Ref.</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th @click="sortBy('subject')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1">
+              <th @click="sortBy('subject')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
                   <span>Asunto</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 Grupo de Ticket
               </th>
-              <th @click="sortBy('severity')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1">
+              <th @click="sortBy('severity')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
                   <span>Gravedad</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 Tercero
               </th>
-              <th @click="sortBy('datec')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1">
+              <th @click="sortBy('datec')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
                   <span>Fecha de creación</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 Asignada a
               </th>
-              <th @click="sortBy('fk_statut')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1">
+              <th @click="sortBy('fk_statut')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
                   <span>Estado</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-right text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-right text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex items-center justify-center space-x-2">
-                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <span>Cargando tickets...</span>
+              <td colspan="9" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <div class="flex items-center justify-center space-x-2 xl:space-x-3 2xl:space-x-4">
+                  <div class="animate-spin rounded-full h-6 w-6 xl:h-8 xl:w-8 2xl:h-10 2xl:w-10 border-b-2 border-blue-500"></div>
+                  <span class="text-sm xl:text-base 2xl:text-lg">Cargando tickets...</span>
                 </div>
               </td>
             </tr>
             <tr v-else-if="paginatedTickets.length === 0">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex flex-col items-center space-y-2">
-                  <svg class="w-12 h-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <td colspan="9" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <div class="flex flex-col items-center space-y-2 xl:space-y-3 2xl:space-y-4">
+                  <svg class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span>No hay tickets que coincidan con los filtros</span>
+                  <span class="text-sm xl:text-base 2xl:text-lg">No hay tickets que coincidan con los filtros</span>
                 </div>
               </td>
             </tr>
             <tr v-else v-for="ticket in paginatedTickets" :key="ticket.id" class="transition-colors" :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg font-medium">
                 <button 
                   @click="viewTicketDetails(ticket)"
                   class="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer font-medium"
@@ -223,47 +223,47 @@
                   {{ ticket.ref }}
                 </button>
               </td>
-              <td class="px-6 py-4 text-sm max-w-xs truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-sm xl:text-base 2xl:text-lg max-w-xs xl:max-w-sm 2xl:max-w-md truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ ticket.subject }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ ticket.category_code || ticket.category || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full"
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
+                <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-2 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full"
                       :class="getPriorityClass(ticket.severity_code || ticket.severity)">
                   {{ getPriorityText(ticket.severity_code || ticket.severity) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ ticket.thirdparty_name || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(ticket.datec) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ ticket.assigned_to || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full"
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
+                <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-2 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full"
                       :class="getStatusClass(ticket.fk_statut)">
                   {{ getStatusText(ticket.fk_statut) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div class="flex items-center justify-end space-x-2">
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-right text-sm xl:text-base 2xl:text-lg font-medium">
+                <div class="flex items-center justify-end space-x-2 xl:space-x-3 2xl:space-x-4">
                   <button 
                     @click="viewTicketDetails(ticket)"
                     class="text-blue-400 hover:text-blue-300 transition-colors"
                     title="Ver detalles"
                   >
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </button>
                   <button class="text-green-400 hover:text-green-300 transition-colors" title="Editar">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </button>
@@ -277,10 +277,10 @@
       <!-- Pagination -->
       <div class="px-6 py-4 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
         <div class="flex items-center justify-between">
-          <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+          <div class="text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
             Mostrando {{ startIndex + 1 }} a {{ Math.min(endIndex, filteredTickets.length) }} de {{ filteredTickets.length }} tickets
           </div>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2 xl:space-x-3 2xl:space-x-4">
             <button
               @click="previousPage"
               :disabled="currentPage === 1"
@@ -288,18 +288,18 @@
                 currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '',
                 isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               ]"
-              class="px-3 py-2 rounded-lg transition-colors"
+              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
             >
               Anterior
             </button>
             
-            <div class="flex items-center space-x-1">
+            <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
               <button
                 v-for="page in visiblePages"
                 :key="page"
                 @click="goToPage(page)"
                 :class="page === currentPage ? 'bg-blue-500 text-white' : (isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')"
-                class="px-3 py-2 rounded-lg transition-colors"
+                class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
               >
                 {{ page }}
               </button>
@@ -312,7 +312,7 @@
                 currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '',
                 isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               ]"
-              class="px-3 py-2 rounded-lg transition-colors"
+              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
             >
               Siguiente
             </button>
