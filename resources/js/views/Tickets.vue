@@ -13,8 +13,8 @@
 
     <!-- Search and Filters -->
     <div class="rounded-xl p-6 mb-6 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <!-- Search -->
+      <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <!-- General Search -->
         <div class="md:col-span-2">
           <div class="relative">
             <input
@@ -28,6 +28,64 @@
             <svg class="absolute right-3 top-2.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+          </div>
+        </div>
+        
+        <!-- Tercero Search -->
+        <div>
+          <div class="relative">
+            <input
+              v-model="terceroSearch"
+              @input="searchTerceros"
+              @focus="showTerceroDropdown = true"
+              type="text"
+              placeholder="Buscar tercero..."
+              class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'"
+            >
+            <!-- Tercero Dropdown -->
+            <div v-if="showTerceroDropdown && filteredTerceros.length > 0" 
+                 class="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                 :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'">
+              <div v-for="tercero in filteredTerceros" :key="tercero.id"
+                   @click="selectTercero(tercero)"
+                   class="px-4 py-2 cursor-pointer transition-colors"
+                   :class="isDark ? 'hover:bg-gray-700 text-white' : 'hover:bg-gray-100 text-gray-900'">
+                <div class="font-medium">{{ tercero.name }}</div>
+                <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                  {{ tercero.email || 'Sin email' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- User Search -->
+        <div>
+          <div class="relative">
+            <input
+              v-model="userSearch"
+              @input="searchUsers"
+              @focus="showUserDropdown = true"
+              type="text"
+              placeholder="Buscar usuario..."
+              class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'"
+            >
+            <!-- User Dropdown -->
+            <div v-if="showUserDropdown && filteredUsers.length > 0" 
+                 class="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                 :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'">
+              <div v-for="user in filteredUsers" :key="user.id"
+                   @click="selectUser(user)"
+                   class="px-4 py-2 cursor-pointer transition-colors"
+                   :class="isDark ? 'hover:bg-gray-700 text-white' : 'hover:bg-gray-100 text-gray-900'">
+                <div class="font-medium">{{ user.firstname }} {{ user.lastname }}</div>
+                <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                  {{ user.login }} - {{ user.email || 'Sin email' }}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -62,6 +120,17 @@
             <option value="3">Alta</option>
             <option value="4">Urgente</option>
           </select>
+        </div>
+        
+        <!-- Clear Filters -->
+        <div class="flex items-end">
+          <button
+            @click="clearFilters"
+            class="w-full px-4 py-2 text-sm border rounded-lg transition-colors"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'"
+          >
+            Limpiar filtros
+          </button>
         </div>
       </div>
     </div>
@@ -158,12 +227,12 @@
                 {{ ticket.subject }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ ticket.category || '-' }}
+                {{ ticket.category_code || ticket.category || '-' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full"
-                      :class="getPriorityClass(ticket.severity)">
-                  {{ getPriorityText(ticket.severity) }}
+                      :class="getPriorityClass(ticket.severity_code || ticket.severity)">
+                  {{ getPriorityText(ticket.severity_code || ticket.severity) }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
@@ -425,6 +494,18 @@ const searchQuery = ref('')
 const statusFilter = ref('')
 const priorityFilter = ref('')
 
+// Terceros and Users search
+const terceros = ref([])
+const users = ref([])
+const terceroSearch = ref('')
+const userSearch = ref('')
+const selectedTercero = ref(null)
+const selectedUser = ref(null)
+const showTerceroDropdown = ref(false)
+const showUserDropdown = ref(false)
+const filteredTerceros = ref([])
+const filteredUsers = ref([])
+
 // Pagination
 const currentPage = ref(1)
 const itemsPerPage = ref(50)
@@ -443,12 +524,108 @@ const fetchTickets = async () => {
   loading.value = true
   try {
     const response = await http.get('/api/doli/tickets')
-    tickets.value = response.data || []
+    const ticketsData = response.data || []
+    
+    // Enrich tickets with tercero names and assigned user names using cached data
+    tickets.value = ticketsData.map(ticket => {
+      // Enrich with tercero name
+      if (ticket.fk_soc && terceros.value.length > 0) {
+        const tercero = terceros.value.find(t => t.id == ticket.fk_soc)
+        if (tercero) {
+          ticket.thirdparty_name = tercero.name
+        }
+      }
+      
+      // Enrich with assigned user name
+      if (ticket.fk_user_assign && users.value.length > 0) {
+        const user = users.value.find(u => u.id == ticket.fk_user_assign)
+        if (user) {
+          ticket.assigned_to = `${user.firstname || ''} ${user.lastname || ''}`.trim() || user.login
+        }
+      }
+      
+      return ticket
+    })
   } catch (error) {
     console.error('Error fetching tickets:', error)
   } finally {
     loading.value = false
   }
+}
+
+const fetchTerceros = async () => {
+  try {
+    const response = await http.get('/api/doli/thirdparties?limit=1000&status=1')
+    terceros.value = response.data || []
+  } catch (error) {
+    console.error('Error fetching terceros:', error)
+  }
+}
+
+const fetchUsers = async () => {
+  try {
+    const response = await http.get('/api/doli/users')
+    users.value = response.data || []
+  } catch (error) {
+    console.error('Error fetching users:', error)
+  }
+}
+
+const searchTerceros = () => {
+  if (terceroSearch.value.length < 2) {
+    filteredTerceros.value = []
+    return
+  }
+  
+  const query = terceroSearch.value.toLowerCase()
+  filteredTerceros.value = terceros.value.filter(tercero => 
+    tercero.name?.toLowerCase().includes(query) ||
+    tercero.email?.toLowerCase().includes(query)
+  ).slice(0, 10)
+}
+
+const searchUsers = () => {
+  if (userSearch.value.length < 2) {
+    filteredUsers.value = []
+    return
+  }
+  
+  const query = userSearch.value.toLowerCase()
+  filteredUsers.value = users.value.filter(user => 
+    user.firstname?.toLowerCase().includes(query) ||
+    user.lastname?.toLowerCase().includes(query) ||
+    user.login?.toLowerCase().includes(query) ||
+    user.email?.toLowerCase().includes(query)
+  ).slice(0, 10)
+}
+
+const selectTercero = (tercero) => {
+  selectedTercero.value = tercero
+  terceroSearch.value = tercero.name
+  showTerceroDropdown.value = false
+  applyFilters()
+}
+
+const selectUser = (user) => {
+  selectedUser.value = user
+  userSearch.value = `${user.firstname} ${user.lastname}`
+  showUserDropdown.value = false
+  applyFilters()
+}
+
+const clearFilters = () => {
+  searchQuery.value = ''
+  statusFilter.value = ''
+  priorityFilter.value = ''
+  terceroSearch.value = ''
+  userSearch.value = ''
+  selectedTercero.value = null
+  selectedUser.value = null
+  showTerceroDropdown.value = false
+  showUserDropdown.value = false
+  filteredTerceros.value = []
+  filteredUsers.value = []
+  applyFilters()
 }
 
 // Computed properties for filtering and pagination
@@ -467,6 +644,20 @@ const filteredTickets = computed(() => {
       ticket.ref?.toLowerCase().includes(query) ||
       ticket.subject?.toLowerCase().includes(query) ||
       ticket.thirdparty_name?.toLowerCase().includes(query)
+    )
+  }
+  
+  // Apply tercero filter
+  if (selectedTercero.value) {
+    filtered = filtered.filter(ticket => 
+      ticket.fk_soc == selectedTercero.value.id
+    )
+  }
+  
+  // Apply user filter
+  if (selectedUser.value) {
+    filtered = filtered.filter(ticket => 
+      ticket.fk_user_assign == selectedUser.value.id
     )
   }
 
@@ -643,13 +834,25 @@ const getStatusClass = (status) => {
 }
 
 const getPriorityText = (priority) => {
+  console.log('Priority value received:', priority, 'Type:', typeof priority)
+  
   const priorities = {
     '1': 'Baja',
-    '2': 'Normal',
+    '2': 'Normal', 
     '3': 'Alta',
-    '4': 'Urgente'
+    '4': 'Urgente',
+    // Add common severity codes
+    'LOW': 'Baja',
+    'NORMAL': 'Normal',
+    'HIGH': 'Alta',
+    'URGENT': 'Urgente',
+    'CRITICAL': 'Crítica',
+    'BLOCKING': 'Bloqueante'
   }
-  return priorities[priority] || 'Normal'
+  
+  const result = priorities[priority] || priorities[String(priority)] || 'Normal'
+  console.log('Priority result:', result)
+  return result
 }
 
 const getPriorityClass = (priority) => {
@@ -657,9 +860,16 @@ const getPriorityClass = (priority) => {
     '1': 'bg-green-600 text-green-100',
     '2': 'bg-blue-600 text-blue-100',
     '3': 'bg-yellow-600 text-yellow-100',
-    '4': 'bg-red-600 text-red-100'
+    '4': 'bg-red-600 text-red-100',
+    // Add common severity codes
+    'LOW': 'bg-green-600 text-green-100',
+    'NORMAL': 'bg-blue-600 text-blue-100',
+    'HIGH': 'bg-yellow-600 text-yellow-100',
+    'URGENT': 'bg-red-600 text-red-100',
+    'CRITICAL': 'bg-red-800 text-red-100',
+    'BLOCKING': 'bg-red-900 text-red-100'
   }
-  return classes[priority] || 'bg-blue-600 text-blue-100'
+  return classes[priority] || classes[String(priority)] || 'bg-blue-600 text-blue-100'
 }
 
 // Watch for filter changes to reset pagination
@@ -667,7 +877,34 @@ watch([searchQuery, statusFilter, priorityFilter], () => {
   currentPage.value = 1
 })
 
-onMounted(() => {
-  fetchTickets()
+// Close dropdowns when clicking outside
+const closeDropdowns = (event) => {
+  if (!event.target.closest('.relative')) {
+    showTerceroDropdown.value = false
+    showUserDropdown.value = false
+  }
+}
+
+onMounted(async () => {
+  // First fetch terceros and users, then tickets to enrich with tercero names
+  await Promise.all([
+    fetchTerceros(),
+    fetchUsers()
+  ])
+  
+  // Then fetch tickets and enrich with tercero data
+  await fetchTickets()
+  
+  // Add click outside listener
+  document.addEventListener('click', closeDropdowns)
 })
+
+// Clean up event listener
+const cleanup = () => {
+  document.removeEventListener('click', closeDropdowns)
+}
+
+// Add cleanup on unmount
+import { onUnmounted } from 'vue'
+onUnmounted(cleanup)
 </script>

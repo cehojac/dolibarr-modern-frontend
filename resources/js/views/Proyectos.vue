@@ -1,10 +1,10 @@
 <template>
-  <div class="bg-black min-h-screen p-6">
+  <div class="min-h-screen p-6" :class="isDark ? 'bg-black' : 'bg-gray-50'">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-3xl font-bold text-white">Proyectos</h1>
-        <p class="text-gray-400 mt-2">Gestión de proyectos</p>
+        <h1 class="text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Proyectos</h1>
+        <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Gestión de proyectos</p>
       </div>
       <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-medium transition-colors">
         + Crear Proyecto
@@ -12,7 +12,7 @@
     </div>
 
     <!-- Search and Filters -->
-    <div class="bg-gray-900 rounded-xl p-6 mb-6 border border-gray-800">
+    <div class="rounded-xl p-6 mb-6 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Search -->
         <div class="md:col-span-2">
@@ -22,7 +22,8 @@
               @input="handleSearch"
               type="text"
               placeholder="Buscar proyectos..."
-              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
             >
             <svg class="absolute right-3 top-2.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -35,7 +36,8 @@
           <select
             v-model="statusFilter"
             @change="applyFilters"
-            class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
           >
             <option value="">Todos los estados</option>
             <option value="0">Borrador</option>
@@ -48,12 +50,12 @@
     </div>
 
     <!-- Table -->
-    <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+    <div class="rounded-xl border overflow-hidden" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-gray-800">
+          <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-50'">
             <tr>
-              <th @click="sortBy('ref')" class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white transition-colors">
+              <th @click="sortBy('ref')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'">
                 <div class="flex items-center space-x-1">
                   <span>Ref.</span>
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,7 +63,7 @@
                   </svg>
                 </div>
               </th>
-              <th @click="sortBy('title')" class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white transition-colors">
+              <th @click="sortBy('title')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'">
                 <div class="flex items-center space-x-1">
                   <span>Título</span>
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,36 +71,26 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                 Cliente
               </th>
-              <th @click="sortBy('datec')" class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white transition-colors">
-                <div class="flex items-center space-x-1">
-                  <span>Fecha de creación</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                  </svg>
-                </div>
+              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Estado
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                Fecha límite
+              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Fecha Inicio
               </th>
-              <th @click="sortBy('fk_statut')" class="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:text-white transition-colors">
-                <div class="flex items-center space-x-1">
-                  <span>Estado</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                  </svg>
-                </div>
+              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Fecha Fin
               </th>
-              <th class="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
+              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody class="bg-gray-900 divide-y divide-gray-800">
+          <tbody class="divide-y" :class="isDark ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="7" class="px-6 py-8 text-center text-gray-400">
+              <td colspan="8" class="px-6 py-8 text-center text-gray-400">
                 <div class="flex items-center justify-center space-x-2">
                   <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                   <span>Cargando proyectos...</span>
@@ -106,35 +98,29 @@
               </td>
             </tr>
             <tr v-else-if="paginatedProjects.length === 0">
-              <td colspan="7" class="px-6 py-8 text-center text-gray-400">
+              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
                 <div class="flex flex-col items-center space-y-2">
-                  <svg class="w-12 h-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-12 h-12" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                   <span>No hay proyectos que coincidan con los filtros</span>
                 </div>
               </td>
             </tr>
-            <tr v-else v-for="project in paginatedProjects" :key="project.id" class="hover:bg-gray-800 transition-colors">
+            <tr v-else v-for="project in paginatedProjects" :key="project.id" class="transition-colors" :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button 
                   @click="viewProjectDetails(project)"
-                  class="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer font-medium"
+                  class="transition-colors cursor-pointer font-medium" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
                 >
                   {{ project.ref }}
                 </button>
               </td>
-              <td class="px-6 py-4 text-sm text-white max-w-xs truncate">
+              <td class="px-6 py-4 text-sm max-w-xs truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ project.title }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ project.thirdparty_name || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                {{ formatDate(project.datec) }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                {{ formatDate(project.date_end) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full"
@@ -142,11 +128,17 @@
                   {{ getStatusText(project.fk_statut) }}
                 </span>
               </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                {{ formatDate(project.datec) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                {{ formatDate(project.date_end) }}
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end space-x-2">
                   <button 
                     @click="viewProjectDetails(project)"
-                    class="text-blue-400 hover:text-blue-300 transition-colors"
+                    class="transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
                     title="Ver detalles"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -154,7 +146,7 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </button>
-                  <button class="text-green-400 hover:text-green-300 transition-colors" title="Editar">
+                  <button class="transition-colors" :class="isDark ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-800'" title="Editar">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
@@ -167,17 +159,20 @@
       </div>
       
       <!-- Pagination -->
-      <div class="bg-gray-800 px-6 py-4 border-t border-gray-700">
+      <div class="px-6 py-4 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
         <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-400">
+          <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
             Mostrando {{ startIndex + 1 }} a {{ Math.min(endIndex, filteredProjects.length) }} de {{ filteredProjects.length }} proyectos
           </div>
           <div class="flex items-center space-x-2">
             <button
               @click="previousPage"
               :disabled="currentPage === 1"
-              :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'"
-              class="px-3 py-2 rounded-lg bg-gray-700 text-white transition-colors"
+              class="px-3 py-2 rounded-lg transition-colors"
+              :class="[
+                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : (isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-50'),
+                isDark ? 'bg-gray-700 text-white' : 'bg-white text-gray-700 border border-gray-300'
+              ]"
             >
               Anterior
             </button>
@@ -187,7 +182,7 @@
                 v-for="page in visiblePages"
                 :key="page"
                 @click="goToPage(page)"
-                :class="page === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+                :class="page === currentPage ? 'bg-blue-500 text-white' : (isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')"
                 class="px-3 py-2 rounded-lg transition-colors"
               >
                 {{ page }}
@@ -337,9 +332,13 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import http from '../utils/http'
+import { useTheme } from '../composables/useTheme'
+
+const { isDark } = useTheme()
 
 const projects = ref([])
 const loading = ref(false)
+const terceros = ref([])
 
 // Filters and search
 const searchQuery = ref('')
@@ -360,20 +359,67 @@ const projectDetails = ref(null)
 const loadingDetails = ref(false)
 
 const fetchProjects = async () => {
+  console.log('🔄 fetchProjects called')
   loading.value = true
   try {
-    const response = await http.get('/api/doli/projects')
-    projects.value = response.data || []
+    const [projectsResponse, tercerosResponse] = await Promise.all([
+      http.get('/api/doli/projects'),
+      http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] }))
+    ])
+    
+    const projectsData = projectsResponse.data || []
+    terceros.value = tercerosResponse.data || []
+    
+    console.log('📊 Raw data loaded:', {
+      projects: projectsData.length,
+      terceros: terceros.value.length
+    })
+    
+    // Create terceros lookup map (same as Dashboard)
+    const tercerosMap = {}
+    terceros.value.forEach(tercero => {
+      tercerosMap[tercero.id] = tercero
+    })
+    
+    // Enrich projects with terceros data (same pattern as Dashboard)
+    const enrichedProjects = projectsData.map(project => {
+      const tercero = tercerosMap[project.fk_soc] || null
+      return {
+        ...project,
+        thirdparty_name: tercero ? tercero.name : null
+      }
+    })
+    
+    console.log('✅ Enriched projects sample:', enrichedProjects.slice(0, 3).map(p => ({
+      ref: p.ref,
+      fk_soc: p.fk_soc,
+      thirdparty_name: p.thirdparty_name,
+      title: p.title
+    })))
+    
+    // Check if any projects have thirdparty_name
+    const withThirdparty = enrichedProjects.filter(p => p.thirdparty_name).length
+    console.log(`📈 Projects with thirdparty: ${withThirdparty}/${enrichedProjects.length}`)
+    
+    // Sample terceros for debugging
+    console.log('🏢 Sample terceros:', Object.keys(tercerosMap).slice(0, 5), 'Total:', Object.keys(tercerosMap).length)
+    
+    projects.value = enrichedProjects
+    
   } catch (error) {
-    console.error('Error fetching projects:', error)
+    console.error('❌ Error fetching projects:', error)
   } finally {
     loading.value = false
+    console.log('🏁 fetchProjects completed, projects count:', projects.value.length)
   }
 }
 
 // Computed properties for filtering and pagination
 const filteredProjects = computed(() => {
   let filtered = [...projects.value]
+
+  // Hide projects with status = 2
+  filtered = filtered.filter(project => project.fk_statut !== '2')
 
   // Apply search filter
   if (searchQuery.value) {
@@ -541,7 +587,20 @@ watch([searchQuery, statusFilter], () => {
   currentPage.value = 1
 })
 
+// Debug watcher to monitor projects data changes
+watch(projects, (newProjects, oldProjects) => {
+  console.log('🔍 Projects data changed:', {
+    oldCount: oldProjects?.length || 0,
+    newCount: newProjects?.length || 0,
+    sampleNew: newProjects?.slice(0, 2)?.map(p => ({
+      ref: p.ref,
+      thirdparty_name: p.thirdparty_name
+    }))
+  })
+}, { deep: true })
+
 onMounted(() => {
+  console.log('🚀 Component mounted, calling fetchProjects')
   fetchProjects()
 })
 </script>

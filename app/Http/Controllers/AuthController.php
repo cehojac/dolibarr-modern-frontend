@@ -32,14 +32,123 @@ class AuthController extends Controller
                 // La API de Dolibarr devuelve directamente el token como string
                 $token = is_array($data) ? ($data['success']['token'] ?? $data) : $data;
                 
-                // Guardar token en sesión
+                // Intentar obtener información del usuario usando diferentes enfoques
+                // Nota: La API login no devuelve ID, necesitamos obtenerlo de otra forma
+                $userInfo = [];
+                
+                try {
+                    // Enfoque 1: Intentar obtener el perfil del usuario actual con diferentes endpoints
+                    $endpoints = [
+                        '/users/info',
+                        '/users/0',  // 0 suele representar el usuario actual en muchas APIs
+                        '/users/me', // Endpoint común para "mi perfil"
+                        '/user',     // Alternativa sin 's'
+                        '/profile'   // Otro endpoint común
+                    ];
+                    
+                    $userInfo = [];
+                    foreach ($endpoints as $endpoint) {
+                        $userInfoResponse = Http::withHeaders([
+                            'DOLAPIKEY' => $token,
+                            'Accept' => 'application/json',
+                        ])->get(config('services.dolibarr.base_url') . $endpoint);
+                        
+                        if ($userInfoResponse->successful()) {
+                            $userInfo = $userInfoResponse->json();
+                            Log::info("Got user info from {$endpoint}:", $userInfo);
+                            break;
+                        } else {
+                            Log::info("Failed to get user info from {$endpoint}", [
+                                'status' => $userInfoResponse->status(),
+                                'response' => $userInfoResponse->body()
+                            ]);
+                        }
+                    }
+                    
+                    if (empty($userInfo)) {
+                        Log::info('Failed to get user info, trying alternative approach', [
+                            'status' => $userInfoResponse->status(),
+                            'response' => $userInfoResponse->body()
+                        ]);
+                        
+                        // Enfoque 2: Intentar con /users (lista completa) si tiene permisos
+                        $usersResponse = Http::withHeaders([
+                            'DOLAPIKEY' => $token,
+                            'Accept' => 'application/json',
+                        ])->get(config('services.dolibarr.base_url') . '/users');
+                        
+                        if ($usersResponse->successful()) {
+                            $users = $usersResponse->json();
+                            Log::info('Searching user in users list, total:', count($users));
+                            
+                            // Buscar por login exacto
+                            foreach ($users as $user) {
+                                if (isset($user['login']) && $user['login'] === $login) {
+                                    $userInfo = $user;
+                                    Log::info('Found user by login:', ['login' => $user['login'], 'id' => $user['id'] ?? $user['rowid'] ?? 'NO_ID']);
+                                    break;
+                                }
+                            }
+                        } else {
+                            Log::warning('Cannot access users API, using fallback approach', [
+                                'status' => $usersResponse->status(),
+                                'error' => $usersResponse->body()
+                            ]);
+                            
+                            // Enfoque 3: Fallback - usar una ID basada en el login como hash
+                            // Esto es temporal hasta encontrar una mejor solución
+                            $fallbackId = crc32($login); // Genera un ID numérico basado en el login
+                            $userInfo = [
+                                'id' => $fallbackId,
+                                'login' => $login,
+                                'firstname' => '',
+                                'lastname' => '',
+                                'email' => filter_var($login, FILTER_VALIDATE_EMAIL) ? $login : '',
+                                'admin' => 0
+                            ];
+                            Log::info('Using fallback ID for user:', ['login' => $login, 'fallback_id' => $fallbackId]);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error getting user info: ' . $e->getMessage());
+                    // Fallback final
+                    $fallbackId = crc32($login);
+                    $userInfo = [
+                        'id' => $fallbackId,
+                        'login' => $login,
+                        'firstname' => '',
+                        'lastname' => '',
+                        'email' => filter_var($login, FILTER_VALIDATE_EMAIL) ? $login : '',
+                        'admin' => 0
+                    ];
+                }
+                
+                // Guardar token y información completa del usuario en sesión
                 $request->session()->put('dolibarr_token', $token);
+                
+                // Try multiple possible ID field names from Dolibarr API
+                $userId = null;
+                if (!empty($userInfo)) {
+                    $userId = $userInfo['id'] ?? 
+                             $userInfo['rowid'] ?? 
+                             $userInfo['user_id'] ?? 
+                             $userInfo['fk_user'] ?? 
+                             null;
+                    
+                    Log::info('Available user fields:', array_keys($userInfo));
+                    Log::info('Extracted user ID:', ['user_id' => $userId]);
+                }
+                
                 $request->session()->put('dolibarr_user', [
-                    'login' => $login,
-                    'firstname' => '',
-                    'lastname' => '',
-                    'email' => '',
+                    'id' => $userId,
+                    'login' => $userInfo['login'] ?? $login,
+                    'firstname' => $userInfo['firstname'] ?? $userInfo['name'] ?? '',
+                    'lastname' => $userInfo['lastname'] ?? $userInfo['surname'] ?? '',
+                    'email' => $userInfo['email'] ?? '',
+                    'admin' => $userInfo['admin'] ?? 0,
                 ]);
+                
+                Log::info('User data stored in session:', $request->session()->get('dolibarr_user'));
                 
                 return response()->json([
                     'message' => 'Autenticado correctamente',

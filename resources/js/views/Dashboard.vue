@@ -27,7 +27,7 @@
           </div>
           <div class="ml-4">
             <p class="text-sm font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ module.name }}</p>
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ module.count || '-' }}</p>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ module.count !== undefined ? module.count : '-' }}</p>
           </div>
         </div>
       </div>
@@ -90,10 +90,10 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Tipo</th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Estado</th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Asignado a</th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Etiquetas</th>
+              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tipo</th>
+              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
+              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Asignado a</th>
+              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Detalles</th>
               <th @click="sortBy('date_start')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
                 <div class="flex items-center space-x-1">
                   <span>Fecha inicio</span>
@@ -110,8 +110,8 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Proyecto</th>
-              <th class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Progreso</th>
+              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Proyecto</th>
+              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Progreso</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-200'">
@@ -155,22 +155,28 @@
                   {{ getStatusText(todo.status, todo.type) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ todo.assigned_to || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ todo.tags || '-' }}
+              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                <div class="space-y-1">
+                  <div v-if="todo.tercero_name" class="text-xs">Tercero: {{ todo.tercero_name }}</div>
+                  <div v-if="todo.project_name" class="text-xs">Proyecto: {{ todo.project_name }}</div>
+                  <div v-if="todo.project_category" class="text-xs">Categoría: {{ todo.project_category }}</div>
+                  <div v-if="todo.severity" class="text-xs">Gravedad: {{ todo.severity }}</div>
+                  <div v-if="todo.tags" class="text-xs">Tags: {{ todo.tags }}</div>
+                </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(todo.date_start) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(todo.date_end) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ todo.project || '-' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 <div v-if="todo.type === 'task' && todo.progress !== undefined" class="flex items-center">
                   <div class="w-full rounded-full h-2 mr-2" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'">
                     <div class="bg-blue-500 h-2 rounded-full" :style="`width: ${todo.progress}%`"></div>
@@ -234,20 +240,23 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import http from '../utils/http'
+import { useAuthStore } from '../stores/auth'
+import { useTicketsCounter } from '../composables/useTicketsCounter'
+import { useTasksCounter } from '../composables/useTasksCounter'
 import { useTheme } from '../composables/useTheme'
-
 const { isDark } = useTheme()
+const authStore = useAuthStore()
 
 // Reactive data
-const modules = ref([
-  { name: 'Terceros', href: '/terceros', iconPath: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z', count: 0 },
-  { name: 'Productos', href: '/productos', iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', count: 0 },
-  { name: 'Servicios', href: '/servicios', iconPath: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', count: 0 },
-  { name: 'Documentos', href: '/documentos', iconPath: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', count: 0 },
-  { name: 'Agenda', href: '/agenda', iconPath: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', count: 0 },
-  { name: 'Tickets', href: '/tickets', iconPath: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z', count: 0 }
+const modules = computed(() => [
+  { name: 'Terceros', href: '/terceros', iconPath: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z' },
+  { name: 'Productos', href: '/productos', iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+  { name: 'Servicios', href: '/servicios', iconPath: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+  { name: 'Proyectos', href: '/proyectos', iconPath: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
+  { name: 'Tickets Asignados', href: '/tickets', iconPath: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z', count: assignedTicketsCount.value },
+  { name: 'Tareas Asignadas', href: '/tareas', iconPath: 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', count: assignedTasksCount.value }
 ])
 
 // To Do table data
@@ -257,6 +266,10 @@ const searchQuery = ref('')
 const typeFilter = ref('')
 const sortField = ref('date_start')
 const sortOrder = ref('desc')
+
+// Counters
+const assignedTicketsCount = ref(0)
+const assignedTasksCount = ref(0)
 
 // Pagination
 const currentPage = ref(1)
@@ -327,91 +340,133 @@ const visiblePages = computed(() => {
 const loadTodos = async () => {
   loading.value = true
   try {
-    console.log('Loading todos...')
     
-    // Load tickets, projects and tasks in parallel
-    const [ticketsResponse, projectsResponse, tasksResponse] = await Promise.all([
-      axios.get('/api/doli/tickets').catch(err => {
-        console.error('Error loading tickets:', err)
-        return { data: [] }
-      }),
-      axios.get('/api/doli/projects').catch(err => {
-        console.error('Error loading projects:', err)
-        return { data: [] }
-      }),
-      axios.get('/api/doli/tasks').catch(err => {
-        console.error('Error loading tasks:', err)
-        return { data: [] }
-      })
+    // Load all required data in parallel
+    const [ticketsResponse, tasksResponse, tercerosResponse, projectsResponse, usersResponse] = await Promise.all([
+      http.get('/api/doli/tickets').catch(() => ({ data: [] })),
+      http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)').catch(() => ({ data: [] })),
+      http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] })),
+      http.get('/api/doli/projects').catch(() => ({ data: [] })),
+      http.get('/api/doli/users').catch(() => ({ data: [] }))
     ])
 
-    console.log('API Responses:', {
-      tickets: ticketsResponse.data,
-      projects: projectsResponse.data,
-      tasks: tasksResponse.data
-    })
 
-    const todoItems = []
+    // Create lookup maps for enrichment
+    const tercerosMap = {}
+    const projectsMap = {}
+    const usersMap = {}
 
-    // Process tickets
-    if (ticketsResponse.data && Array.isArray(ticketsResponse.data)) {
-      console.log(`Processing ${ticketsResponse.data.length} tickets`)
-      ticketsResponse.data.forEach(ticket => {
-        console.log('Ticket:', ticket)
-        // Include all tickets for debugging, remove status filter temporarily
-        todoItems.push({
-          id: ticket.id,
-          type: 'ticket',
-          ref: ticket.ref,
-          title: ticket.subject || ticket.message || 'Sin título',
-          status: ticket.fk_statut,
-          assigned_to: ticket.assigned_user_name || ticket.assigned_user || null,
-          tags: ticket.category ? [ticket.category] : [],
-          date_start: ticket.datec,
-          date_end: ticket.date_close,
-          project_name: null,
-          progress: null
-        })
+    // Build terceros map
+    if (tercerosResponse.data && Array.isArray(tercerosResponse.data)) {
+      tercerosResponse.data.forEach(tercero => {
+        tercerosMap[tercero.id] = tercero
       })
     }
 
-    // Create a map of projects for quick lookup
-    const projectsMap = {}
+    // Build projects map
     if (projectsResponse.data && Array.isArray(projectsResponse.data)) {
-      console.log(`Processing ${projectsResponse.data.length} projects`)
       projectsResponse.data.forEach(project => {
         projectsMap[project.id] = project
       })
     }
 
-    // Process tasks from Dolibarr tasks endpoint
-    if (tasksResponse.data && Array.isArray(tasksResponse.data)) {
-      console.log(`Processing ${tasksResponse.data.length} tasks`)
-      tasksResponse.data.forEach(task => {
-        console.log('Task:', task)
-        // Include all tasks for debugging, remove progress filter temporarily
-        const project = projectsMap[task.fk_project] || null
-        
-        todoItems.push({
-          id: task.id,
-          type: 'task',
-          ref: task.ref || `TASK-${task.id}`,
-          title: task.label || 'Sin título',
-          status: task.progress >= 100 ? 'completed' : (task.progress > 0 ? 'in_progress' : 'pending'),
-          assigned_to: task.assigned_user_name || null,
-          tags: task.category ? [task.category] : [],
-          date_start: task.dateo,
-          date_end: task.datee,
-          project_name: project ? (project.title || project.ref) : null,
-          progress: task.progress || 0
-        })
+    // Build users map
+    if (usersResponse.data && Array.isArray(usersResponse.data)) {
+      usersResponse.data.forEach(user => {
+        usersMap[user.id] = user
       })
     }
 
-    console.log(`Total todo items: ${todoItems.length}`)
+    const todoItems = []
+
+    // Process tickets with enrichment and count assigned ones
+    let assignedTicketsCounter = 0
+    try {
+      if (ticketsResponse.data && Array.isArray(ticketsResponse.data)) {
+        ticketsResponse.data.forEach(ticket => {
+          // Only include non-closed tickets
+          if (ticket.fk_statut !== '8') {
+            const assignedUser = usersMap[ticket.fk_user_assign] || null
+            const tercero = tercerosMap[ticket.fk_soc] || null
+            
+            // Count tickets assigned to current user
+            const currentUserId = authStore.user?.id || authStore.user?.rowid || authStore.user?.user_id
+            const currentUserLogin = authStore.user?.login
+            const isAssignedById = currentUserId && ticket.fk_user_assign == currentUserId
+            const isAssignedByLogin = currentUserLogin && ticket.fk_user_assign_login == currentUserLogin
+            if (isAssignedById || isAssignedByLogin) {
+              assignedTicketsCounter++
+            }
+            
+            todoItems.push({
+              id: ticket.id,
+              type: 'ticket',
+              ref: ticket.ref,
+              title: ticket.subject || 'Sin asunto',
+              status: ticket.fk_statut === '0' ? 'pending' : (ticket.fk_statut === '1' ? 'in_progress' : 'pending'),
+              assigned_to: assignedUser ? `${assignedUser.firstname} ${assignedUser.lastname}`.trim() : null,
+              tags: ticket.category_code || ticket.category || null,
+              date_start: ticket.datec,
+              date_end: null,
+              project: null,
+              progress: null,
+              tercero_name: tercero ? tercero.name : null,
+              project_name: null,
+              project_category: null,
+              severity: ticket.severity_code || ticket.severity || 'NORMAL'
+            })
+          }
+        })
+      }
+    } catch (err) {
+      // Silent error handling for tickets
+    }
+    assignedTicketsCount.value = assignedTicketsCounter
+    
+    // Process tasks with enrichment and count assigned ones
+    let assignedTasksCounter = 0
+    if (tasksResponse.data && Array.isArray(tasksResponse.data)) {
+      tasksResponse.data.forEach(task => {
+        // Only include non-completed tasks
+        if (task.progress < 100) {
+          const project = projectsMap[task.fk_project] || null
+          const assignedUser = usersMap[task.fk_user_assign] || null
+          const tercero = project ? tercerosMap[project.fk_soc] : null
+          
+          // Count tasks assigned to current user
+          const currentUserId = authStore.user?.id || authStore.user?.rowid || authStore.user?.user_id
+          const currentUserLogin = authStore.user?.login
+          const isAssignedById = currentUserId && task.fk_user_assign == currentUserId
+          const isAssignedByLogin = currentUserLogin && task.fk_user_assign_login == currentUserLogin
+          if (isAssignedById || isAssignedByLogin) {
+            assignedTasksCounter++
+          }
+          
+          todoItems.push({
+            id: task.id,
+            type: 'task',
+            ref: task.ref || `TASK-${task.id}`,
+            title: task.label || 'Sin título',
+            status: task.progress >= 100 ? 'completed' : (task.progress > 0 ? 'in_progress' : 'pending'),
+            assigned_to: assignedUser ? `${assignedUser.firstname} ${assignedUser.lastname}`.trim() : null,
+            tags: project ? project.category : null,
+            date_start: task.dateo,
+            date_end: task.datee,
+            project: project ? project.ref : null,
+            progress: task.progress || 0,
+            tercero_name: tercero ? tercero.name : null,
+            project_name: project ? project.title || project.ref : null,
+            project_category: project ? project.category : null,
+            severity: task.priority || 'NORMAL'
+          })
+        }
+      })
+    }
+    assignedTasksCount.value = assignedTasksCounter
+
     todos.value = todoItems
   } catch (error) {
-    console.error('Error loading todos:', error)
+    // Silent error handling
   } finally {
     loading.value = false
   }
@@ -422,7 +477,7 @@ const sortBy = (field) => {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
     sortField.value = field
-    sortOrder.value = 'asc'
+    sortOrder.value = 'desc'
   }
 }
 
@@ -523,6 +578,17 @@ const getStatusText = (status, type) => {
     }
   }
 }
+
+// Watch for user changes and refresh data
+watch(() => authStore.user, (newUser, oldUser) => {
+  if (newUser && (!oldUser || newUser.id !== oldUser.id || newUser.login !== oldUser.login)) {
+    console.log('🔄 User changed in Dashboard, reloading data:', {
+      oldUser: oldUser ? { id: oldUser.id, login: oldUser.login } : null,
+      newUser: { id: newUser.id, login: newUser.login }
+    })
+    loadTodos()
+  }
+}, { immediate: false })
 
 onMounted(() => {
   loadTodos()

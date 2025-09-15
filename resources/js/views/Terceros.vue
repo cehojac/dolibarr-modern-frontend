@@ -4,7 +4,7 @@
       <div class="sm:flex-auto">
         <h1 :class="['text-xl font-semibold', isDark ? 'text-white' : 'text-gray-900']">Terceros</h1>
         <p :class="['mt-2 text-sm', isDark ? 'text-gray-300' : 'text-gray-700']">
-          Gestión de clientes, prospectos y proveedores
+          Gestión de clientes, clientes potenciales y proveedores (solo activos)
         </p>
       </div>
       <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
@@ -128,20 +128,27 @@ const updatePagination = () => {
 }
 
 const getTerceroType = (tercero) => {
-  if (tercero.client == 1) return 'Cliente'
-  if (tercero.client == 2) return 'Prospecto'
-  if (tercero.fournisseur == 1) return 'Proveedor'
-  return 'Otro'
+  const types = []
+  
+  if (tercero.client == 1) types.push('Cliente')
+  if (tercero.client == 2) types.push('Cliente Potencial')
+  if (tercero.fournisseur == 1) types.push('Proveedor')
+  
+  return types.length > 0 ? types.join(' / ') : 'Otro'
 }
 
 const fetchTerceros = async () => {
-  const cacheKey = 'terceros'
+  const cacheKey = 'terceros_active'
   
   try {
     const data = await cache.cachedFetch(cacheKey, async () => {
       loading.value = true
-      const response = await http.get('/api/doli/thirdparties')
-      return response.data || []
+      // Fetch with limit of 1000 and filter for active only (status = 1)
+      const response = await http.get('/api/doli/thirdparties?limit=1000&status=1')
+      const allData = response.data || []
+      
+      // Additional client-side filter to ensure only active terceros
+      return allData.filter(tercero => tercero.status == 1)
     }, 2 * 60 * 1000) // 2 minutes TTL
     
     allTerceros.value = data
@@ -160,16 +167,16 @@ const filterOptions = [
     placeholder: 'Tipo de tercero',
     options: [
       { value: '1', label: 'Cliente' },
-      { value: '2', label: 'Prospecto' },
+      { value: '2', label: 'Cliente Potencial' },
       { value: '0', label: 'Otro' }
     ]
   },
   {
-    key: 'status',
-    placeholder: 'Estado',
+    key: 'fournisseur',
+    placeholder: 'Proveedor',
     options: [
-      { value: '1', label: 'Activo' },
-      { value: '0', label: 'Inactivo' }
+      { value: '1', label: 'Es Proveedor' },
+      { value: '0', label: 'No es Proveedor' }
     ]
   }
 ]

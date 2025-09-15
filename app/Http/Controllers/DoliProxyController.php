@@ -57,8 +57,6 @@ class DoliProxyController extends Controller
         
         // Si es una solicitud de tareas, agregar parámetros por defecto
         if (str_contains($url, '/tasks')) {
-            $queryParams['sortfield'] = 'dateo';
-            $queryParams['sortorder'] = 'DESC';
             $queryParams['limit'] = '500';
         }
         
