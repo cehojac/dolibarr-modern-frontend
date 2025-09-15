@@ -250,8 +250,10 @@
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import http from '../utils/http'
 import { useTheme } from '../composables/useTheme'
+import { useAuth } from '../composables/useAuth'
 
 const { isDark } = useTheme()
+const { currentUser } = useAuth()
 
 // Reactive data
 const tasks = ref([])
@@ -426,8 +428,8 @@ const loadTasks = async () => {
         console.log('Tareas - Terceros map keys:', Object.keys(tercerosMap).slice(0, 10))
         console.log('Tareas - Users map keys:', Object.keys(usersMap).slice(0, 10))
 
-        // Process tasks with enrichment
-        tasksResponse.data.forEach((task, index) => {
+        // Process tasks with enrichment (including role-based assignment)
+        const taskPromises = tasksResponse.data.map(async (task, index) => {
           if (index < 3) {
             console.log(`Sample task ${index}:`, task)
           }
@@ -454,13 +456,32 @@ const loadTasks = async () => {
             }
           }
 
-          // Try multiple possible user ID fields
+          // Check if current user has a role in this task
           let assignedUser = null
-          const userIds = [task.fk_user_assign, task.fk_user, task.user_id, task.userid]
-          for (const userId of userIds) {
-            if (userId && usersMap[userId]) {
-              assignedUser = usersMap[userId]
-              break
+          let isUserAssigned = false
+          
+          if (task.id && currentUser.value?.id) {
+            try {
+              const roleResponse = await http.get(`/tasks/${task.id}/roles?userid=${currentUser.value.id}`)
+              if (roleResponse.data && roleResponse.data.length > 0) {
+                isUserAssigned = true
+                assignedUser = currentUser.value
+                console.log(`User ${currentUser.value.id} is assigned to task ${task.ref}`)
+              }
+            } catch (error) {
+              // No role found or API error - continue with fallback logic
+              console.log(`No role found for user ${currentUser.value.id} in task ${task.ref}`)
+            }
+          }
+
+          // Fallback: Try multiple possible user ID fields if no role found
+          if (!assignedUser) {
+            const userIds = [task.fk_user_assign, task.fk_user, task.user_id, task.userid]
+            for (const userId of userIds) {
+              if (userId && usersMap[userId]) {
+                assignedUser = usersMap[userId]
+                break
+              }
             }
           }
 
@@ -490,15 +511,20 @@ const loadTasks = async () => {
 
           console.log(`Task ${task.ref}: project=${project?.title || project?.ref || 'none'}, tercero=${tercero?.name || 'none'}`)
           
-          enrichedTasks.push({
+          return {
             ...task,
             status: task.progress >= 100 ? 'completed' : (task.progress > 0 ? 'in_progress' : 'pending'),
             assigned_to: assignedUser ? `${assignedUser.firstname} ${assignedUser.lastname}`.trim() : null,
             project_name: project ? (project.title || project.ref) : null,
             tercero_name: tercero ? tercero.name : null,
-            priority: task.priority || 'NORMAL'
-          })
+            priority: task.priority || 'NORMAL',
+            isUserAssigned: isUserAssigned
+          }
         })
+
+        // Wait for all task processing to complete
+        const processedTasks = await Promise.all(taskPromises)
+        enrichedTasks.push(...processedTasks)
       }
     } catch (err) {
       // Tasks API failed, show empty state

@@ -328,154 +328,343 @@
         <div class="fixed inset-0 bg-black bg-opacity-75 transition-opacity" @click="closeModal"></div>
 
         <!-- Modal -->
-        <div class="relative inline-block align-bottom rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border" :class="isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'" @click.stop>
+        <div class="relative inline-block align-bottom rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full border" :class="isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'" @click.stop>
           <!-- Header -->
           <div class="px-6 py-4 border-b" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'">
             <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Detalles del Ticket</h3>
-                <p class="mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ selectedTicket?.ref }}</p>
+              <div class="flex items-center space-x-4">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                  <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketDetails?.subject || 'Cargando...' }}</h3>
+                  <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Ticket {{ selectedTicket?.ref }}</p>
+                </div>
               </div>
-              <button @click="closeModal" class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <div class="flex items-center space-x-3">
+                <span v-if="ticketDetails" class="inline-flex px-3 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut)">
+                  {{ getStatusText(ticketDetails.fk_statut) }}
+                </span>
+                <button @click="closeModal" class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Content -->
-          <div class="px-6 py-6" :class="isDark ? 'bg-gray-900' : 'bg-white'">
-            <div v-if="loadingDetails" class="flex items-center justify-center py-8">
+          <!-- Content - Two Panel Layout -->
+          <div class="flex h-[80vh]" :class="isDark ? 'bg-gray-900' : 'bg-white'">
+            <div v-if="loadingDetails" class="flex items-center justify-center w-full py-8">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               <span class="ml-3" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Cargando detalles...</span>
             </div>
 
-            <div v-else-if="ticketDetails" class="space-y-6">
-              <!-- Información básica -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Referencia</label>
-                    <p class="px-3 py-2 rounded-lg" :class="isDark ? 'text-white bg-gray-800' : 'text-gray-900 bg-gray-100'">{{ ticketDetails.ref }}</p>
+            <div v-else-if="ticketDetails" class="flex w-full">
+              <!-- Left Panel - Main Content -->
+              <div class="flex-1 p-6 overflow-y-auto">
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-3 mb-6">
+                  <button class="flex items-center space-x-2 px-3 py-2 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-sm">Marcar completo</span>
+                  </button>
+                  <button class="flex items-center space-x-2 px-3 py-2 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span class="text-sm">Iniciar Timer</span>
+                  </button>
+                </div>
+
+                <!-- Description Section -->
+                <div class="mb-8">
+                  <div class="flex items-center space-x-2 mb-4">
+                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Descripción</h3>
+                  </div>
+                  <div class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
+                    <div v-if="ticketDetails.message" v-html="ticketDetails.message" class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'"></div>
+                    <p v-else class="text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-500'">Sin descripción disponible</p>
+                  </div>
+                </div>
+
+                <!-- Intervenciones del Ticket -->
+                <div class="mb-8">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125-1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Intervenciones</h3>
+                    </div>
+                    <span v-if="ticketDetails.messages" class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                      {{ ticketDetails.messages.length }} intervención(es)
+                    </span>
                   </div>
                   
-                  <div>
-                    <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Estado</label>
-                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut)">
-                      {{ getStatusText(ticketDetails.fk_statut) }}
-                    </span>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Prioridad</label>
-                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full" :class="getPriorityClass(ticketDetails.severity)">
-                      {{ getPriorityText(ticketDetails.severity) }}
-                    </span>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Fecha de creación</label>
-                    <p class="px-3 py-2 rounded-lg" :class="isDark ? 'text-gray-300 bg-gray-800' : 'text-gray-700 bg-gray-100'">{{ formatDate(ticketDetails.datec) }}</p>
-                  </div>
-                </div>
-
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Tercero</label>
-                    <p class="px-3 py-2 rounded-lg" :class="isDark ? 'text-gray-300 bg-gray-800' : 'text-gray-700 bg-gray-100'">
-                      {{ ticketDetails.thirdparty_info?.name || ticketDetails.thirdparty_name || '-' }}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Asignado a</label>
-                    <p class="px-3 py-2 rounded-lg" :class="isDark ? 'text-gray-300 bg-gray-800' : 'text-gray-700 bg-gray-100'">{{ ticketDetails.assigned_to || 'Sin asignar' }}</p>
-                  </div>
-
-                  <div>
-                    <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Categoría</label>
-                    <p class="px-3 py-2 rounded-lg" :class="isDark ? 'text-gray-300 bg-gray-800' : 'text-gray-700 bg-gray-100'">{{ ticketDetails.category || '-' }}</p>
-                  </div>
-
-                  <div v-if="ticketDetails.date_close">
-                    <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Fecha de cierre</label>
-                    <p class="px-3 py-2 rounded-lg" :class="isDark ? 'text-gray-300 bg-gray-800' : 'text-gray-700 bg-gray-100'">{{ formatDate(ticketDetails.date_close) }}</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Asunto -->
-              <div>
-                <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Asunto</label>
-                <p class="px-4 py-3 rounded-lg" :class="isDark ? 'text-white bg-gray-800' : 'text-gray-900 bg-gray-100'">{{ ticketDetails.subject }}</p>
-              </div>
-
-              <!-- Mensaje -->
-              <div v-if="ticketDetails.message">
-                <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Descripción</label>
-                <div class="px-4 py-3 rounded-lg max-h-64 overflow-y-auto" :class="isDark ? 'text-gray-300 bg-gray-800' : 'text-gray-700 bg-gray-100'" v-html="ticketDetails.message"></div>
-              </div>
-
-              <!-- Mensajes del ticket -->
-              <div v-if="ticketDetails.messages && ticketDetails.messages.length > 0" class="mt-6">
-                <label class="block text-sm font-medium mb-3" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Mensajes del Ticket</label>
-                <div class="space-y-4 max-h-96 overflow-y-auto">
-                  <div 
-                    v-for="message in ticketDetails.messages" 
-                    :key="message.id"
-                    class="border rounded-lg p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'"
-                  >
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="flex items-center space-x-2">
-                        <span class="text-sm font-medium text-blue-400">
-                          {{ message.fk_user_author_name || 'Usuario' }}
-                        </span>
-                        <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
-                          {{ formatDate(message.datec) }}
-                        </span>
+                  <!-- Intervenciones del ticket -->
+                  <div v-if="ticketDetails.messages && ticketDetails.messages.length > 0" class="space-y-3">
+                    <div 
+                      v-for="(message, index) in ticketDetails.messages" 
+                      :key="message.id"
+                      class="flex items-start space-x-3 p-3 rounded-lg border" 
+                      :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'"
+                    >
+                      <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white mt-0.5" 
+                           :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                        {{ index + 1 }}
                       </div>
-                      <span v-if="message.private" class="text-xs bg-yellow-600 text-yellow-100 px-2 py-1 rounded">
-                        Privado
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-2">
+                          <div class="flex items-center space-x-2">
+                            <span class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                              {{ message.fk_user_author_name || 'Usuario' }}
+                            </span>
+                            <span v-if="message.private" class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                              Privado
+                            </span>
+                          </div>
+                          <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                            {{ formatDate(message.datec) }}
+                          </span>
+                        </div>
+                        <div class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          <div v-if="message.message || message.content" v-html="message.message || message.content" class="prose prose-sm max-w-none" :class="isDark ? 'prose-invert' : ''"></div>
+                          <p v-else class="italic" :class="isDark ? 'text-gray-500' : 'text-gray-500'">Sin contenido</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Estado cuando no hay intervenciones -->
+                  <div v-else class="text-center py-8">
+                    <svg class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125-1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                    </svg>
+                    <p class="text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-500'">No hay intervenciones registradas para este ticket</p>
+                  </div>
+                </div>
+
+                <!-- Comments Section -->
+                <div>
+                  <div class="flex items-center space-x-2 mb-4">
+                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.126-.276.75.75 0 00-.618.127L8.5 21.5l-1.5-1.5a.75.75 0 00-.618-.127A8.955 8.955 0 014 20c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Comentarios</h3>
+                  </div>
+
+                  <!-- Messages -->
+                  <div v-if="ticketDetails.messages && ticketDetails.messages.length > 0" class="space-y-4 mb-4">
+                    <div 
+                      v-for="message in ticketDetails.messages" 
+                      :key="message.id"
+                      class="flex space-x-3"
+                    >
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                        <span class="text-xs text-white font-medium">{{ (message.fk_user_author_name || 'U').charAt(0).toUpperCase() }}</span>
+                      </div>
+                      <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-1">
+                          <span class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                            {{ message.fk_user_author_name || 'Usuario' }}
+                          </span>
+                          <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                            {{ formatDate(message.datec) }}
+                          </span>
+                        </div>
+                        <div class="text-sm p-3 rounded-lg" :class="isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'" v-html="message.message || message.content"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Add Comment -->
+                  <div class="border-t pt-4" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+                    <textarea 
+                      placeholder="Añadir un comentario..."
+                      class="w-full p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                      rows="3"
+                    ></textarea>
+                    <div class="flex justify-end mt-2">
+                      <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
+                        Comentar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Sidebar - Ticket Info -->
+              <div class="w-80 border-l p-6 overflow-y-auto" :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'">
+                <!-- Ticket Info Section -->
+                <div class="mb-6">
+                  <div class="flex items-center space-x-2 mb-4">
+                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Ticket Info</h3>
+                  </div>
+                  
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Estado:</label>
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut)">
+                        {{ getStatusText(ticketDetails.fk_statut) }}
                       </span>
                     </div>
-                    <div class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'" v-html="message.message || message.content"></div>
+                    
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Fecha de inicio:</label>
+                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ formatDate(ticketDetails.datec) }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Fecha de vencimiento:</label>
+                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ ticketDetails.date_close ? formatDate(ticketDetails.date_close) : 'Sin fecha límite' }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Prioridad:</label>
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getPriorityClass(ticketDetails.severity)">
+                        {{ getPriorityText(ticketDetails.severity) }}
+                      </span>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tiempo registrado:</label>
+                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">00:00</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tiempo total registrado:</label>
+                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">00:01</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Reminders Section -->
+                <div class="mb-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Recordatorios</h3>
+                    </div>
+                    <button class="text-blue-500 hover:text-blue-600">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  <div class="space-y-3">
+                    <div class="p-3 rounded-lg border" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'">
+                      <div class="flex items-start space-x-3">
+                        <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                          <span class="text-xs text-white font-medium">A</span>
+                        </div>
+                        <div class="flex-1">
+                          <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Recordatorio para Admin</p>
+                          <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">24-09-2025 16:00:00</p>
+                          <p class="text-xs mt-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Seguimiento del ticket</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Assignees Section -->
+                <div class="mb-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Asignados</h3>
+                    </div>
+                  </div>
+                  
+                  <div class="space-y-2">
+                    <div class="relative">
+                      <select class="w-full p-2 border rounded-lg text-sm" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'">
+                        <option>Asignar ticket a</option>
+                      </select>
+                    </div>
+                    
+                    <div v-if="ticketDetails.assigned_to" class="flex items-center space-x-3 p-2 rounded-lg" :class="isDark ? 'bg-gray-700' : 'bg-gray-100'">
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                        <span class="text-xs text-white font-medium">{{ (ticketDetails.assigned_to || 'U').charAt(0).toUpperCase() }}</span>
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketDetails.assigned_to }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Followers Section -->
+                <div class="mb-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Seguidores</h3>
+                    </div>
+                  </div>
+                  
+                  <div class="space-y-2">
+                    <div class="relative">
+                      <select class="w-full p-2 border rounded-lg text-sm" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'">
+                        <option>Añadir Seguidores</option>
+                      </select>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3 p-2 rounded-lg" :class="isDark ? 'bg-gray-700' : 'bg-gray-100'">
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-green-600' : 'bg-green-500'">
+                        <span class="text-xs text-white font-medium">A</span>
+                      </div>
+                      <div class="flex-1">
+                        <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Admin</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- File Upload Section -->
+                <div>
+                  <div class="flex items-center space-x-2 mb-4">
+                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Archivos</h3>
+                  </div>
+                  
+                  <div class="border-2 border-dashed rounded-lg p-8 text-center" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
+                    <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-500' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Arrastra archivos aquí para subir</p>
+                    <button class="mt-2 text-xs text-blue-500 hover:text-blue-600">Elegir desde Dropbox</button>
                   </div>
                 </div>
               </div>
-
-              <!-- Información adicional -->
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
-                <div>
-                  <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Creado por</label>
-                  <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ ticketDetails.fk_user_create_label || 'Sistema' }}</p>
-                </div>
-                <div v-if="ticketDetails.fk_user_assign_label">
-                  <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Asignado por</label>
-                  <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ ticketDetails.fk_user_assign_label }}</p>
-                </div>
-                <div v-if="ticketDetails.progress">
-                  <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Progreso</label>
-                  <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ ticketDetails.progress }}%</p>
-                </div>
-              </div>
             </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="px-6 py-4 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'">
-            <div class="flex justify-end space-x-3">
-              <button @click="closeModal" class="px-4 py-2 rounded-lg transition-colors" :class="isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'">
-                Cerrar
-              </button>
-              <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                Editar Ticket
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
+  </div>
+
   </div>
 </template>
 
@@ -767,16 +956,90 @@ const viewTicketDetails = async (ticket) => {
   loadingDetails.value = true
   
   try {
-    const [ticketResponse, messagesResponse] = await Promise.all([
-      http.get(`/api/doli/tickets/${ticket.id}`),
-      http.get(`/api/doli/tickets/${ticket.id}/messages`).catch(err => {
-        console.warn('Error fetching ticket messages:', err)
-        return { data: [] }
-      })
-    ])
-    
+    // Get the ticket details
+    const ticketResponse = await http.get(`/api/doli/tickets/${ticket.id}`)
     ticketDetails.value = ticketResponse.data
-    ticketDetails.value.messages = messagesResponse.data || []
+    
+    // Try multiple approaches to get ticket interventions
+    let interventions = []
+    
+    // Method 1: Check if messages are in the ticket response
+    if (ticketResponse.data.messages && Array.isArray(ticketResponse.data.messages)) {
+      interventions = ticketResponse.data.messages
+    }
+    
+    // Method 2: Try the messages endpoint
+    if (interventions.length === 0) {
+      try {
+        const messagesResponse = await http.get(`/api/doli/tickets/${ticket.id}/messages`)
+        if (messagesResponse.data && Array.isArray(messagesResponse.data)) {
+          interventions = messagesResponse.data
+        }
+      } catch (err) {
+        console.warn('Messages endpoint failed:', err)
+      }
+    }
+    
+    // Method 3: Try using objectlinks to find related interventions
+    if (interventions.length === 0) {
+      try {
+        const objectlinksResponse = await http.get(`/api/doli/tickets/${ticket.id}/objectlinks`)
+        
+        // Look for linked interventions or actioncomm objects
+        if (objectlinksResponse.data && Array.isArray(objectlinksResponse.data)) {
+          const interventionLinks = objectlinksResponse.data.filter(link => 
+            link.objecttype === 'actioncomm' || link.objecttype === 'intervention'
+          )
+          
+          // Fetch each intervention
+          for (const link of interventionLinks) {
+            try {
+              const interventionResponse = await http.get(`/api/doli/agendaevents/${link.objectid}`)
+              if (interventionResponse.data) {
+                interventions.push(interventionResponse.data)
+              }
+            } catch (interventionErr) {
+              console.warn(`Failed to fetch intervention ${link.objectid}:`, interventionErr)
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Objectlinks endpoint failed:', err)
+      }
+    }
+    
+    // Method 4: Try agendaevents with ticket filter
+    if (interventions.length === 0) {
+      try {
+        const agendaResponse = await http.get(`/api/doli/agendaevents?elementtype=ticket&elementid=${ticket.id}`)
+        if (agendaResponse.data && Array.isArray(agendaResponse.data)) {
+          interventions = agendaResponse.data
+        }
+      } catch (err) {
+        console.warn('Agenda events endpoint failed:', err)
+      }
+    }
+    
+    // Method 5: Try fichinter (interventions) and filter client-side by linkedObjectsIds
+    if (interventions.length === 0) {
+      try {
+        // Get all recent interventions and filter client-side
+        const interventionsResponse = await http.get(`/api/doli/fichinter?limit=100&sortfield=datec&sortorder=DESC`)
+        if (interventionsResponse.data && Array.isArray(interventionsResponse.data)) {
+          // Filter client-side for interventions linked to this ticket
+          const linkedInterventions = interventionsResponse.data.filter(intervention => {
+            return intervention.linkedObjectsIds && 
+                   intervention.linkedObjectsIds.ticket && 
+                   Object.values(intervention.linkedObjectsIds.ticket).includes(ticket.id.toString())
+          })
+          interventions = linkedInterventions
+        }
+      } catch (err) {
+        console.warn('Fichinter endpoint failed:', err)
+      }
+    }
+    
+    ticketDetails.value.messages = interventions
     
     // Fetch third party information if fk_soc exists
     if (ticketDetails.value.fk_soc) {
@@ -834,25 +1097,26 @@ const getStatusClass = (status) => {
 }
 
 const getPriorityText = (priority) => {
-  console.log('Priority value received:', priority, 'Type:', typeof priority)
+  if (!priority) return 'Normal'
   
-  const priorities = {
-    '1': 'Baja',
-    '2': 'Normal', 
-    '3': 'Alta',
-    '4': 'Urgente',
-    // Add common severity codes
+  const priorityStr = String(priority).toUpperCase()
+  
+  const priorityMap = {
+    '0': 'Baja',
+    '1': 'Normal', 
+    '2': 'Alta',
+    '3': 'Urgente',
+    '4': 'Inmediata',
+    '5': 'Bloqueante',
     'LOW': 'Baja',
     'NORMAL': 'Normal',
-    'HIGH': 'Alta',
+    'HIGH': 'Alta', 
     'URGENT': 'Urgente',
-    'CRITICAL': 'Crítica',
+    'IMMEDIATE': 'Inmediata',
     'BLOCKING': 'Bloqueante'
   }
   
-  const result = priorities[priority] || priorities[String(priority)] || 'Normal'
-  console.log('Priority result:', result)
-  return result
+  return priorityMap[priorityStr] || 'Normal'
 }
 
 const getPriorityClass = (priority) => {

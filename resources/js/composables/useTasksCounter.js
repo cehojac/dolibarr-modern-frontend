@@ -10,6 +10,7 @@ export function useTasksCounter() {
 
   const fetchAssignedTasksCount = async () => {
     if (!authStore.user) {
+      console.log('🚫 No user found, skipping tasks counter')
       return
     }
     
@@ -17,7 +18,10 @@ export function useTasksCounter() {
     const userId = authStore.user.id || authStore.user.rowid || authStore.user.user_id
     const userLogin = authStore.user.login
     
+    console.log('👤 Tasks Counter - User info:', { userId, userLogin })
+    
     if (!userId && !userLogin) {
+      console.log('🚫 No user ID or login found')
       return
     }
 
@@ -27,19 +31,48 @@ export function useTasksCounter() {
       const response = await http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
       const tasks = response.data || []
       
-      // Count tasks assigned to current user that are not completed
-      const assignedTasks = tasks.filter(task => {
-        // Try matching by ID first, then by login if available
-        const isAssignedById = userId && task.fk_user_assign == userId
-        const isAssignedByLogin = userLogin && task.fk_user_assign_login == userLogin
-        const isAssigned = isAssignedById || isAssignedByLogin
-        const isNotCompleted = task.progress < 100
-        
-        return isAssigned && isNotCompleted
-      })
+      console.log('📋 Tasks Counter - Total tasks fetched:', tasks.length)
       
-      assignedTasksCount.value = assignedTasks.length
+      // Check for role-based assignment first
+      let taskCount = 0
+      
+      for (const task of tasks) {
+        let isAssigned = false
+        
+        // First check if user has a role in this task
+        if (task.id && userId) {
+          try {
+            const roleResponse = await http.get(`/tasks/${task.id}/roles?userid=${userId}`)
+            if (roleResponse.data && roleResponse.data.length > 0) {
+              isAssigned = true
+              console.log(`✅ User ${userId} has role in task ${task.ref}`)
+            }
+          } catch (error) {
+            // No role found, continue with fallback logic
+          }
+        }
+        
+        // Fallback: Check traditional assignment fields
+        if (!isAssigned) {
+          const isAssignedById = userId && task.fk_user_assign == userId
+          const isAssignedByLogin = userLogin && task.fk_user_assign_login == userLogin
+          isAssigned = isAssignedById || isAssignedByLogin
+        }
+        
+        // Only count if assigned and not completed
+        const isNotCompleted = task.progress < 100
+        if (isAssigned && isNotCompleted) {
+          taskCount++
+        }
+      }
+      
+      console.log('🎯 Tasks Counter - Final count:', taskCount)
+      assignedTasksCount.value = taskCount
+      
+      // Force reactivity update
+      console.log('📊 Tasks Counter - Value set to:', assignedTasksCount.value)
     } catch (error) {
+      console.error('❌ Tasks Counter - Error:', error)
       assignedTasksCount.value = 0
     } finally {
       loading.value = false
