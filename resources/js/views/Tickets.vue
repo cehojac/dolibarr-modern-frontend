@@ -89,6 +89,19 @@
           </div>
         </div>
         
+        <!-- User Filter -->
+        <div>
+          <select
+            v-model="showOnlyMyTickets"
+            @change="applyFilters"
+            class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
+          >
+            <option :value="true">Mis Tickets</option>
+            <option :value="false">Todos los Tickets</option>
+          </select>
+        </div>
+
         <!-- Status Filter -->
         <div>
           <select
@@ -262,10 +275,21 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                   </button>
-                  <button class="text-green-400 hover:text-green-300 transition-colors" title="Editar">
-                    <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
+                  <button 
+                    @click.stop="handleTimerClick(ticket)"
+                    :class="isTimerRunning(ticket.id) ? 'text-red-500 hover:text-red-400 bg-red-50 hover:bg-red-100' : 'text-green-500 hover:text-green-400 bg-green-50 hover:bg-green-100'"
+                    class="transition-colors px-2 py-1 rounded-md border"
+                    :title="isTimerRunning(ticket.id) ? 'Parar cronómetro' : 'Iniciar cronómetro'"
+                  >
+                    <div class="flex items-center space-x-1">
+                      <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path v-if="!isTimerRunning(ticket.id)" d="M8 5v14l11-7z"/>
+                        <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                      </svg>
+                      <span v-if="isTimerRunning(ticket.id)" class="text-xs font-mono font-bold">
+                        {{ formatElapsedTime(ticket.id) }}
+                      </span>
+                    </div>
                   </button>
                 </div>
               </td>
@@ -374,11 +398,23 @@
                     </svg>
                     <span class="text-sm">Marcar completo</span>
                   </button>
-                  <button class="flex items-center space-x-2 px-3 py-2 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  
+                  <!-- Timer Button in Modal -->
+                  <button 
+                    @click="handleTimerClick(selectedTicket)"
+                    :class="isTimerRunning(selectedTicket?.id) ? 'text-red-500 hover:text-red-400 bg-red-50 hover:bg-red-100 border-red-200' : 'text-green-500 hover:text-green-400 bg-green-50 hover:bg-green-100 border-green-200'"
+                    class="flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path v-if="!isTimerRunning(selectedTicket?.id)" d="M8 5v14l11-7z"/>
+                      <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
                     </svg>
-                    <span class="text-sm">Iniciar Timer</span>
+                    <span class="text-sm">
+                      {{ isTimerRunning(selectedTicket?.id) ? 'Parar Timer' : 'Iniciar Timer' }}
+                    </span>
+                    <span v-if="isTimerRunning(selectedTicket?.id)" class="text-sm font-mono font-bold bg-red-100 px-2 py-1 rounded">
+                      {{ formatElapsedTime(selectedTicket?.id) }}
+                    </span>
                   </button>
                 </div>
 
@@ -396,60 +432,81 @@
                   </div>
                 </div>
 
-                <!-- Intervenciones del Ticket -->
+                <!-- Intervenciones del Usuario para este Ticket -->
                 <div class="mb-8">
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-2">
                       <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125-1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
                       </svg>
-                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Intervenciones</h3>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Mis Intervenciones</h3>
                     </div>
-                    <span v-if="ticketDetails.messages" class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
-                      {{ ticketDetails.messages.length }} intervención(es)
+                    <span class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                      {{ userInterventionsForTicket?.length || 0 }} intervención(es) mías
                     </span>
                   </div>
                   
-                  <!-- Intervenciones del ticket -->
-                  <div v-if="ticketDetails.messages && ticketDetails.messages.length > 0" class="space-y-3">
+                  <!-- Intervenciones del usuario para este ticket -->
+                  <div v-if="userInterventionsForTicket && userInterventionsForTicket.length > 0" class="space-y-3">
                     <div 
-                      v-for="(message, index) in ticketDetails.messages" 
-                      :key="message.id"
-                      class="flex items-start space-x-3 p-3 rounded-lg border" 
-                      :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'"
+                      v-for="(intervention, index) in userInterventionsForTicket" 
+                      :key="intervention.id"
+                      class="flex items-start space-x-3 p-4 rounded-lg border" 
+                      :class="isDark ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'"
                     >
-                      <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white mt-0.5" 
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white mt-0.5" 
                            :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
-                        {{ index + 1 }}
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                       </div>
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between mb-2">
                           <div class="flex items-center space-x-2">
                             <span class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
-                              {{ message.fk_user_author_name || 'Usuario' }}
+                              Intervención {{ intervention.ref }}
                             </span>
-                            <span v-if="message.private" class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                              Privado
+                            <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full" 
+                                  :class="getInterventionStatusClass(intervention.status)">
+                              {{ getInterventionStatusText(intervention.status) }}
                             </span>
                           </div>
-                          <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
-                            {{ formatDate(message.datec) }}
-                          </span>
+                          <div class="text-right">
+                            <div class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                              {{ formatInterventionDate(intervention.datee) }}
+                            </div>
+                            <div v-if="intervention.duration" class="text-xs" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+                              {{ formatDuration(intervention.duration) }}
+                            </div>
+                          </div>
                         </div>
                         <div class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                          <div v-if="message.message || message.content" v-html="message.message || message.content" class="prose prose-sm max-w-none" :class="isDark ? 'prose-invert' : ''"></div>
-                          <p v-else class="italic" :class="isDark ? 'text-gray-500' : 'text-gray-500'">Sin contenido</p>
+                          <div v-if="intervention.desc" class="mb-2">
+                            <strong>Descripción:</strong> {{ intervention.desc }}
+                          </div>
+                          <div v-if="intervention.lines && intervention.lines.length > 0" class="space-y-1">
+                            <strong>Líneas de intervención:</strong>
+                            <ul class="list-disc list-inside ml-2 space-y-1">
+                              <li v-for="line in intervention.lines" :key="line.id" class="text-xs">
+                                {{ line.desc || 'Sin descripción' }}
+                                <span v-if="line.duration" class="text-blue-600 ml-2">({{ formatDuration(Number(line.duration)) }})</span>
+                              </li>
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  <!-- Estado cuando no hay intervenciones -->
-                  <div v-else class="text-center py-8">
-                    <svg class="w-12 h-12 mx-auto mb-4" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125-1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                    </svg>
-                    <p class="text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-500'">No hay intervenciones registradas para este ticket</p>
+                  <!-- Estado cuando no hay intervenciones del usuario -->
+                  <div v-else class="text-center py-6">
+                    <div class="rounded-lg p-4" :class="isDark ? 'bg-gray-800/50' : 'bg-gray-100'">
+                      <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125-1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                      </svg>
+                      <p class="text-sm font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">0 intervenciones</p>
+                      <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">No tienes intervenciones registradas para este ticket</p>
+                    </div>
                   </div>
                 </div>
 
@@ -665,18 +722,134 @@
     </div>
   </div>
 
+  <!-- Modal para guardar tiempo registrado -->
+  <div v-if="showTimeEntryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="rounded-lg p-6 w-full max-w-md mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <h3 class="text-lg font-semibold mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">
+        Guardar Tiempo Registrado
+      </h3>
+      
+      <div class="mb-4">
+        <p class="text-sm mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+          Tiempo registrado: <span class="font-mono font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ formatDuration(recordedTime) }}</span>
+        </p>
+      </div>
+      
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+          Nota (opcional)
+        </label>
+        <textarea
+          v-model="timeEntryNote"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+          :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+          rows="3"
+          placeholder="Describe el trabajo realizado..."
+        ></textarea>
+      </div>
+      
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="cancelTimeEntry"
+          class="px-4 py-2 text-sm font-medium rounded-md transition-colors border"
+          :class="isDark ? 'text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 border-gray-600' : 'text-gray-700 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 border-gray-300'"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="saveTimeEntry"
+          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import http from '../utils/http'
 import { useTheme } from '../composables/useTheme'
+import http from '../utils/http'
+import { useTicketsCounter } from '../composables/useTicketsCounter'
+import { useInterventions } from '@/composables/useInterventions'
+import { useTicketTimer } from '@/composables/useTicketTimer'
+import { useAuthStore } from '../stores/auth'
 
 const { isDark } = useTheme()
+const authStore = useAuthStore()
+
+// Debug: Check if useInterventions is working
+console.log('=== IMPORTING INTERVENTIONS ===')
+const interventionsComposable = useInterventions()
+console.log('Interventions composable:', interventionsComposable)
+const { fetchUserInterventions, getInterventionsForTicket } = interventionsComposable
+
+// Timer functionality
+const { startTimer, stopTimer, isTimerRunning, formatElapsedTime } = useTicketTimer()
+
+// Timer state
+const showTimeEntryModal = ref(false)
+const timeEntryNote = ref('')
+const recordedTime = ref(0)
+
+// Timer methods
+const handleTimerClick = (ticket) => {
+  console.log('Timer click for ticket:', ticket.id)
+  console.log('Is timer running?', isTimerRunning(ticket.id))
+  
+  if (isTimerRunning(ticket.id)) {
+    // Stop timer and show save modal
+    const elapsedSeconds = stopTimer(ticket.id)
+    recordedTime.value = elapsedSeconds
+    selectedTicket.value = ticket
+    showTimeEntryModal.value = true
+    console.log('Timer stopped, elapsed seconds:', elapsedSeconds)
+  } else {
+    // Start timer
+    startTimer(ticket.id)
+    console.log('Timer started for ticket:', ticket.id)
+  }
+}
+
+const saveTimeEntry = async () => {
+  try {
+    // Here you would save to backend
+    console.log('Saving time entry:', {
+      ticketId: selectedTicket.value.id,
+      duration: recordedTime.value,
+      note: timeEntryNote.value
+    })
+    
+    // Reset modal state
+    showTimeEntryModal.value = false
+    timeEntryNote.value = ''
+    recordedTime.value = 0
+    
+    // Refresh interventions to show new entry
+    if (authStore.user?.id) {
+      await fetchUserInterventions(true)
+    }
+  } catch (error) {
+    console.error('Error saving time entry:', error)
+  }
+}
+
+const cancelTimeEntry = () => {
+  showTimeEntryModal.value = false
+  timeEntryNote.value = ''
+  recordedTime.value = 0
+}
+console.log('fetchUserInterventions:', fetchUserInterventions)
+console.log('getInterventionsForTicket:', getInterventionsForTicket)
 
 const tickets = ref([])
 const loading = ref(false)
+
+// User filter - show only user's tickets by default
+const showOnlyMyTickets = ref(true)
 
 // Filters and search
 const searchQuery = ref('')
@@ -707,6 +880,17 @@ const sortDirection = ref('asc')
 const showModal = ref(false)
 const selectedTicket = ref(null)
 const ticketDetails = ref(null)
+
+// Computed property for user interventions for the selected ticket
+const userInterventionsForTicket = computed(() => {
+  if (!selectedTicket.value?.id) {
+    return []
+  }
+  
+  const interventions = getInterventionsForTicket(selectedTicket.value.id)
+  return interventions
+})
+
 const loadingDetails = ref(false)
 
 const fetchTickets = async () => {
@@ -753,10 +937,17 @@ const fetchTerceros = async () => {
 
 const fetchUsers = async () => {
   try {
-    const response = await http.get('/api/doli/users')
-    users.value = response.data || []
+    console.log('🔍 Fetching ticket details for ID:', ticket.id)
+    const response = await http.get(`/api/doli/tickets/${ticket.id}`)
+    console.log('✅ Ticket details response:', response)
+    ticketDetails.value = response.data
   } catch (error) {
-    console.error('Error fetching users:', error)
+    console.error('❌ Error fetching ticket details:', error)
+    console.error('Error details:', error.response?.data)
+    console.error('Error status:', error.response?.status)
+    console.error('Error config:', error.config)
+  } finally {
+    loadingDetails.value = false
   }
 }
 
@@ -814,12 +1005,21 @@ const clearFilters = () => {
   showUserDropdown.value = false
   filteredTerceros.value = []
   filteredUsers.value = []
+  // Keep showOnlyMyTickets as true by default
+  showOnlyMyTickets.value = true
   applyFilters()
 }
 
 // Computed properties for filtering and pagination
 const filteredTickets = computed(() => {
   let filtered = [...tickets.value]
+
+  // Filter by user assignment - show only tickets assigned to current user
+  if (showOnlyMyTickets.value && authStore.user) {
+    filtered = filtered.filter(ticket => 
+      ticket.fk_user_assign == authStore.user.id
+    )
+  }
 
   // Filtrar tickets cerrados por defecto (a menos que se especifique mostrar todos)
   if (statusFilter.value !== 'show_all' && statusFilter.value !== '8') {
@@ -955,17 +1155,28 @@ const viewTicketDetails = async (ticket) => {
   showModal.value = true
   loadingDetails.value = true
   
+  // Refrescar intervenciones del usuario si es necesario
+  if (authStore.user && authStore.user.id) {
+    try {
+      await refreshIfNeeded(authStore.user.id)
+    } catch (error) {
+      console.warn('Error al refrescar intervenciones del usuario:', error)
+    }
+  }
+  
   try {
-    // Get the ticket details
-    const ticketResponse = await http.get(`/api/doli/tickets/${ticket.id}`)
-    ticketDetails.value = ticketResponse.data
+    console.log('🔍 Fetching ticket details for ID:', ticket.id)
+    // Fetch detailed ticket information
+    const response = await http.get(`/api/doli/tickets/${ticket.id}`)
+    console.log('✅ Ticket details response:', response)
+    ticketDetails.value = response.data
     
-    // Try multiple approaches to get ticket interventions
+    // Try multiple methods to get interventions/messages for this ticket
     let interventions = []
     
     // Method 1: Check if messages are in the ticket response
-    if (ticketResponse.data.messages && Array.isArray(ticketResponse.data.messages)) {
-      interventions = ticketResponse.data.messages
+    if (response.data.messages && Array.isArray(response.data.messages)) {
+      interventions = response.data.messages
     }
     
     // Method 2: Try the messages endpoint
@@ -1052,7 +1263,10 @@ const viewTicketDetails = async (ticket) => {
       }
     }
   } catch (error) {
-    console.error('Error fetching ticket details:', error)
+    console.error('❌ Error fetching ticket details:', error)
+    console.error('Error status:', error.response?.status)
+    console.error('Error data:', error.response?.data)
+    console.error('Request URL:', error.config?.url)
     ticketDetails.value = ticket // Fallback to basic ticket data
     ticketDetails.value.messages = []
   } finally {
@@ -1136,6 +1350,70 @@ const getPriorityClass = (priority) => {
   return classes[priority] || classes[String(priority)] || 'bg-blue-600 text-blue-100'
 }
 
+// Funciones para manejar intervenciones
+const getInterventionStatusText = (status) => {
+  const statuses = {
+    '0': 'Borrador',
+    '1': 'Validada',
+    '2': 'Facturada',
+    '3': 'Cerrada'
+  }
+  return statuses[status] || 'Desconocido'
+}
+
+const getInterventionStatusClass = (status) => {
+  const classes = {
+    '0': 'bg-gray-100 text-gray-800',
+    '1': 'bg-green-100 text-green-800',
+    '2': 'bg-blue-100 text-blue-800',
+    '3': 'bg-purple-100 text-purple-800'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+const formatInterventionDate = (dateString) => {
+  if (!dateString) return '-'
+  // Si es timestamp, convertir
+  if (typeof dateString === 'number' || /^\d+$/.test(dateString)) {
+    return new Date(dateString * 1000).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+  // Si es fecha ISO
+  return new Date(dateString).toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const formatDuration = (duration) => {
+  if (!duration) return '0h'
+  
+  // Convertir a número si es string
+  const numDuration = typeof duration === 'string' ? parseInt(duration) : duration
+  
+  // Si la duración está en segundos
+  if (typeof numDuration === 'number' && !isNaN(numDuration)) {
+    const hours = Math.floor(numDuration / 3600)
+    const minutes = Math.floor((numDuration % 3600) / 60)
+    
+    if (hours > 0) {
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+    }
+    return minutes > 0 ? `${minutes}m` : '< 1m'
+  }
+  
+  // Si ya está formateado
+  return duration
+}
+
 // Watch for filter changes to reset pagination
 watch([searchQuery, statusFilter, priorityFilter], () => {
   currentPage.value = 1
@@ -1150,17 +1428,16 @@ const closeDropdowns = (event) => {
 }
 
 onMounted(async () => {
-  // First fetch terceros and users, then tickets to enrich with tercero names
-  await Promise.all([
-    fetchTerceros(),
-    fetchUsers()
-  ])
-  
-  // Then fetch tickets and enrich with tercero data
   await fetchTickets()
   
-  // Add click outside listener
-  document.addEventListener('click', closeDropdowns)
+  // Fetch user interventions when component mounts
+  if (authStore.user && authStore.user.id) {
+    try {
+      await fetchUserInterventions(true) // Force refresh
+    } catch (error) {
+      console.warn('Error al obtener intervenciones del usuario:', error)
+    }
+  }
 })
 
 // Clean up event listener

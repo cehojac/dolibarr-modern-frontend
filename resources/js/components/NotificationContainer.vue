@@ -51,11 +51,20 @@
               </svg>
             </div>
             <div class="ml-3 w-0 flex-1 pt-0.5">
-              <p class="text-sm font-medium text-gray-900 dark:text-white">
+              <!-- Debug: mostrar datos de notificación -->
+              <div v-if="false" class="text-xs text-red-500 mb-2">
+                DEBUG: {{ JSON.stringify(notification) }}
+              </div>
+              
+              <p v-if="notification.title" class="text-sm font-medium text-gray-900 dark:text-white">
                 {{ notification.title }}
               </p>
-              <p v-if="notification.message" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <p v-if="notification.message" class="text-sm" :class="notification.title ? 'mt-1 text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white font-medium'">
                 {{ notification.message }}
+              </p>
+              <!-- Fallback si no hay ni título ni mensaje -->
+              <p v-if="!notification.title && !notification.message" class="text-sm font-medium text-gray-900 dark:text-white">
+                Notificación (sin datos)
               </p>
             </div>
             <div class="ml-4 flex-shrink-0 flex">

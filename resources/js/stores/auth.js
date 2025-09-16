@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import http from '../utils/http'
 import { useNotificationStore } from './notifications'
+import { useInterventions } from '../composables/useInterventions'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -25,11 +27,24 @@ export const useAuthStore = defineStore('auth', {
     async login(login, password) {
       this.loading = true
       const notificationStore = useNotificationStore()
+      const { initInterventions } = useInterventions()
       
       try {
         const response = await http.post('/api/auth/login', { login, password })
         this.isAuthenticated = true
         this.user = response.data.user
+        
+        // Cargar intervenciones del usuario en segundo plano
+        if (response.data.user && response.data.user.id) {
+          try {
+            await initInterventions()
+            console.log('Intervenciones del usuario cargadas correctamente')
+          } catch (interventionError) {
+            console.warn('Error al cargar intervenciones del usuario:', interventionError)
+            // No interrumpir el login por este error
+          }
+        }
+        
         notificationStore.addNotification('success', 'Sesión iniciada', `Bienvenido ${response.data.user.firstname || response.data.user.login}`)
       } catch (error) {
         this.isAuthenticated = false
@@ -42,6 +57,7 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       const notificationStore = useNotificationStore()
+      const { clearInterventions } = useInterventions()
       
       try {
         await http.post('/api/auth/logout')
@@ -51,8 +67,9 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.isAuthenticated = false
         this.user = null
-        // Limpiar localStorage
+        // Limpiar localStorage y intervenciones
         localStorage.removeItem('dolibarr-auth')
+        clearInterventions()
       }
     },
 

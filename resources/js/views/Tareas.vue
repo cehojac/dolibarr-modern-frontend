@@ -22,6 +22,16 @@
         </svg>
       </div>
 
+      <!-- User Filter -->
+      <select
+        v-model="showOnlyMyTasks"
+        class="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
+      >
+        <option :value="true">Mis Tareas</option>
+        <option :value="false">Todas las Tareas</option>
+      </select>
+
       <!-- Status Filter -->
       <select
         v-model="statusFilter"
@@ -251,9 +261,11 @@ import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import http from '../utils/http'
 import { useTheme } from '../composables/useTheme'
 import { useAuth } from '../composables/useAuth'
+import { useAuthStore } from '../stores/auth'
 
 const { isDark } = useTheme()
 const { currentUser } = useAuth()
+const authStore = useAuthStore()
 
 // Reactive data
 const tasks = ref([])
@@ -261,6 +273,9 @@ const projects = ref([])
 const users = ref([])
 const terceros = ref([])
 const loading = ref(false)
+
+// User filter - show only user's tasks by default
+const showOnlyMyTasks = ref(true)
 
 // Filters
 const searchQuery = ref('')
@@ -297,6 +312,13 @@ const filteredUsers = computed(() => {
 
 const filteredTasks = computed(() => {
   let filtered = tasks.value
+
+  // Filter by user assignment - show only tasks assigned to current user
+  if (showOnlyMyTasks.value && authStore.user) {
+    filtered = filtered.filter(task => 
+      task.fk_user_assign == authStore.user.id || task.isUserAssigned
+    )
+  }
 
   // Filter by search query
   if (searchQuery.value) {
@@ -573,6 +595,8 @@ const clearFilters = () => {
   userSearchQuery.value = ''
   selectedProject.value = null
   selectedUser.value = null
+  // Keep showOnlyMyTasks as true by default
+  showOnlyMyTasks.value = true
   currentPage.value = 1
 }
 

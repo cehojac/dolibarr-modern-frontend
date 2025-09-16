@@ -8,11 +8,22 @@ export const useNotificationStore = defineStore('notifications', {
   actions: {
     addNotification(notification) {
       const id = Date.now() + Math.random()
+      
+      // Si notification es un string, convertirlo a objeto con message
+      let notificationObj
+      if (typeof notification === 'string') {
+        notificationObj = { message: notification }
+      } else if (typeof notification === 'object' && notification !== null) {
+        notificationObj = { ...notification }
+      } else {
+        notificationObj = { message: 'Notificación' }
+      }
+      
       const newNotification = {
         id,
         type: 'info',
         duration: 5000,
-        ...notification
+        ...notificationObj
       }
       
       this.notifications.push(newNotification)
@@ -33,37 +44,46 @@ export const useNotificationStore = defineStore('notifications', {
       }
     },
 
-    success(message, options = {}) {
+    success(message, title = 'Éxito', options = {}) {
       return this.addNotification({
         type: 'success',
+        title,
         message,
         ...options
       })
     },
 
-    error(message, options = {}) {
+    error(message, title = 'Error', options = {}) {
       return this.addNotification({
         type: 'error',
+        title,
         message,
         duration: 8000,
         ...options
       })
     },
 
-    warning(message, options = {}) {
+    warning(message, title = 'Advertencia', options = {}) {
       return this.addNotification({
         type: 'warning',
+        title,
         message,
         ...options
       })
     },
 
-    info(message, options = {}) {
+    info(message, title = 'Información', options = {}) {
       return this.addNotification({
         type: 'info',
+        title,
         message,
         ...options
       })
+    },
+
+    // Método adicional para compatibilidad con el formato anterior
+    add(notification) {
+      return this.addNotification(notification)
     },
 
     clear() {
