@@ -105,13 +105,8 @@ export function useInterventions() {
     const filtered = interventions.value.filter(intervention => {
       console.log(`Checking intervention ${intervention.ref}:`, intervention.linkedObjectsIds)
       
-      if (!intervention.linkedObjectsIds) {
-        console.log(`  No linkedObjectsIds for ${intervention.ref}`)
-        return false
-      }
-      
-      // Check if linkedObjectsIds has a ticket property with nested structure
-      if (intervention.linkedObjectsIds.ticket && typeof intervention.linkedObjectsIds.ticket === 'object') {
+      // Método 1: Verificar vinculación por linkedObjectsIds (base de datos)
+      if (intervention.linkedObjectsIds && intervention.linkedObjectsIds.ticket && typeof intervention.linkedObjectsIds.ticket === 'object') {
         // Structure: { "ticket": { "366": "438" } }
         // The values are the actual ticket IDs
         const ticketIds = Object.values(intervention.linkedObjectsIds.ticket)
@@ -119,23 +114,25 @@ export function useInterventions() {
         
         const matches = ticketIds.some(id => String(id) === String(ticketId))
         console.log(`  Matches ticket ${ticketId}:`, matches)
-        return matches
+        if (matches) return true
       }
       
-      // Fallback: check if it's a direct array or object structure
-      let linkedIds = []
-      if (Array.isArray(intervention.linkedObjectsIds)) {
-        linkedIds = intervention.linkedObjectsIds
-      } else if (typeof intervention.linkedObjectsIds === 'object') {
-        linkedIds = Object.values(intervention.linkedObjectsIds)
+      // Método 2: Verificar vinculación por nota privada estructurada
+      if (intervention.note_private) {
+        const noteMatch = intervention.note_private.includes(`[TICKET_LINK]`) && 
+                         intervention.note_private.includes(`(ID: ${ticketId})`)
+        console.log(`  Note-based link for ${intervention.ref}:`, noteMatch)
+        if (noteMatch) return true
       }
       
-      console.log(`  Processed linkedIds for ${intervention.ref}:`, linkedIds)
+      // Método 3: Verificar vinculación por descripción (método anterior)
+      if (intervention.desc && intervention.desc.includes(`(ID: ${ticketId})`)) {
+        console.log(`  Description-based link for ${intervention.ref}: true`)
+        return true
+      }
       
-      const matches = linkedIds.some(id => String(id) === String(ticketId))
-      console.log(`  Matches ticket ${ticketId}:`, matches)
-      
-      return matches
+      console.log(`  No link found for ${intervention.ref}`)
+      return false
     })
     
     console.log(`Found ${filtered.length} interventions for ticket ${ticketId}`)

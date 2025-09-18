@@ -416,6 +416,17 @@
                       {{ formatElapsedTime(selectedTicket?.id) }}
                     </span>
                   </button>
+                  
+                  <!-- Manual Intervention Button -->
+                  <button 
+                    @click="openManualInterventionModal"
+                    class="flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors text-blue-500 hover:text-blue-400 bg-blue-50 hover:bg-blue-100 border-blue-200"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span class="text-sm">Add Timesheet</span>
+                  </button>
                 </div>
 
                 <!-- Description Section -->
@@ -427,7 +438,38 @@
                     <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Descripción</h3>
                   </div>
                   <div class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
-                    <div v-if="ticketDetails.message" v-html="ticketDetails.message" class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'"></div>
+                    <div v-if="ticketDetails.message" class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                      <!-- Descripción truncada o completa -->
+                      <div 
+                        v-if="!showFullDescription && ticketDetails.message.length > 300"
+                        v-html="ticketDetails.message.substring(0, 300) + '...'"
+                        class="mb-2"
+                      ></div>
+                      <div 
+                        v-else
+                        v-html="ticketDetails.message"
+                        class="mb-2"
+                      ></div>
+                      
+                      <!-- Botón Leer más / Leer menos -->
+                      <button 
+                        v-if="ticketDetails.message.length > 300"
+                        @click="showFullDescription = !showFullDescription"
+                        class="inline-flex items-center text-sm font-medium transition-colors"
+                        :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'"
+                      >
+                        <span>{{ showFullDescription ? 'Leer menos' : 'Leer más' }}</span>
+                        <svg 
+                          class="ml-1 w-4 h-4 transition-transform"
+                          :class="showFullDescription ? 'rotate-180' : ''"
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
                     <p v-else class="text-sm" :class="isDark ? 'text-gray-500' : 'text-gray-500'">Sin descripción disponible</p>
                   </div>
                 </div>
@@ -519,11 +561,118 @@
                     <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Comentarios</h3>
                   </div>
 
-                  <!-- Messages -->
-                  <div v-if="ticketDetails.messages && ticketDetails.messages.length > 0" class="space-y-4 mb-4">
+                  <!-- Add Comment Form FIRST -->
+                  <div class="mb-6 p-4 rounded-lg border" :class="isDark ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'">
+                    <!-- Comment Type Selection -->
+                    <div class="mb-3">
+                      <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                        Tipo de comentario:
+                      </label>
+                      <div class="flex space-x-4">
+                        <label class="flex items-center">
+                          <input
+                            v-model="commentType"
+                            type="radio"
+                            value="message"
+                            class="mr-2 text-blue-500 focus:ring-blue-500"
+                          >
+                          <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Solo mensaje</span>
+                        </label>
+                        <label class="flex items-center">
+                          <input
+                            v-model="commentType"
+                            type="radio"
+                            value="email"
+                            class="mr-2 text-blue-500 focus:ring-blue-500"
+                          >
+                          <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Enviar email</span>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <!-- Comment Textarea -->
+                    <textarea 
+                      v-model="newComment"
+                      :placeholder="commentType === 'email' ? 'Escribir comentario (se enviará por email)...' : 'Escribir comentario...'"
+                      class="w-full p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                      rows="4"
+                      :disabled="sendingComment"
+                    ></textarea>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex justify-between items-center mt-3">
+                      <div class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                        <span v-if="commentType === 'email'" class="flex items-center">
+                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                          </svg>
+                          Se enviará notificación por email
+                        </span>
+                        <span v-else class="flex items-center">
+                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+                          </svg>
+                          Solo se guardará como mensaje interno
+                        </span>
+                      </div>
+                      <div class="flex space-x-2">
+                        <button 
+                          @click="clearComment"
+                          :disabled="sendingComment || !newComment.trim()"
+                          class="px-3 py-1 text-sm border rounded-lg transition-colors"
+                          :class="[
+                            sendingComment || !newComment.trim() 
+                              ? 'opacity-50 cursor-not-allowed' 
+                              : 'hover:bg-gray-100',
+                            isDark 
+                              ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                              : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                          ]"
+                        >
+                          Limpiar
+                        </button>
+                        <button 
+                          @click="sendComment"
+                          :disabled="sendingComment || !newComment.trim()"
+                          class="px-4 py-1 text-sm rounded-lg transition-colors flex items-center space-x-1"
+                          :class="[
+                            sendingComment || !newComment.trim()
+                              ? 'bg-gray-400 cursor-not-allowed'
+                              : commentType === 'email'
+                                ? 'bg-green-500 hover:bg-green-600'
+                                : 'bg-blue-500 hover:bg-blue-600',
+                            'text-white'
+                          ]"
+                        >
+                          <svg v-if="sendingComment" class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <svg v-else-if="commentType === 'email'" class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                          </svg>
+                          <svg v-else class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+                          </svg>
+                          <span>{{ sendingComment ? 'Enviando...' : (commentType === 'email' ? 'Enviar Email' : 'Comentar') }}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Messages List SECOND -->
+                  <div v-if="ticketDetails.messages && ticketDetails.messages.length > 0" class="space-y-4" :key="messagesKey">
+                    <div class="flex items-center space-x-2 mb-3">
+                      <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                        Historial de comentarios ({{ ticketDetails.messages.length }})
+                      </h4>
+                    </div>
                     <div 
                       v-for="message in ticketDetails.messages" 
-                      :key="message.id"
+                      :key="`${messagesKey}-${message.id}`"
                       class="flex space-x-3"
                     >
                       <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
@@ -537,24 +686,27 @@
                           <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
                             {{ formatDate(message.datec) }}
                           </span>
+                          <span v-if="message.type === 'email'" class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <svg class="w-2.5 h-2.5 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                            </svg>
+                            Email
+                          </span>
                         </div>
                         <div class="text-sm p-3 rounded-lg" :class="isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'" v-html="message.message || message.content"></div>
                       </div>
                     </div>
                   </div>
-
-                  <!-- Add Comment -->
-                  <div class="border-t pt-4" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
-                    <textarea 
-                      placeholder="Añadir un comentario..."
-                      class="w-full p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-                      rows="3"
-                    ></textarea>
-                    <div class="flex justify-end mt-2">
-                      <button class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm">
-                        Comentar
-                      </button>
+                  
+                  <!-- Empty State -->
+                  <div v-else class="text-center py-6">
+                    <div class="rounded-lg p-4" :class="isDark ? 'bg-gray-800/50' : 'bg-gray-100'">
+                      <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.126-.276.75.75 0 00-.618.127L8.5 21.5l-1.5-1.5a.75.75 0 00-.618-.127A8.955 8.955 0 014 20c-4.418 0-8-3.582-8-8s3.582-8 8-8 8 3.582 8 8z"/>
+                      </svg>
+                      <p class="text-sm font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Sin comentarios</p>
+                      <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">Sé el primero en comentar este ticket</p>
                     </div>
                   </div>
                 </div>
@@ -579,6 +731,51 @@
                       </span>
                     </div>
                     
+                    <!-- Proyecto del ticket -->
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Proyecto:</label>
+                      <div v-if="editingProject" class="space-y-2">
+                        <select 
+                          v-model="selectedProjectId" 
+                          class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                        >
+                          <option value="">Sin proyecto</option>
+                          <option v-for="project in availableProjects" :key="project.id" :value="project.id">
+                            {{ project.ref }} - {{ project.title }}
+                          </option>
+                        </select>
+                        <div class="flex space-x-2">
+                          <button 
+                            @click="saveProject" 
+                            class="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                          >
+                            Guardar
+                          </button>
+                          <button 
+                            @click="cancelEditProject" 
+                            class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                      <div v-else class="flex items-center justify-between">
+                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          {{ currentProject?.ref ? `${currentProject.ref} - ${currentProject.title}` : 'Sin proyecto asignado' }}
+                        </p>
+                        <button 
+                          @click="startEditProject" 
+                          class="ml-2 p-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                          title="Cambiar proyecto"
+                        >
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Fecha de inicio:</label>
                       <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ formatDate(ticketDetails.datec) }}</p>
@@ -598,12 +795,12 @@
                     
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tiempo registrado:</label>
-                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">00:00</p>
-                    </div>
-                    
-                    <div>
-                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tiempo total registrado:</label>
-                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">00:01</p>
+                      <p class="text-sm font-medium" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+                        {{ totalRegisteredTime }}
+                      </p>
+                      <p v-if="ticketInterventions.length > 0" class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                        {{ ticketInterventions.length }} intervención{{ ticketInterventions.length !== 1 ? 'es' : '' }}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -647,24 +844,76 @@
                       <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                       </svg>
-                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Asignados</h3>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Asignado</h3>
                     </div>
                   </div>
                   
                   <div class="space-y-2">
-                    <div class="relative">
-                      <select class="w-full p-2 border rounded-lg text-sm" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'">
-                        <option>Asignar ticket a</option>
+                    <!-- Edit mode -->
+                    <div v-if="editingAssignment" class="space-y-2">
+                      <select 
+                        v-model="selectedAssignedUserId"
+                        class="w-full p-2 border rounded-lg text-sm" 
+                        :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                      >
+                        <option value="">Sin asignar</option>
+                        <option 
+                          v-for="user in availableUsers" 
+                          :key="user.id" 
+                          :value="user.id"
+                        >
+                          {{ user.firstname }} {{ user.lastname }} ({{ user.login }})
+                        </option>
                       </select>
+                      <div class="flex space-x-2">
+                        <button 
+                          @click="saveAssignment"
+                          class="px-3 py-1 text-xs rounded-lg transition-colors"
+                          :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                        >
+                          Guardar
+                        </button>
+                        <button 
+                          @click="cancelEditAssignment"
+                          class="px-3 py-1 text-xs rounded-lg transition-colors"
+                          :class="isDark ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-500 hover:bg-gray-600 text-white'"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
                     
-                    <div v-if="ticketDetails.assigned_to" class="flex items-center space-x-3 p-2 rounded-lg" :class="isDark ? 'bg-gray-700' : 'bg-gray-100'">
-                      <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
-                        <span class="text-xs text-white font-medium">{{ (ticketDetails.assigned_to || 'U').charAt(0).toUpperCase() }}</span>
+                    <!-- Display mode -->
+                    <div v-else class="flex items-center justify-between">
+                      <div v-if="currentAssignedUser" class="flex items-center space-x-3 p-2 rounded-lg flex-1" :class="isDark ? 'bg-gray-700' : 'bg-gray-100'">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                          <span class="text-xs text-white font-medium">
+                            {{ (currentAssignedUser.firstname || 'U').charAt(0).toUpperCase() }}
+                          </span>
+                        </div>
+                        <div class="flex-1">
+                          <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                            {{ currentAssignedUser.firstname }} {{ currentAssignedUser.lastname }}
+                          </p>
+                          <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                            {{ currentAssignedUser.login }}
+                          </p>
+                        </div>
                       </div>
-                      <div class="flex-1">
-                        <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketDetails.assigned_to }}</p>
+                      <div v-else class="flex items-center justify-between flex-1">
+                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          Sin asignar
+                        </p>
                       </div>
+                      <button 
+                        @click="startEditAssignment" 
+                        class="ml-2 p-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                        title="Cambiar asignación"
+                      >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -707,13 +956,97 @@
                     <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Archivos</h3>
                   </div>
                   
-                  <div class="border-2 border-dashed rounded-lg p-8 text-center" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
-                    <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-500' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Arrastra archivos aquí para subir</p>
-                    <button class="mt-2 text-xs text-blue-500 hover:text-blue-600">Elegir desde Dropbox</button>
+                  <!-- Documents List FIRST -->
+                  <div v-if="ticketDocuments.length > 0" class="mb-4 space-y-2">
+                    <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                      Archivos adjuntos ({{ ticketDocuments.length }})
+                    </h4>
+                    <div class="space-y-1">
+                      <div 
+                        v-for="doc in ticketDocuments" 
+                        :key="doc.id || doc.name"
+                        class="flex items-center justify-between p-2 rounded-lg text-sm"
+                        :class="isDark ? 'bg-gray-700' : 'bg-gray-100'"
+                      >
+                        <div class="flex items-center space-x-2">
+                          <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span :class="isDark ? 'text-white' : 'text-gray-900'">
+                            {{ doc.name || doc.filename || 'Archivo sin nombre' }}
+                          </span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <span class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                            {{ doc.size ? formatFileSize(doc.size) : '' }}
+                          </span>
+                          <button 
+                            v-if="doc.download_url || doc.url"
+                            @click="downloadDocument(doc)"
+                            class="text-blue-500 hover:text-blue-600 transition-colors"
+                            title="Descargar"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+                  
+                  <!-- File Upload Area SECOND -->
+                  <div 
+                    @dragover="handleDragOver"
+                    @dragleave="handleDragLeave"
+                    @drop="handleDrop"
+                    @click="openFileDialog"
+                    class="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors"
+                    :class="[
+                      isDark ? 'border-gray-600 hover:border-gray-500' : 'border-gray-300 hover:border-gray-400',
+                      isDragOver ? (isDark ? 'border-blue-500 bg-blue-900/20' : 'border-blue-500 bg-blue-50') : '',
+                      uploadingFiles ? 'pointer-events-none' : ''
+                    ]"
+                  >
+                    <!-- Upload Progress -->
+                    <div v-if="uploadingFiles" class="space-y-3">
+                      <div class="animate-spin w-8 h-8 mx-auto border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                        Subiendo archivos... {{ uploadProgress }}%
+                      </p>
+                      <div class="w-full bg-gray-200 rounded-full h-2" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'">
+                        <div 
+                          class="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                          :style="{ width: uploadProgress + '%' }"
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <!-- Default State -->
+                    <div v-else class="space-y-3">
+                      <svg class="w-8 h-8 mx-auto" :class="isDragOver ? 'text-blue-500' : (isDark ? 'text-gray-500' : 'text-gray-400')" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      <div>
+                        <p class="text-sm font-medium" :class="isDragOver ? 'text-blue-500' : (isDark ? 'text-gray-300' : 'text-gray-700')">
+                          {{ isDragOver ? 'Suelta los archivos aquí' : 'Arrastra archivos aquí para subir' }}
+                        </p>
+                        <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                          o haz clic para seleccionar archivos
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Hidden File Input -->
+                  <input
+                    ref="fileInputRef"
+                    type="file"
+                    multiple
+                    class="hidden"
+                    @change="handleFileSelect"
+                    accept="*/*"
+                  >
                 </div>
               </div>
             </div>
@@ -766,13 +1099,123 @@
     </div>
   </div>
 
+  <!-- Modal para agregar intervención manual -->
+  <div v-if="showManualInterventionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="rounded-lg p-6 w-full max-w-lg mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <h3 class="text-lg font-semibold mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">
+        Add timesheet
+      </h3>
+      
+      <div class="space-y-4">
+        <!-- Start Time / End Time or Duration -->
+        <div v-if="!manualIntervention.useDuration" class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Start Time
+            </label>
+            <input
+              v-model="manualIntervention.startTime"
+              type="datetime-local"
+              class="w-full p-2 border rounded-lg text-sm"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            >
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              End Time
+            </label>
+            <input
+              v-model="manualIntervention.endTime"
+              type="datetime-local"
+              class="w-full p-2 border rounded-lg text-sm"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            >
+          </div>
+        </div>
+        
+        <!-- Duration Mode -->
+        <div v-else>
+          <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Duration (minutes)
+          </label>
+          <input
+            v-model.number="manualIntervention.duration"
+            type="number"
+            min="0"
+            step="1"
+            class="w-full p-2 border rounded-lg text-sm"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            placeholder="Enter duration in minutes"
+          >
+        </div>
+        
+        <!-- Toggle Duration Mode -->
+        <div>
+          <button
+            @click="toggleDurationMode"
+            class="text-sm text-blue-500 hover:text-blue-600 transition-colors"
+          >
+            {{ manualIntervention.useDuration ? 'Use start/end times instead' : 'Enter time duration instead' }}
+          </button>
+        </div>
+        
+        <!-- Member Selection -->
+        <div>
+          <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Member
+          </label>
+          <select
+            v-model="manualIntervention.member"
+            class="w-full p-2 border rounded-lg text-sm"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+          >
+            <option :value="authStore.user?.id">{{ authStore.user?.firstname }} {{ authStore.user?.lastname }}</option>
+            <!-- Add more users here if needed -->
+          </select>
+        </div>
+        
+        <!-- Note -->
+        <div>
+          <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Note
+          </label>
+          <textarea
+            v-model="manualIntervention.note"
+            rows="3"
+            class="w-full p-2 border rounded-lg text-sm resize-none"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+            placeholder="Add a note about this intervention..."
+          ></textarea>
+        </div>
+      </div>
+      
+      <!-- Modal Actions -->
+      <div class="flex justify-end space-x-3 mt-6">
+        <button
+          @click="closeManualInterventionModal"
+          class="px-4 py-2 text-sm font-medium border rounded-md transition-colors"
+          :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700' : 'text-gray-700 border-gray-300 hover:bg-gray-50'"
+        >
+          Cancel
+        </button>
+        <button
+          @click="saveManualIntervention"
+          class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useTheme } from '../composables/useTheme'
 import http from '../utils/http'
+import axios from 'axios'
 import { useTicketsCounter } from '../composables/useTicketsCounter'
 import { useInterventions } from '@/composables/useInterventions'
 import { useTicketTimer } from '@/composables/useTicketTimer'
@@ -794,6 +1237,24 @@ const { startTimer, stopTimer, isTimerRunning, formatElapsedTime } = useTicketTi
 const showTimeEntryModal = ref(false)
 const timeEntryNote = ref('')
 const recordedTime = ref(0)
+const showFullDescription = ref(false)
+
+// Manual intervention state
+const showManualInterventionModal = ref(false)
+const manualIntervention = ref({
+  startTime: '',
+  endTime: '',
+  member: '',
+  note: '',
+  useDuration: false,
+  duration: 0
+})
+
+// Comments state
+const newComment = ref('')
+const commentType = ref('message') // 'message' or 'email'
+const sendingComment = ref(false)
+const messagesKey = ref(0) // Key to force re-render of messages
 
 // Timer methods
 const handleTimerClick = (ticket) => {
@@ -815,25 +1276,221 @@ const handleTimerClick = (ticket) => {
 }
 
 const saveTimeEntry = async () => {
+  let interventionId = null
+  
   try {
-    // Here you would save to backend
-    console.log('Saving time entry:', {
-      ticketId: selectedTicket.value.id,
+    console.log('🚀 INICIANDO PROCESO DE CREACIÓN DE INTERVENCIÓN')
+    console.log('='.repeat(60))
+    
+    // PASO 1: Crear intervención en BORRADOR
+    console.log('📝 PASO 1: Creando intervención en borrador...')
+    const interventionData = {
+      socid: selectedTicket.value.fk_soc || ticketDetails.value?.fk_soc,
+      datei: Math.floor(Date.now() / 1000),
+      datee: Math.floor(Date.now() / 1000),
+      description: timeEntryNote.value || 'Tiempo registrado desde cronómetro',
+      duration: recordedTime.value || 0,
+      fk_user_author: authStore.user?.id
+      // Sin estado - crear en borrador por defecto
+    }
+    
+    // Asignar proyecto - obligatorio para intervenciones
+    if (selectedTicket.value.fk_project || ticketDetails.value?.fk_project) {
+      interventionData.fk_project = selectedTicket.value.fk_project || ticketDetails.value.fk_project
+    } else {
+      // Si no hay proyecto en el ticket, usar proyecto por defecto (ID 1) o crear sin proyecto
+      console.warn('⚠️ Ticket sin proyecto asignado, usando proyecto por defecto')
+      interventionData.fk_project = 1 // Cambiar por el ID del proyecto por defecto de tu sistema
+    }
+
+    console.log('📋 Datos de intervención:', interventionData)
+    
+    let response
+    try {
+      response = await http.post('/api/doli/interventions', interventionData)
+      console.log('📊 RESPUESTA COMPLETA DEL SERVIDOR:')
+      console.log('   Response status:', response.status)
+      console.log('   Response data:', response.data)
+      console.log('   Response data type:', typeof response.data)
+      console.log('   Response data keys:', response.data ? Object.keys(response.data) : 'No data')
+      console.log('   Response headers:', response.headers)
+    } catch (createError) {
+      console.error('❌ ERROR AL CREAR INTERVENCIÓN:')
+      console.error('   Error status:', createError.response?.status)
+      console.error('   Error data:', createError.response?.data)
+      console.error('   Error message:', createError.message)
+      
+      // Si falla por falta de proyecto, intentar sin proyecto
+      if (createError.response?.data?.error?.message?.includes('fk_project')) {
+        console.log('🔄 Reintentando sin proyecto...')
+        try {
+          const interventionDataNoProject = { ...interventionData }
+          delete interventionDataNoProject.fk_project
+          
+          response = await http.post('/api/doli/interventions', interventionDataNoProject)
+          console.log('✅ Intervención creada sin proyecto')
+        } catch (secondError) {
+          console.error('❌ También falló sin proyecto:', secondError.response?.data)
+          throw createError // Lanzar el error original
+        }
+      } else {
+        throw createError
+      }
+    }
+    
+    // Intentar extraer ID de diferentes formas
+    interventionId = response.data?.id || response.data?.rowid || response.data
+    
+    console.log('✅ PASO 1 COMPLETADO - Intervención creada:')
+    console.log('   ID extraído:', interventionId)
+    console.log('   Tipo de ID:', typeof interventionId)
+    console.log('   Ref:', response.data?.ref)
+    console.log('   Status:', response.data?.statut || response.data?.status)
+    console.log('-'.repeat(60))
+    
+    if (!interventionId || interventionId === null || interventionId === undefined) {
+      console.error('❌ NO SE PUDO EXTRAER ID DE LA RESPUESTA')
+      console.error('   Estructura de response.data:', Object.keys(response.data || {}))
+      throw new Error('No se obtuvo ID de la intervención creada')
+    }
+
+    console.log('-'.repeat(60))
+
+    // PASO 2: Agregar línea con nota y tiempo
+    console.log('📋 PASO 2: Agregando línea a la intervención...')
+    const startTime = Math.floor(Date.now() / 1000) - recordedTime.value
+    const endTime = Math.floor(Date.now() / 1000)
+    
+    // Usar la estructura que funciona (alternativa 1)
+    const lineData = {
+      description: timeEntryNote.value || 'Tiempo registrado desde cronómetro',
       duration: recordedTime.value,
-      note: timeEntryNote.value
-    })
+      date: startTime
+    }
+    
+    console.log('📋 Datos de línea:', lineData)
+    console.log('🕐 Hora inicio:', new Date(startTime * 1000).toLocaleString())
+    console.log('🕐 Hora fin:', new Date(endTime * 1000).toLocaleString())
+    console.log('⏱️ Duración:', recordedTime.value, 'segundos')
+    
+    try {
+      const lineResponse = await http.post(`/api/doli/interventions/${interventionId}/lines`, lineData)
+      console.log('✅ PASO 2 COMPLETADO - Línea agregada:')
+      console.log('   Line ID:', lineResponse.data)
+      console.log('   Descripción:', lineData.description)
+      console.log('   Duración:', lineData.duration)
+    } catch (lineError) {
+      console.error('❌ PASO 2 FALLÓ - Error agregando línea:')
+      console.error('   Error status:', lineError.response?.status)
+      console.error('   Error data:', lineError.response?.data)
+      console.error('   Error message:', lineError.message)
+      throw lineError
+    }
+    console.log('-'.repeat(60))
+
+    // PASO 3: Vincular intervención al ticket
+    console.log('🔗 PASO 3: Vinculando intervención al ticket...')
+    
+    try {
+      // ALTERNATIVA 1: Usar API nativa de Dolibarr objectlinks
+      console.log('🔗 ALTERNATIVA 1: Intentando con API nativa objectlinks...')
+      
+      const objectLinksData = {
+        fk_source: selectedTicket.value.id.toString(),
+        sourcetype: "ticket",
+        fk_target: interventionId.toString(),
+        targettype: "fichinter"
+      }
+      
+      console.log('🔗 Datos objectlinks:', objectLinksData)
+      const linkResponse = await http.post(`/api/doli/objectlinks`, objectLinksData)
+      console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con API nativa')
+      console.log('   Link result:', linkResponse.data)
+      
+    } catch (objectLinksError) {
+      console.warn('❌ ALTERNATIVA 1 FALLÓ - Intentando módulo personalizado...')
+      console.warn('   ObjectLinks error status:', objectLinksError.response?.status)
+      console.warn('   ObjectLinks error data:', objectLinksError.response?.data)
+      
+      // ALTERNATIVA 2: Usar módulo personalizado a través del proxy
+      try {
+        console.log('🔗 ALTERNATIVA 2: Usando módulo personalizado a través del proxy...')
+        
+        const customLinkResponse = await http.post(`/api/doli/dolibarmodernfrontendapi/link/${selectedTicket.value.id}/${interventionId}`)
+        console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
+        console.log('   Custom link result:', customLinkResponse.data)
+        
+      } catch (customError) {
+        console.error('❌ ALTERNATIVA 2 TAMBIÉN FALLÓ')
+        console.error('   Custom error status:', customError.response?.status)
+        console.error('   Custom error data:', customError.response?.data)
+        console.error('   Custom error message:', customError.message)
+        
+        // ALTERNATIVA 3: Nota privada como último recurso
+        try {
+          console.log('🔗 ALTERNATIVA 3: Usando nota privada como último recurso...')
+          
+          const referenceData = {
+            note_private: `[TICKET_LINK]\nTicket: ${selectedTicket.value.ref} (ID: ${selectedTicket.value.id})\nFecha: ${new Date().toLocaleString('es-ES')}\nDuración: ${Math.floor(recordedTime.value / 60)}m ${recordedTime.value % 60}s\nEstado: Vinculado automáticamente desde cronómetro\n[/TICKET_LINK]`
+          }
+          
+          console.log('📋 Datos de referencia:', referenceData)
+          const referenceResponse = await http.put(`/api/doli/interventions/${interventionId}`, referenceData)
+          console.log('✅ PASO 3 COMPLETADO - Referencia añadida en nota privada')
+          console.log('   Reference result:', referenceResponse.data)
+          
+        } catch (referenceError) {
+          console.error('❌ TODAS LAS ALTERNATIVAS FALLARON')
+          console.error('   Reference error:', referenceError.response?.data)
+          throw new Error('Todas las alternativas de vinculación fallaron')
+        }
+      }
+    }
+    console.log('-'.repeat(60))
+
+    // PASO 4: Validar la intervención
+    console.log('🔍 PASO 4: Validando intervención...')
+    
+    const validateData = {
+      notrigger: 1
+    }
+    
+    console.log('🔍 Datos de validación:', validateData)
+    
+    try {
+      const validateResponse = await http.post(`/api/doli/interventions/${interventionId}/validate`, validateData)
+      console.log('✅ PASO 4 COMPLETADO - Intervención validada')
+      console.log('   Validate result:', validateResponse.data)
+    } catch (validateError) {
+      console.warn('⚠️ PASO 4 FALLÓ - Error validando intervención')
+      console.warn('   Validate error status:', validateError.response?.status)
+      console.warn('   Validate error data:', validateError.response?.data)
+      console.warn('   Validate error message:', validateError.message)
+      console.log('💡 La intervención se creó y vinculó, pero no se pudo validar')
+    }
+    console.log('-'.repeat(60))
     
     // Reset modal state
     showTimeEntryModal.value = false
     timeEntryNote.value = ''
     recordedTime.value = 0
     
-    // Refresh interventions to show new entry
+    // Refresh interventions
     if (authStore.user?.id) {
       await fetchUserInterventions(true)
     }
+    
+    console.log('🎉 PROCESO COMPLETADO EXITOSAMENTE')
+    console.log('='.repeat(60))
+    
   } catch (error) {
-    console.error('Error saving time entry:', error)
+    console.error('💥 ERROR GENERAL EN EL PROCESO:')
+    console.error('   Intervention ID:', interventionId)
+    console.error('   Error:', error.message)
+    console.error('   Details:', error.response?.data)
+    console.error('='.repeat(60))
+    
+    alert('Error al guardar la intervención: ' + (error.response?.data?.message || error.message))
   }
 }
 
@@ -841,6 +1498,439 @@ const cancelTimeEntry = () => {
   showTimeEntryModal.value = false
   timeEntryNote.value = ''
   recordedTime.value = 0
+}
+
+// Manual intervention methods
+const openManualInterventionModal = () => {
+  // Reset form
+  manualIntervention.value = {
+    startTime: '',
+    endTime: '',
+    member: authStore.user?.id || '',
+    note: '',
+    useDuration: false,
+    duration: 0
+  }
+  showManualInterventionModal.value = true
+}
+
+const closeManualInterventionModal = () => {
+  showManualInterventionModal.value = false
+}
+
+const toggleDurationMode = () => {
+  manualIntervention.value.useDuration = !manualIntervention.value.useDuration
+  if (manualIntervention.value.useDuration) {
+    manualIntervention.value.startTime = ''
+    manualIntervention.value.endTime = ''
+  } else {
+    manualIntervention.value.duration = 0
+  }
+}
+
+const saveManualIntervention = async () => {
+  let interventionId = null
+  
+  try {
+    console.log('🚀 INICIANDO PROCESO DE CREACIÓN DE INTERVENCIÓN MANUAL')
+    console.log('='.repeat(60))
+    
+    // PASO 1: Crear intervención en BORRADOR
+    console.log('📝 PASO 1: Creando intervención manual en borrador...')
+    
+    let interventionData = {
+      socid: selectedTicket.value.fk_soc || ticketDetails.value?.fk_soc,
+      description: manualIntervention.value.note || 'Intervención manual',
+      fk_user_author: manualIntervention.value.member || authStore.user?.id
+      // Sin estado - crear en borrador por defecto
+    }
+    
+    // Calculate duration and dates based on mode
+    if (manualIntervention.value.useDuration) {
+      // Use direct duration (convert minutes to seconds)
+      interventionData.duration = manualIntervention.value.duration * 60
+      interventionData.datei = Math.floor(Date.now() / 1000)
+      interventionData.datee = Math.floor(Date.now() / 1000)
+    } else {
+      // Use start/end times
+      const startTime = new Date(manualIntervention.value.startTime).getTime() / 1000
+      const endTime = new Date(manualIntervention.value.endTime).getTime() / 1000
+      interventionData.datei = startTime
+      interventionData.datee = endTime
+      interventionData.duration = endTime - startTime
+    }
+    
+    // Asignar proyecto - obligatorio para intervenciones
+    if (selectedTicket.value.fk_project || ticketDetails.value?.fk_project) {
+      interventionData.fk_project = selectedTicket.value.fk_project || ticketDetails.value.fk_project
+    } else {
+      // Si no hay proyecto en el ticket, usar proyecto por defecto (ID 1) o crear sin proyecto
+      console.warn('⚠️ Ticket sin proyecto asignado, usando proyecto por defecto')
+      interventionData.fk_project = 1 // Cambiar por el ID del proyecto por defecto de tu sistema
+    }
+
+    console.log('📋 Datos de intervención manual:', interventionData)
+    
+    let response
+    try {
+      response = await http.post('/api/doli/interventions', interventionData)
+      console.log('📊 RESPUESTA COMPLETA DEL SERVIDOR:')
+      console.log('   Response status:', response.status)
+      console.log('   Response data:', response.data)
+      console.log('   Response data type:', typeof response.data)
+      console.log('   Response data keys:', response.data ? Object.keys(response.data) : 'No data')
+      console.log('   Response headers:', response.headers)
+    } catch (createError) {
+      console.error('❌ ERROR AL CREAR INTERVENCIÓN MANUAL:')
+      console.error('   Error status:', createError.response?.status)
+      console.error('   Error data:', createError.response?.data)
+      console.error('   Error message:', createError.message)
+      
+      // Si falla por falta de proyecto, intentar sin proyecto
+      if (createError.response?.data?.error?.message?.includes('fk_project')) {
+        console.log('🔄 Reintentando sin proyecto...')
+        try {
+          const interventionDataNoProject = { ...interventionData }
+          delete interventionDataNoProject.fk_project
+          
+          response = await http.post('/api/doli/interventions', interventionDataNoProject)
+          console.log('✅ Intervención creada sin proyecto')
+        } catch (retryError) {
+          console.error('❌ Error en reintento:', retryError)
+          throw retryError
+        }
+      } else {
+        throw createError
+      }
+    }
+
+    // Extraer ID de la respuesta
+    if (response.data) {
+      if (typeof response.data === 'string') {
+        interventionId = response.data
+      } else if (response.data.id) {
+        interventionId = response.data.id
+      } else if (typeof response.data === 'number') {
+        interventionId = response.data
+      }
+    }
+
+    console.log('🆔 ID de intervención extraído:', interventionId)
+
+    if (!interventionId) {
+      throw new Error('No se pudo obtener el ID de la intervención creada')
+    }
+
+    console.log('-'.repeat(60))
+
+    // PASO 2: Agregar línea con nota y tiempo
+    console.log('📋 PASO 2: Agregando línea a la intervención...')
+    
+    let startTime, endTime, duration
+    
+    if (manualIntervention.value.useDuration) {
+      // Use direct duration (convert minutes to seconds)
+      duration = manualIntervention.value.duration * 60
+      endTime = Math.floor(Date.now() / 1000)
+      startTime = endTime - duration
+    } else {
+      // Use start/end times
+      startTime = Math.floor(new Date(manualIntervention.value.startTime).getTime() / 1000)
+      endTime = Math.floor(new Date(manualIntervention.value.endTime).getTime() / 1000)
+      duration = endTime - startTime
+    }
+    
+    const lineData = {
+      description: manualIntervention.value.note || 'Intervención manual',
+      duration: duration,
+      date: startTime
+    }
+    
+    console.log('📋 Datos de línea:', lineData)
+    console.log('🕐 Hora inicio:', new Date(startTime * 1000).toLocaleString())
+    console.log('🕐 Hora fin:', new Date(endTime * 1000).toLocaleString())
+    console.log('⏱️ Duración:', duration, 'segundos')
+    
+    try {
+      const lineResponse = await http.post(`/api/doli/interventions/${interventionId}/lines`, lineData)
+      console.log('✅ PASO 2 COMPLETADO - Línea agregada:')
+      console.log('   Line ID:', lineResponse.data)
+      console.log('   Descripción:', lineData.description)
+      console.log('   Duración:', lineData.duration)
+    } catch (lineError) {
+      console.error('❌ PASO 2 FALLÓ - Error agregando línea:')
+      console.error('   Error status:', lineError.response?.status)
+      console.error('   Error data:', lineError.response?.data)
+      console.error('   Error message:', lineError.message)
+      throw lineError
+    }
+    console.log('-'.repeat(60))
+
+    // PASO 3: Vincular intervención al ticket (igual que el timer)
+    console.log('🔗 PASO 3: Vinculando intervención al ticket...')
+    
+    try {
+      // ALTERNATIVA 1: Usar API nativa de Dolibarr objectlinks
+      console.log('🔗 ALTERNATIVA 1: Intentando con API nativa objectlinks...')
+      
+      const objectLinksData = {
+        fk_source: (selectedTicket.value.id || ticketDetails.value.id).toString(),
+        sourcetype: "ticket",
+        fk_target: interventionId.toString(),
+        targettype: "fichinter"
+      }
+      
+      console.log('🔗 Datos objectlinks:', objectLinksData)
+      const linkResponse = await http.post(`/api/doli/objectlinks`, objectLinksData)
+      console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con API nativa')
+      console.log('   Link result:', linkResponse.data)
+      
+    } catch (objectLinksError) {
+      console.warn('❌ ALTERNATIVA 1 FALLÓ - Intentando módulo personalizado...')
+      console.warn('   ObjectLinks error status:', objectLinksError.response?.status)
+      console.warn('   ObjectLinks error data:', objectLinksError.response?.data)
+      
+      // ALTERNATIVA 2: Usar módulo personalizado a través del proxy
+      try {
+        console.log('🔗 ALTERNATIVA 2: Usando módulo personalizado a través del proxy...')
+        
+        const ticketId = selectedTicket.value.id || ticketDetails.value.id
+        const customLinkResponse = await http.post(`/api/doli/dolibarmodernfrontendapi/link/${ticketId}/${interventionId}`)
+        console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
+        console.log('   Custom link result:', customLinkResponse.data)
+        
+      } catch (customError) {
+        console.error('❌ ALTERNATIVA 2 TAMBIÉN FALLÓ')
+        console.error('   Custom error status:', customError.response?.status)
+        console.error('   Custom error data:', customError.response?.data)
+        console.error('   Custom error message:', customError.message)
+        
+        // ALTERNATIVA 3: Nota privada como último recurso
+        try {
+          console.log('🔗 ALTERNATIVA 3: Usando nota privada como último recurso...')
+          
+          const referenceData = {
+            note_private: `[TICKET_LINK]\nTicket: ${selectedTicket.value.ref || ticketDetails.value.ref} (ID: ${selectedTicket.value.id || ticketDetails.value.id})\nFecha: ${new Date().toLocaleString('es-ES')}\nTipo: Intervención manual\nEstado: Vinculado automáticamente desde formulario manual\n[/TICKET_LINK]`
+          }
+          
+          console.log('📋 Datos de referencia:', referenceData)
+          const referenceResponse = await http.put(`/api/doli/interventions/${interventionId}`, referenceData)
+          console.log('✅ PASO 3 COMPLETADO - Referencia añadida en nota privada')
+          console.log('   Reference result:', referenceResponse.data)
+          
+        } catch (referenceError) {
+          console.error('❌ TODAS LAS ALTERNATIVAS FALLARON')
+          console.error('   Reference error:', referenceError.response?.data)
+          console.warn('⚠️ La intervención se creó pero no se pudo vincular al ticket')
+        }
+      }
+    }
+    console.log('-'.repeat(60))
+
+    // PASO 4: Validar la intervención
+    console.log('🔍 PASO 4: Validando intervención...')
+    
+    const validateData = {
+      notrigger: 1
+    }
+    
+    console.log('🔍 Datos de validación:', validateData)
+    
+    try {
+      const validateResponse = await http.post(`/api/doli/interventions/${interventionId}/validate`, validateData)
+      console.log('✅ PASO 4 COMPLETADO - Intervención validada')
+      console.log('   Validate result:', validateResponse.data)
+    } catch (validateError) {
+      console.warn('⚠️ PASO 4 FALLÓ - Error validando intervención')
+      console.warn('   Validate error status:', validateError.response?.status)
+      console.warn('   Validate error data:', validateError.response?.data)
+      console.warn('   Validate error message:', validateError.message)
+      console.log('💡 La intervención se creó y vinculó, pero no se pudo validar')
+    }
+    console.log('-'.repeat(60))
+
+    // PASO 5: Cerrar modal y actualizar datos
+    console.log('🔄 PASO 5: Actualizando interfaz...')
+    closeManualInterventionModal()
+
+    // Refrescar intervenciones del usuario (igual que el timer)
+    if (authStore.user?.id) {
+      try {
+        await fetchUserInterventions(true)
+        console.log('✅ Intervenciones del usuario refrescadas')
+      } catch (error) {
+        console.warn('Error al refrescar intervenciones del usuario:', error)
+      }
+    }
+    
+    // Forzar actualización de las intervenciones del ticket actual
+    try {
+      console.log('🔄 Forzando actualización de intervenciones para el ticket actual...')
+      // Trigger reactivity by accessing the computed property
+      const currentInterventions = userInterventionsForTicket.value
+      console.log('📋 Intervenciones actuales del ticket:', currentInterventions.length)
+    } catch (error) {
+      console.warn('Error al actualizar intervenciones del ticket:', error)
+    }
+
+    console.log('✅ PROCESO COMPLETADO EXITOSAMENTE')
+    console.log('='.repeat(60))
+    
+  } catch (error) {
+    console.error('❌ ERROR GENERAL EN CREACIÓN DE INTERVENCIÓN MANUAL:', error)
+    console.error('❌ Error response:', error.response?.data)
+    console.error('❌ Error status:', error.response?.status)
+    
+    alert('Error al crear la intervención manual: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+// Comments methods
+const clearComment = () => {
+  newComment.value = ''
+}
+
+const sendComment = async () => {
+  if (!newComment.value.trim() || sendingComment.value) {
+    return
+  }
+
+  sendingComment.value = true
+
+  try {
+    // Obtener el track_id del ticket
+    const trackId = selectedTicket.value?.track_id || ticketDetails.value?.track_id
+    
+    if (!trackId) {
+      throw new Error('No se encontró el track_id del ticket')
+    }
+
+    console.log('💬 Enviando comentario:', {
+      type: commentType.value,
+      message: newComment.value,
+      track_id: trackId
+    })
+
+    // Preparar datos según el endpoint de Dolibarr
+    const commentData = {
+      track_id: trackId,
+      message: newComment.value.trim(),
+      private: commentType.value === 'email' ? 0 : 1  // 0 = email, 1 = mensaje interno
+    }
+
+    console.log('📤 Endpoint: /api/doli/tickets/newmessage')
+    console.log('📋 Datos del comentario:', commentData)
+
+    const response = await http.post('/api/doli/tickets/newmessage', commentData)
+    console.log('✅ Comentario enviado:', response.data)
+
+    // Limpiar formulario
+    newComment.value = ''
+    
+    // Refrescar detalles del ticket para mostrar el nuevo comentario
+    try {
+      const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
+      if (ticketId) {
+        console.log('🔄 Refrescando detalles del ticket...')
+        const response = await http.get(`/api/doli/tickets/${ticketId}`)
+        ticketDetails.value = response.data
+        
+        // Intentar obtener mensajes actualizados
+        console.log('🔄 Refrescando mensajes del ticket...')
+        console.log('📋 Estructura del ticket response:', Object.keys(response.data))
+        console.log('📋 Mensajes en response.data.messages:', response.data.messages)
+        
+        let messages = []
+        
+        // Method 1: Check if messages are in the ticket response
+        if (response.data.messages && Array.isArray(response.data.messages)) {
+          messages = response.data.messages
+          console.log('✅ Mensajes obtenidos del ticket response:', messages.length)
+          console.log('📋 Primer mensaje:', messages[0])
+        } else {
+          console.log('⚠️ No hay mensajes en response.data.messages')
+        }
+        
+        // Method 2: Los mensajes ya están en el ticket response, no hay endpoint GET separado
+        console.log('ℹ️ Usando solo mensajes del ticket response (no hay endpoint GET para mensajes)')
+        
+        // Method 3: Force refresh - try agendaevents
+        try {
+          console.log('🔄 Intentando endpoint agendaevents...')
+          const agendaResponse = await http.get(`/api/doli/agendaevents?elementtype=ticket&elementid=${ticketId}`)
+          console.log('📋 Agenda events response:', agendaResponse.data)
+          
+          if (agendaResponse.data && Array.isArray(agendaResponse.data) && agendaResponse.data.length > 0) {
+            console.log('📋 Eventos de agenda encontrados:', agendaResponse.data.length)
+            // If we have agenda events, they might be the messages
+            if (messages.length === 0) {
+              messages = agendaResponse.data
+              console.log('✅ Usando eventos de agenda como mensajes')
+            }
+          }
+        } catch (agendaErr) {
+          console.warn('⚠️ Agenda events endpoint failed:', agendaErr)
+        }
+        
+        // Update messages in ticketDetails
+        console.log('🔄 Actualizando ticketDetails.messages...')
+        console.log('📋 Mensajes antes:', ticketDetails.value?.messages?.length || 0)
+        
+        if (ticketDetails.value) {
+          // Simple update - just update messages and force re-render of comments section
+          console.log('🔄 Actualizando solo la sección de comentarios...')
+          
+          // Update messages directly
+          ticketDetails.value.messages = [...messages]
+          
+          console.log('📋 Mensajes después:', ticketDetails.value.messages?.length || 0)
+          
+          // Log the last few messages to verify they're there
+          const lastMessages = ticketDetails.value.messages.slice(-3)
+          console.log('📋 Últimos 3 mensajes:', lastMessages.map(m => ({ id: m.id, message: m.message })))
+          
+          // Force re-render ONLY of the comments section by updating key
+          messagesKey.value++
+          console.log('🔄 Actualizando messagesKey a:', messagesKey.value, '(solo sección comentarios)')
+          
+          await nextTick()
+          console.log('✅ Sección de comentarios actualizada')
+        }
+        
+        console.log('✅ Detalles del ticket refrescados con', messages.length, 'mensajes')
+      }
+    } catch (refreshError) {
+      console.warn('⚠️ Error al refrescar detalles del ticket:', refreshError)
+      // No lanzar error, el comentario ya se envió correctamente
+    }
+
+    console.log(`✅ Comentario ${commentType.value === 'email' ? 'enviado por email' : 'guardado como mensaje interno'} correctamente`)
+
+  } catch (error) {
+    console.error('❌ Error enviando comentario:', error)
+    console.error('❌ Error response:', error.response?.data)
+    console.error('❌ Error status:', error.response?.status)
+    console.error('❌ Error message:', error.message)
+    
+    let errorMessage = 'Error al enviar el comentario'
+    
+    // Manejo específico de errores
+    if (error.message === 'No se encontró el track_id del ticket') {
+      errorMessage = 'Error: No se pudo obtener el identificador del ticket. Intenta recargar la página.'
+    } else if (error.response?.status === 404) {
+      errorMessage = 'Error: Endpoint no encontrado. Verifica la configuración de la API.'
+    } else if (error.response?.status === 400) {
+      errorMessage = 'Error: Datos inválidos. Verifica el track_id del ticket.'
+    } else if (error.response?.data?.message) {
+      errorMessage += ': ' + error.response.data.message
+    } else if (error.message) {
+      errorMessage += ': ' + error.message
+    }
+    
+    alert(errorMessage)
+  } finally {
+    sendingComment.value = false
+  }
 }
 console.log('fetchUserInterventions:', fetchUserInterventions)
 console.log('getInterventionsForTicket:', getInterventionsForTicket)
@@ -867,6 +1957,25 @@ const showTerceroDropdown = ref(false)
 const showUserDropdown = ref(false)
 const filteredTerceros = ref([])
 const filteredUsers = ref([])
+
+// Project management
+const editingProject = ref(false)
+const selectedProjectId = ref('')
+const availableProjects = ref([])
+const currentProject = ref(null)
+
+// User assignment management
+const editingAssignment = ref(false)
+const selectedAssignedUserId = ref('')
+const availableUsers = ref([])
+const currentAssignedUser = ref(null)
+
+// File upload management
+const isDragOver = ref(false)
+const uploadingFiles = ref(false)
+const uploadProgress = ref(0)
+const ticketDocuments = ref([])
+const fileInputRef = ref(null)
 
 // Pagination
 const currentPage = ref(1)
@@ -1114,6 +2223,40 @@ const visiblePages = computed(() => {
   return pages
 })
 
+// Computed property for total registered time
+const totalRegisteredTime = computed(() => {
+  if (!ticketInterventions.value || ticketInterventions.value.length === 0) {
+    return '0h 0m'
+  }
+  
+  const totalSeconds = ticketInterventions.value.reduce((total, intervention) => {
+    // Sumar duración de todas las líneas de la intervención
+    if (intervention.lines && Array.isArray(intervention.lines)) {
+      return total + intervention.lines.reduce((lineTotal, line) => {
+        return lineTotal + (parseInt(line.duration) || 0)
+      }, 0)
+    }
+    return total + (parseInt(intervention.duration) || 0)
+  }, 0)
+  
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`
+  } else {
+    return `${minutes}m`
+  }
+})
+
+// Computed property for ticket interventions
+const ticketInterventions = computed(() => {
+  if (!selectedTicket.value?.id) {
+    return []
+  }
+  return getInterventionsForTicket(selectedTicket.value.id)
+})
+
 // Methods
 const handleSearch = () => {
   currentPage.value = 1
@@ -1152,8 +2295,10 @@ const nextPage = () => {
 // Modal methods
 const viewTicketDetails = async (ticket) => {
   selectedTicket.value = ticket
+  ticketDetails.value = null
+  loading.value = true
   showModal.value = true
-  loadingDetails.value = true
+  showFullDescription.value = false // Reset description state
   
   // Refrescar intervenciones del usuario si es necesario
   if (authStore.user && authStore.user.id) {
@@ -1439,6 +2584,472 @@ onMounted(async () => {
     }
   }
 })
+
+// Project management functions
+const startEditProject = async () => {
+  editingProject.value = true
+  selectedProjectId.value = ticketDetails.value?.fk_project || ''
+  
+  console.log('🔍 Starting project edit for ticket:', {
+    ticketId: ticketDetails.value?.id,
+    currentProject: ticketDetails.value?.fk_project,
+    clientId: ticketDetails.value?.fk_soc
+  })
+  
+  let projects = []
+  
+  // First, if there's a current project, always include it
+  if (ticketDetails.value?.fk_project && currentProject.value) {
+    projects.push(currentProject.value)
+    console.log('✅ Added current project:', currentProject.value.ref)
+  }
+  
+  // Then fetch available projects for the client
+  if (ticketDetails.value?.fk_soc) {
+    try {
+      console.log('🔍 Fetching projects for client:', ticketDetails.value.fk_soc)
+      
+      // Try different API endpoints to get projects
+      let response
+      try {
+        // Method 1: Use sqlfilters to filter by client ID
+        const sqlfilter = `(fk_soc:=:${ticketDetails.value.fk_soc})`
+        console.log('🔍 Using sqlfilter:', sqlfilter)
+        response = await http.get(`/api/doli/projects?sqlfilters=${encodeURIComponent(sqlfilter)}&limit=100`)
+        console.log('✅ Method 1 (sqlfilters) succeeded')
+      } catch (error1) {
+        console.warn('Method 1 (sqlfilters) failed, trying method 2...', error1.message)
+        try {
+          // Method 2: Filter by fk_soc parameter
+          response = await http.get(`/api/doli/projects?fk_soc=${ticketDetails.value.fk_soc}&limit=100`)
+          console.log('✅ Method 2 (fk_soc param) succeeded')
+        } catch (error2) {
+          console.warn('Method 2 failed, trying method 3...', error2.message)
+          // Method 3: Get all projects and filter client-side
+          response = await http.get(`/api/doli/projects?limit=100`)
+          console.log('✅ Method 3 (get all) succeeded')
+        }
+      }
+      
+      console.log('📋 Projects API response:', response.data)
+      
+      if (response.data && Array.isArray(response.data)) {
+        // Debug: Check the structure of the first few projects
+        console.log('🔍 Sample project structure:', response.data.slice(0, 3).map(p => ({
+          id: p.id,
+          ref: p.ref,
+          fk_soc: p.fk_soc,
+          socid: p.socid,
+          client_id: p.client_id,
+          thirdparty_id: p.thirdparty_id
+        })))
+        
+        console.log('🎯 Looking for client ID:', ticketDetails.value.fk_soc, '(type:', typeof ticketDetails.value.fk_soc, ')')
+        
+        // Filter projects to ensure they belong to the correct client
+        const clientProjects = response.data.filter(project => {
+          const matches = project.fk_soc == ticketDetails.value.fk_soc || 
+                         project.socid == ticketDetails.value.fk_soc ||
+                         project.client_id == ticketDetails.value.fk_soc ||
+                         project.thirdparty_id == ticketDetails.value.fk_soc
+          
+          if (matches) {
+            console.log('✅ Found matching project:', project.ref, 'with client field:', {
+              fk_soc: project.fk_soc,
+              socid: project.socid,
+              client_id: project.client_id,
+              thirdparty_id: project.thirdparty_id
+            })
+          }
+          
+          return matches
+        })
+        
+        console.log('🎯 Client projects found:', clientProjects.length)
+        
+        // Add client projects that aren't already in the list
+        clientProjects.forEach(project => {
+          if (!projects.find(p => p.id === project.id)) {
+            projects.push(project)
+          }
+        })
+      }
+      
+      availableProjects.value = projects
+      console.log('✅ Final projects list:', projects.length, 'projects:', projects.map(p => p.ref))
+      
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+      // If API fails, at least keep the current project
+      availableProjects.value = projects
+    }
+  } else {
+    console.warn('⚠️ No client ID (fk_soc) found in ticket details')
+    availableProjects.value = projects
+  }
+}
+
+const cancelEditProject = () => {
+  editingProject.value = false
+  selectedProjectId.value = ''
+}
+
+const saveProject = async () => {
+  try {
+    const updateData = {
+      fk_project: selectedProjectId.value || null
+    }
+    
+    console.log('💾 Saving project for ticket:', {
+      ticketId: ticketDetails.value.id,
+      currentProject: ticketDetails.value.fk_project,
+      newProject: selectedProjectId.value,
+      updateData: updateData
+    })
+    
+    const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
+    console.log('✅ Project update response:', response.data)
+    console.log('✅ Response status:', response.status)
+    console.log('✅ Response headers:', response.headers)
+    
+    // Update local data
+    ticketDetails.value.fk_project = selectedProjectId.value
+    
+    // Fetch updated project info if project was assigned
+    if (selectedProjectId.value) {
+      try {
+        const projectResponse = await http.get(`/api/doli/projects/${selectedProjectId.value}`)
+        currentProject.value = projectResponse.data
+      } catch (error) {
+        console.warn('Error fetching project details:', error)
+      }
+    } else {
+      currentProject.value = null
+    }
+    
+    editingProject.value = false
+    console.log('✅ Proyecto actualizado correctamente')
+    
+  } catch (error) {
+    console.error('❌ Error updating project:', error)
+    console.error('❌ Error response:', error.response?.data)
+    console.error('❌ Error status:', error.response?.status)
+    console.error('❌ Error headers:', error.response?.headers)
+    console.error('❌ Error config:', error.config)
+    
+    // Show detailed error information
+    if (error.response?.data) {
+      console.error('❌ Server error details:', error.response.data)
+    }
+    
+    // Show error message to user
+    alert('Error al actualizar el proyecto: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+// User assignment management functions
+const startEditAssignment = async () => {
+  editingAssignment.value = true
+  selectedAssignedUserId.value = ticketDetails.value?.fk_user_assign || ''
+  
+  console.log('🔍 Starting user assignment edit for ticket:', {
+    ticketId: ticketDetails.value?.id,
+    currentAssignedUser: ticketDetails.value?.fk_user_assign
+  })
+  
+  try {
+    console.log('🔍 Fetching active users...')
+    const response = await http.get('/api/doli/users?status=1&limit=100')
+    console.log('✅ Users API response:', response.data)
+    
+    if (response.data && Array.isArray(response.data)) {
+      availableUsers.value = response.data.filter(user => user.statut == 1) // Only active users
+      console.log('✅ Active users found:', availableUsers.value.length)
+    } else {
+      availableUsers.value = []
+    }
+  } catch (error) {
+    console.error('Error fetching users:', error)
+    availableUsers.value = []
+  }
+}
+
+const cancelEditAssignment = () => {
+  editingAssignment.value = false
+  selectedAssignedUserId.value = ''
+}
+
+const saveAssignment = async () => {
+  try {
+    const updateData = {
+      fk_user_assign: selectedAssignedUserId.value || null
+    }
+    
+    console.log('💾 Saving assignment for ticket:', {
+      ticketId: ticketDetails.value.id,
+      currentAssignment: ticketDetails.value.fk_user_assign,
+      newAssignment: selectedAssignedUserId.value,
+      updateData: updateData
+    })
+    
+    const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
+    console.log('✅ Assignment update response:', response.data)
+    
+    // Update local data
+    ticketDetails.value.fk_user_assign = selectedAssignedUserId.value
+    
+    // Fetch updated user info if user was assigned
+    if (selectedAssignedUserId.value) {
+      try {
+        const userResponse = await http.get(`/api/doli/users/${selectedAssignedUserId.value}`)
+        currentAssignedUser.value = userResponse.data
+      } catch (error) {
+        console.warn('Error fetching user details:', error)
+      }
+    } else {
+      currentAssignedUser.value = null
+    }
+    
+    editingAssignment.value = false
+    console.log('✅ Asignación actualizada correctamente')
+    
+  } catch (error) {
+    console.error('❌ Error updating assignment:', error)
+    console.error('❌ Error response:', error.response?.data)
+    console.error('❌ Error status:', error.response?.status)
+    
+    // Show detailed error information
+    if (error.response?.data) {
+      console.error('❌ Server error details:', error.response.data)
+    }
+    
+    // Show error message to user
+    alert('Error al actualizar la asignación: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+// File upload management functions
+const handleDragOver = (e) => {
+  e.preventDefault()
+  isDragOver.value = true
+}
+
+const handleDragLeave = (e) => {
+  e.preventDefault()
+  isDragOver.value = false
+}
+
+const handleDrop = (e) => {
+  e.preventDefault()
+  isDragOver.value = false
+  const files = Array.from(e.dataTransfer.files)
+  uploadFiles(files)
+}
+
+const openFileDialog = () => {
+  fileInputRef.value?.click()
+}
+
+const handleFileSelect = (e) => {
+  const files = Array.from(e.target.files)
+  uploadFiles(files)
+  // Reset input
+  e.target.value = ''
+}
+
+const uploadFiles = async (files) => {
+  if (!files.length || !ticketDetails.value?.id) return
+  
+  uploadingFiles.value = true
+  uploadProgress.value = 0
+  
+  console.log('🚀 Starting file upload process for', files.length, 'files')
+  
+  try {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      console.log(`📁 Processing file ${i + 1}/${files.length}:`, file.name)
+      
+      await uploadSingleFile(file)
+      uploadProgress.value = Math.round(((i + 1) / files.length) * 100)
+    }
+    
+    console.log('✅ All files uploaded successfully')
+    // Refresh documents list using custom module
+    await fetchTicketDocuments()
+    
+  } catch (error) {
+    console.error('❌ Error uploading files:', error)
+    alert('Error al subir archivos: ' + (error.message || 'Error desconocido'))
+  } finally {
+    uploadingFiles.value = false
+    uploadProgress.value = 0
+  }
+}
+
+const uploadSingleFile = async (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    
+    reader.onload = async (e) => {
+      try {
+        const fileContent = e.target.result.split(',')[1] // Remove data:type;base64, prefix
+        
+        console.log('📤 Uploading file:', {
+          filename: file.name,
+          size: file.size,
+          type: file.type
+        })
+        
+        // Step 1: Upload document using custom module
+        const uploadData = {
+          filename: file.name,
+          file_content: fileContent
+        }
+        
+        console.log('📋 Upload data (custom module):', uploadData)
+        
+        const uploadUrl = `/api/doli/dolibarmodernfrontendapi/ticket/${ticketDetails.value.id}/documents`
+        console.log('📤 Upload URL (custom module):', uploadUrl)
+        
+        const uploadResponse = await http.post(uploadUrl, uploadData)
+        console.log('✅ Document uploaded via custom module:', uploadResponse.data)
+        
+        resolve(uploadResponse.data)
+        
+      } catch (error) {
+        console.error('❌ Error in uploadSingleFile:', error)
+        reject(error)
+      }
+    }
+    
+    reader.onerror = () => {
+      reject(new Error('Error reading file'))
+    }
+    
+    reader.readAsDataURL(file)
+  })
+}
+
+const linkDocumentToTicket = async (documentId) => {
+  try {
+    console.log('🔗 Linking document', documentId, 'to ticket', ticketDetails.value.id)
+    
+    const linkData = {
+      source: 'ticket',
+      sourceid: ticketDetails.value.id,
+      target: 'document', 
+      targetid: documentId
+    }
+    
+    console.log('📋 Link data:', linkData)
+    
+    const linkResponse = await http.post('/api/doli/objectlinks', linkData)
+    console.log('✅ Document linked successfully:', linkResponse.data)
+    
+  } catch (error) {
+    console.error('❌ Error linking document:', error)
+    console.error('❌ Error response:', error.response?.data)
+    throw error
+  }
+}
+
+
+const fetchTicketDocuments = async () => {
+  if (!ticketDetails.value?.id) return
+  
+  try {
+    console.log('📋 Fetching documents for ticket:', ticketDetails.value.id)
+    
+    // Use custom module to get documents
+    const response = await http.get(`/api/doli/dolibarmodernfrontendapi/ticket/${ticketDetails.value.id}/documents`)
+    
+    console.log('📋 Raw response from custom module:', response)
+    console.log('📋 Response data:', response.data)
+    console.log('📋 Response data type:', typeof response.data)
+    console.log('📋 Response data keys:', response.data ? Object.keys(response.data) : 'No data')
+    
+    // Handle different response structures
+    let documents = []
+    if (Array.isArray(response.data)) {
+      documents = response.data
+    } else if (response.data && response.data.documents) {
+      documents = response.data.documents
+    } else if (response.data && response.data.data) {
+      documents = response.data.data
+    } else if (response.data) {
+      documents = [response.data] // Single document
+    }
+    
+    ticketDocuments.value = documents
+    
+    console.log('✅ Documents processed:', ticketDocuments.value.length)
+    console.log('📋 Documents structure:', ticketDocuments.value)
+    
+    // Log individual document structure for debugging
+    if (ticketDocuments.value.length > 0) {
+      console.log('📋 First document structure:', ticketDocuments.value[0])
+      console.log('📋 First document keys:', Object.keys(ticketDocuments.value[0]))
+    }
+    
+  } catch (error) {
+    console.warn('⚠️ Error fetching ticket documents:', error)
+    console.error('⚠️ Error response:', error.response?.data)
+    ticketDocuments.value = []
+  }
+}
+
+// Utility functions
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const downloadDocument = (doc) => {
+  const downloadUrl = doc.download_url || doc.url
+  if (downloadUrl) {
+    window.open(downloadUrl, '_blank')
+  } else {
+    console.warn('No download URL available for document:', doc)
+  }
+}
+
+// Watch for ticket details changes to load project and user info
+watch(ticketDetails, async (newDetails) => {
+  // Load project info
+  if (newDetails?.fk_project) {
+    try {
+      const projectResponse = await http.get(`/api/doli/projects/${newDetails.fk_project}`)
+      currentProject.value = projectResponse.data
+    } catch (error) {
+      console.warn('Error fetching project details:', error)
+      currentProject.value = null
+    }
+  } else {
+    currentProject.value = null
+  }
+  
+  // Load assigned user info
+  if (newDetails?.fk_user_assign) {
+    try {
+      const userResponse = await http.get(`/api/doli/users/${newDetails.fk_user_assign}`)
+      currentAssignedUser.value = userResponse.data
+    } catch (error) {
+      console.warn('Error fetching assigned user details:', error)
+      currentAssignedUser.value = null
+    }
+  } else {
+    currentAssignedUser.value = null
+  }
+  
+  // Load ticket documents using custom module
+  if (newDetails?.id) {
+    await fetchTicketDocuments()
+  }
+}, { immediate: true })
 
 // Clean up event listener
 const cleanup = () => {
