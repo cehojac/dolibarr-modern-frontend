@@ -477,19 +477,33 @@
                 <!-- Intervenciones del Usuario para este Ticket -->
                 <div class="mb-8">
                   <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2">
+                    <button 
+                      @click="toggleInterventions"
+                      class="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                    >
                       <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125-1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125 1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
                       </svg>
-                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Mis Intervenciones</h3>
-                    </div>
-                    <span class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
-                      {{ userInterventionsForTicket?.length || 0 }} intervención(es) mías
-                    </span>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                        Mis Intervenciones ({{ userInterventionsForTicket?.length || 0 }})
+                      </h3>
+                      <svg 
+                        class="w-4 h-4 transition-transform duration-200" 
+                        :class="[
+                          isDark ? 'text-gray-400' : 'text-gray-600',
+                          showInterventions ? 'rotate-180' : ''
+                        ]" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
                   </div>
                   
                   <!-- Intervenciones del usuario para este ticket -->
-                  <div v-if="userInterventionsForTicket && userInterventionsForTicket.length > 0" class="space-y-3">
+                  <div v-if="userInterventionsForTicket && userInterventionsForTicket.length > 0" v-show="showInterventions" class="space-y-3">
                     <div 
                       v-for="(intervention, index) in userInterventionsForTicket" 
                       :key="intervention.id"
@@ -541,7 +555,7 @@
                   </div>
                   
                   <!-- Estado cuando no hay intervenciones del usuario -->
-                  <div v-else class="text-center py-6">
+                  <div v-else v-show="showInterventions" class="text-center py-6">
                     <div class="rounded-lg p-4" :class="isDark ? 'bg-gray-800/50' : 'bg-gray-100'">
                       <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125-1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
@@ -808,15 +822,27 @@
                 <!-- Reminders Section -->
                 <div class="mb-6">
                   <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2">
-                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button 
+                      @click="toggleInterventions"
+                      class="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                    >
+                      <svg class="w-5 h-5" :class="isDark ? 'text-blue-400' : 'text-blue-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Recordatorios</h3>
-                    </div>
-                    <button class="text-blue-500 hover:text-blue-600">
-                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                        Mis Intervenciones ({{ userInterventionsForTicket?.length || 0 }})
+                      </h3>
+                      <svg 
+                        class="w-4 h-4 transition-transform duration-200" 
+                        :class="[
+                          isDark ? 'text-gray-400' : 'text-gray-600',
+                          showInterventions ? 'rotate-180' : ''
+                        ]" 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
                   </div>
@@ -1255,6 +1281,7 @@ const newComment = ref('')
 const commentType = ref('message') // 'message' or 'email'
 const sendingComment = ref(false)
 const messagesKey = ref(0) // Key to force re-render of messages
+const showInterventions = ref(false) // Control visibility of interventions list
 
 // Timer methods
 const handleTimerClick = (ticket) => {
@@ -1788,6 +1815,10 @@ const saveManualIntervention = async () => {
 // Comments methods
 const clearComment = () => {
   newComment.value = ''
+}
+
+const toggleInterventions = () => {
+  showInterventions.value = !showInterventions.value
 }
 
 const sendComment = async () => {
