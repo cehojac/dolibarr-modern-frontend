@@ -387,9 +387,9 @@
               <span class="ml-3" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Cargando detalles...</span>
             </div>
 
-            <div v-else-if="ticketDetails" class="flex w-full">
+            <div v-else-if="ticketDetails" class="flex w-full min-h-0">
               <!-- Left Panel - Main Content -->
-              <div class="flex-1 p-6 overflow-y-auto">
+              <div class="flex-1 p-6 overflow-y-auto min-w-0">
                 <!-- Action Buttons -->
                 <div class="flex items-center space-x-3 mb-6">
                   <button class="flex items-center space-x-2 px-3 py-2 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'">
@@ -727,7 +727,7 @@
               </div>
 
               <!-- Right Sidebar - Ticket Info -->
-              <div class="w-80 border-l p-6 overflow-y-auto" :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'">
+              <div class="w-72 max-w-sm border-l p-4 overflow-y-auto flex-shrink-0" :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'">
                 <!-- Ticket Info Section -->
                 <div class="mb-6">
                   <div class="flex items-center space-x-2 mb-4">
@@ -949,25 +949,107 @@
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-2">
                       <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
-                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Seguidores</h3>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+                        Seguidores ({{ ticketFollowers.length }})
+                      </h3>
                     </div>
                   </div>
                   
-                  <div class="space-y-2">
-                    <div class="relative">
-                      <select class="w-full p-2 border rounded-lg text-sm" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'">
-                        <option>Añadir Seguidores</option>
+                  <div class="space-y-3">
+                    <!-- Add Follower Selector -->
+                    <div class="flex flex-col space-y-2">
+                      <select 
+                        v-model="selectedFollower"
+                        class="w-full p-2 border rounded-lg text-xs" 
+                        :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                        :disabled="loadingFollowers"
+                      >
+                        <option value="">Seleccionar seguidor...</option>
+                        
+                        <!-- Usuarios de Dolibarr -->
+                        <optgroup label="Usuarios de Dolibarr" v-if="availableUsers.length > 0">
+                          <option 
+                            v-for="user in availableUsers" 
+                            :key="`user:${user.id}`"
+                            :value="`user:${user.id}`"
+                          >
+                            👤 {{ user.firstname }} {{ user.lastname }}
+                          </option>
+                        </optgroup>
+                        
+                        <!-- Contactos del tercero -->
+                        <optgroup label="Contactos del cliente" v-if="availableContacts.length > 0">
+                          <option 
+                            v-for="contact in availableContacts" 
+                            :key="`contact:${contact.id}`"
+                            :value="`contact:${contact.id}`"
+                          >
+                            📧 {{ contact.firstname }} {{ contact.lastname }}
+                          </option>
+                        </optgroup>
                       </select>
+                      
+                      <button
+                        @click="addFollower"
+                        :disabled="!selectedFollower || loadingFollowers"
+                        class="w-full px-3 py-2 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center justify-center"
+                      >
+                        <svg v-if="loadingFollowers" class="w-3 h-3 animate-spin mr-1" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span v-if="loadingFollowers">Agregando...</span>
+                        <span v-else>+ Agregar Seguidor</span>
+                      </button>
                     </div>
                     
-                    <div class="flex items-center space-x-3 p-2 rounded-lg" :class="isDark ? 'bg-gray-700' : 'bg-gray-100'">
-                      <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-green-600' : 'bg-green-500'">
-                        <span class="text-xs text-white font-medium">A</span>
+                    <!-- Current Followers List -->
+                    <div v-if="ticketFollowers.length > 0" class="space-y-2">
+                      <div 
+                        v-for="follower in ticketFollowers" 
+                        :key="follower.id"
+                        class="flex items-center justify-between p-2 rounded-lg border" 
+                        :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
+                      >
+                        <div class="flex items-center space-x-2 min-w-0 flex-1">
+                          <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0" 
+                               :class="follower.type === 'user' ? (isDark ? 'bg-blue-600' : 'bg-blue-500') : (isDark ? 'bg-green-600' : 'bg-green-500')">
+                            <span v-if="follower.type === 'user'">👤</span>
+                            <span v-else>📧</span>
+                          </div>
+                          <div class="min-w-0 flex-1">
+                            <p class="text-xs font-medium truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+                              {{ follower.firstname }} {{ follower.lastname }}
+                            </p>
+                            <p class="text-xs truncate" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                              {{ follower.type === 'user' ? 'Usuario' : 'Contacto' }}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <button
+                          @click="removeFollower(follower.id, follower.type)"
+                          :disabled="loadingFollowers"
+                          class="p-1 text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          title="Eliminar seguidor"
+                        >
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
                       </div>
-                      <div class="flex-1">
-                        <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Admin</p>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div v-else class="text-center py-4">
+                      <div class="rounded-lg p-4" :class="isDark ? 'bg-gray-800/50' : 'bg-gray-100'">
+                        <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <p class="text-sm font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Sin seguidores</p>
+                        <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">Agrega usuarios o contactos para seguir este ticket</p>
                       </div>
                     </div>
                   </div>
@@ -1282,6 +1364,13 @@ const commentType = ref('message') // 'message' or 'email'
 const sendingComment = ref(false)
 const messagesKey = ref(0) // Key to force re-render of messages
 const showInterventions = ref(false) // Control visibility of interventions list
+
+// Followers state
+const ticketFollowers = ref([])
+const availableUsers = ref([])
+const availableContacts = ref([])
+const selectedFollower = ref('')
+const loadingFollowers = ref(false)
 
 // Timer methods
 const handleTimerClick = (ticket) => {
@@ -1821,6 +1910,102 @@ const toggleInterventions = () => {
   showInterventions.value = !showInterventions.value
 }
 
+// Followers methods
+const fetchTicketFollowers = async (ticketId) => {
+  try {
+    console.log('🔍 Obteniendo seguidores del ticket:', ticketId)
+    const response = await http.get(`/api/doli/tickets/${ticketId}/contacts`)
+    ticketFollowers.value = response.data || []
+    console.log('✅ Seguidores obtenidos:', ticketFollowers.value.length)
+  } catch (error) {
+    console.warn('⚠️ Error obteniendo seguidores:', error)
+    ticketFollowers.value = []
+  }
+}
+
+const fetchAvailableUsers = async () => {
+  try {
+    console.log('🔍 Obteniendo usuarios de Dolibarr...')
+    const response = await http.get('/api/doli/users?limit=100&active=1')
+    availableUsers.value = response.data || []
+    console.log('✅ Usuarios obtenidos:', availableUsers.value.length)
+  } catch (error) {
+    console.warn('⚠️ Error obteniendo usuarios:', error)
+    availableUsers.value = []
+  }
+}
+
+const fetchAvailableContacts = async (socid) => {
+  if (!socid) return
+  
+  try {
+    console.log('🔍 Obteniendo contactos del tercero:', socid)
+    const response = await http.get(`/api/doli/contacts?socid=${socid}&limit=100`)
+    availableContacts.value = response.data || []
+    console.log('✅ Contactos obtenidos:', availableContacts.value.length)
+  } catch (error) {
+    console.warn('⚠️ Error obteniendo contactos:', error)
+    availableContacts.value = []
+  }
+}
+
+const addFollower = async () => {
+  if (!selectedFollower.value || loadingFollowers.value) return
+  
+  loadingFollowers.value = true
+  
+  try {
+    const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
+    const [type, id] = selectedFollower.value.split(':')
+    
+    console.log('➕ Agregando seguidor:', { type, id, ticketId })
+    
+    const response = await http.post(`/api/doli/tickets/${ticketId}/contacts`, {
+      contactid: id,
+      type: type // 'user' or 'contact'
+    })
+    
+    console.log('✅ Seguidor agregado:', response.data)
+    
+    // Refresh followers list
+    await fetchTicketFollowers(ticketId)
+    
+    // Reset selection
+    selectedFollower.value = ''
+    
+  } catch (error) {
+    console.error('❌ Error agregando seguidor:', error)
+    alert('Error al agregar seguidor: ' + (error.response?.data?.message || error.message))
+  } finally {
+    loadingFollowers.value = false
+  }
+}
+
+const removeFollower = async (followerId, followerType) => {
+  if (loadingFollowers.value) return
+  
+  loadingFollowers.value = true
+  
+  try {
+    const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
+    
+    console.log('➖ Eliminando seguidor:', { followerId, followerType, ticketId })
+    
+    await http.delete(`/api/doli/tickets/${ticketId}/contacts/${followerId}`)
+    
+    console.log('✅ Seguidor eliminado')
+    
+    // Refresh followers list
+    await fetchTicketFollowers(ticketId)
+    
+  } catch (error) {
+    console.error('❌ Error eliminando seguidor:', error)
+    alert('Error al eliminar seguidor: ' + (error.response?.data?.message || error.message))
+  } finally {
+    loadingFollowers.value = false
+  }
+}
+
 const sendComment = async () => {
   if (!newComment.value.trim() || sendingComment.value) {
     return
@@ -1998,7 +2183,6 @@ const currentProject = ref(null)
 // User assignment management
 const editingAssignment = ref(false)
 const selectedAssignedUserId = ref('')
-const availableUsers = ref([])
 const currentAssignedUser = ref(null)
 
 // File upload management
@@ -2346,6 +2530,13 @@ const viewTicketDetails = async (ticket) => {
     const response = await http.get(`/api/doli/tickets/${ticket.id}`)
     console.log('✅ Ticket details response:', response)
     ticketDetails.value = response.data
+    
+    // Load followers and available users/contacts
+    await Promise.all([
+      fetchTicketFollowers(ticket.id),
+      fetchAvailableUsers(),
+      fetchAvailableContacts(response.data.fk_soc)
+    ])
     
     // Try multiple methods to get interventions/messages for this ticket
     let interventions = []
