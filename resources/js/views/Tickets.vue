@@ -745,6 +745,14 @@
                       </span>
                     </div>
                     
+                    <!-- Empresa del ticket -->
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Empresa:</label>
+                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                        {{ currentCompany?.name || (ticketDetails.fk_soc ? 'Cargando empresa...' : 'Sin empresa asignada') }}
+                      </p>
+                    </div>
+                    
                     <!-- Proyecto del ticket -->
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Proyecto:</label>
@@ -875,22 +883,50 @@
                   </div>
                   
                   <div class="space-y-2">
-                    <!-- Edit mode -->
+                    <!-- Edit mode with Search -->
                     <div v-if="editingAssignment" class="space-y-2">
-                      <select 
-                        v-model="selectedAssignedUserId"
-                        class="w-full p-2 border rounded-lg text-sm" 
-                        :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
-                      >
-                        <option value="">Sin asignar</option>
-                        <option 
-                          v-for="user in availableUsers" 
-                          :key="user.id" 
-                          :value="user.id"
-                        >
-                          {{ user.firstname }} {{ user.lastname }} ({{ user.login }})
-                        </option>
-                      </select>
+                      <div class="relative">
+                        <input
+                          v-model="assignmentSearchTerm"
+                          @focus="showAssignmentDropdown = true"
+                          @blur="setTimeout(() => showAssignmentDropdown = false, 200)"
+                          type="text"
+                          placeholder="Buscar usuario..."
+                          class="w-full p-2 border rounded-lg text-sm pr-8"
+                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                        />
+                        <svg class="absolute right-2 top-2 w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        
+                        <!-- Assignment Dropdown -->
+                        <div v-if="showAssignmentDropdown" class="absolute z-10 w-full mt-1 max-h-60 overflow-auto border rounded-lg shadow-lg" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'">
+                          <!-- Sin asignar option -->
+                          <button
+                            @click="selectAssignedUser('', 'Sin asignar')"
+                            class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors border-b"
+                            :class="isDark ? 'text-white hover:bg-gray-600 border-gray-600' : 'text-gray-900 hover:bg-gray-100 border-gray-200'"
+                          >
+                            Sin asignar
+                          </button>
+                          
+                          <!-- Filtered users -->
+                          <button
+                            v-for="user in filteredAssignmentUsers"
+                            :key="user.id"
+                            @click="selectAssignedUser(user.id, `${user.firstname} ${user.lastname} (${user.login})`)"
+                            class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'text-white hover:bg-gray-600' : 'text-gray-900 hover:bg-gray-100'"
+                          >
+                            {{ user.firstname }} {{ user.lastname }} ({{ user.login }})
+                          </button>
+                          
+                          <!-- No results -->
+                          <div v-if="filteredAssignmentUsers.length === 0 && assignmentSearchTerm" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                            No se encontraron usuarios
+                          </div>
+                        </div>
+                      </div>
                       <div class="flex space-x-2">
                         <button 
                           @click="saveAssignment"
@@ -958,38 +994,63 @@
                   </div>
                   
                   <div class="space-y-3">
-                    <!-- Add Follower Selector -->
+                    <!-- Add Follower Selector with Search -->
                     <div class="flex flex-col space-y-2">
-                      <select 
-                        v-model="selectedFollower"
-                        class="w-full p-2 border rounded-lg text-xs" 
-                        :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
-                        :disabled="loadingFollowers"
-                      >
-                        <option value="">Seleccionar seguidor...</option>
+                      <div class="relative">
+                        <input
+                          v-model="followersSearchTerm"
+                          @focus="showFollowersDropdown = true"
+                          @blur="setTimeout(() => showFollowersDropdown = false, 200)"
+                          type="text"
+                          placeholder="Buscar seguidor..."
+                          class="w-full p-2 border rounded-lg text-xs pr-8"
+                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                          :disabled="loadingFollowers"
+                        />
+                        <svg class="absolute right-2 top-2 w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                         
-                        <!-- Usuarios de Dolibarr -->
-                        <optgroup label="Usuarios de Dolibarr" v-if="availableUsers.length > 0">
-                          <option 
-                            v-for="user in availableUsers" 
-                            :key="`user:${user.id}`"
-                            :value="`user:${user.id}`"
-                          >
-                            👤 {{ user.firstname }} {{ user.lastname }}
-                          </option>
-                        </optgroup>
-                        
-                        <!-- Contactos del tercero -->
-                        <optgroup label="Contactos del cliente" v-if="availableContacts.length > 0">
-                          <option 
-                            v-for="contact in availableContacts" 
-                            :key="`contact:${contact.id}`"
-                            :value="`contact:${contact.id}`"
-                          >
-                            📧 {{ contact.firstname }} {{ contact.lastname }}
-                          </option>
-                        </optgroup>
-                      </select>
+                        <!-- Dropdown -->
+                        <div v-if="showFollowersDropdown" class="absolute z-10 w-full mt-1 max-h-60 overflow-auto border rounded-lg shadow-lg" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'">
+                          <!-- Usuarios de Dolibarr -->
+                          <div v-if="filteredFollowers.users.length > 0">
+                            <div class="px-3 py-2 text-xs font-medium border-b" :class="isDark ? 'text-gray-300 border-gray-600 bg-gray-800' : 'text-gray-600 border-gray-200 bg-gray-50'">
+                              Usuarios de Dolibarr
+                            </div>
+                            <button
+                              v-for="user in filteredFollowers.users"
+                              :key="`user:${user.id}`"
+                              @click="selectFollower(`user:${user.id}`, `👤 ${user.firstname} ${user.lastname}`)"
+                              class="w-full text-left px-3 py-2 text-xs hover:bg-opacity-50 transition-colors"
+                              :class="isDark ? 'text-white hover:bg-gray-600' : 'text-gray-900 hover:bg-gray-100'"
+                            >
+                              👤 {{ user.firstname }} {{ user.lastname }}
+                            </button>
+                          </div>
+                          
+                          <!-- Contactos del cliente -->
+                          <div v-if="filteredFollowers.contacts.length > 0">
+                            <div class="px-3 py-2 text-xs font-medium border-b" :class="isDark ? 'text-gray-300 border-gray-600 bg-gray-800' : 'text-gray-600 border-gray-200 bg-gray-50'">
+                              Contactos del cliente
+                            </div>
+                            <button
+                              v-for="contact in filteredFollowers.contacts"
+                              :key="`contact:${contact.id}`"
+                              @click="selectFollower(`contact:${contact.id}`, `📧 ${contact.firstname} ${contact.lastname}`)"
+                              class="w-full text-left px-3 py-2 text-xs hover:bg-opacity-50 transition-colors"
+                              :class="isDark ? 'text-white hover:bg-gray-600' : 'text-gray-900 hover:bg-gray-100'"
+                            >
+                              📧 {{ contact.firstname }} {{ contact.lastname }}
+                            </button>
+                          </div>
+                          
+                          <!-- No results -->
+                          <div v-if="filteredFollowers.users.length === 0 && filteredFollowers.contacts.length === 0" class="px-3 py-2 text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                            No se encontraron resultados
+                          </div>
+                        </div>
+                      </div>
                       
                       <button
                         @click="addFollower"
@@ -1371,6 +1432,8 @@ const availableUsers = ref([])
 const availableContacts = ref([])
 const selectedFollower = ref('')
 const loadingFollowers = ref(false)
+const showFollowersDropdown = ref(false)
+const followersSearchTerm = ref('')
 
 // Timer methods
 const handleTimerClick = (ticket) => {
@@ -1910,6 +1973,20 @@ const toggleInterventions = () => {
   showInterventions.value = !showInterventions.value
 }
 
+// Followers search methods
+const selectFollower = (value, displayText) => {
+  selectedFollower.value = value
+  followersSearchTerm.value = displayText
+  showFollowersDropdown.value = false
+}
+
+// Assignment search methods
+const selectAssignedUser = (userId, displayText) => {
+  selectedAssignedUserId.value = userId
+  assignmentSearchTerm.value = displayText
+  showAssignmentDropdown.value = false
+}
+
 // Followers methods
 const fetchTicketFollowers = async (ticketId) => {
   try {
@@ -1925,10 +2002,13 @@ const fetchTicketFollowers = async (ticketId) => {
 
 const fetchAvailableUsers = async () => {
   try {
-    console.log('🔍 Obteniendo usuarios de Dolibarr...')
+    console.log('🔍 Obteniendo usuarios activos de Dolibarr...')
     const response = await http.get('/api/doli/users?limit=100&active=1')
     availableUsers.value = response.data || []
-    console.log('✅ Usuarios obtenidos:', availableUsers.value.length)
+    console.log('✅ Usuarios activos obtenidos:', availableUsers.value.length)
+    if (availableUsers.value.length > 0) {
+      console.log('📋 Primer usuario:', availableUsers.value[0])
+    }
   } catch (error) {
     console.warn('⚠️ Error obteniendo usuarios:', error)
     availableUsers.value = []
@@ -1936,15 +2016,23 @@ const fetchAvailableUsers = async () => {
 }
 
 const fetchAvailableContacts = async (socid) => {
-  if (!socid) return
+  if (!socid) {
+    availableContacts.value = []
+    return
+  }
   
   try {
-    console.log('🔍 Obteniendo contactos del tercero:', socid)
-    const response = await http.get(`/api/doli/contacts?socid=${socid}&limit=100`)
+    console.log('🔍 Obteniendo contactos del tercero con filtro SQL:', socid)
+    console.log('📤 URL:', `/api/doli/contacts?sqlfilters=(fk_soc:=:${socid})&limit=100`)
+    const response = await http.get(`/api/doli/contacts?sqlfilters=(fk_soc:=:${socid})&limit=100`)
     availableContacts.value = response.data || []
-    console.log('✅ Contactos obtenidos:', availableContacts.value.length)
+    console.log('✅ Contactos obtenidos con filtro SQL:', availableContacts.value.length)
+    if (availableContacts.value.length > 0) {
+      console.log('📋 Primer contacto:', availableContacts.value[0])
+    }
   } catch (error) {
     console.warn('⚠️ Error obteniendo contactos:', error)
+    console.warn('⚠️ Error details:', error.response?.data)
     availableContacts.value = []
   }
 }
@@ -1972,6 +2060,7 @@ const addFollower = async () => {
     
     // Reset selection
     selectedFollower.value = ''
+    followersSearchTerm.value = ''
     
   } catch (error) {
     console.error('❌ Error agregando seguidor:', error)
@@ -2003,6 +2092,24 @@ const removeFollower = async (followerId, followerType) => {
     alert('Error al eliminar seguidor: ' + (error.response?.data?.message || error.message))
   } finally {
     loadingFollowers.value = false
+  }
+}
+
+// Company methods
+const fetchCompanyInfo = async (socid) => {
+  if (!socid) {
+    currentCompany.value = null
+    return
+  }
+  
+  try {
+    console.log('🔍 Obteniendo información de la empresa:', socid)
+    const response = await http.get(`/api/doli/thirdparties/${socid}`)
+    currentCompany.value = response.data
+    console.log('✅ Empresa obtenida:', currentCompany.value?.name)
+  } catch (error) {
+    console.warn('⚠️ Error obteniendo empresa:', error)
+    currentCompany.value = null
   }
 }
 
@@ -2180,10 +2287,15 @@ const selectedProjectId = ref('')
 const availableProjects = ref([])
 const currentProject = ref(null)
 
+// Company management
+const currentCompany = ref(null)
+
 // User assignment management
 const editingAssignment = ref(false)
 const selectedAssignedUserId = ref('')
 const currentAssignedUser = ref(null)
+const showAssignmentDropdown = ref(false)
+const assignmentSearchTerm = ref('')
 
 // File upload management
 const isDragOver = ref(false)
@@ -2204,6 +2316,40 @@ const sortDirection = ref('asc')
 const showModal = ref(false)
 const selectedTicket = ref(null)
 const ticketDetails = ref(null)
+
+// Computed property for available followers (users + contacts)
+const availableFollowersCount = computed(() => {
+  const usersCount = availableUsers.value?.length || 0
+  const contactsCount = availableContacts.value?.length || 0
+  return { users: usersCount, contacts: contactsCount, total: usersCount + contactsCount }
+})
+
+// Computed property for filtered followers
+const filteredFollowers = computed(() => {
+  const searchTerm = followersSearchTerm.value.toLowerCase()
+  
+  const filteredUsers = availableUsers.value.filter(user => {
+    const fullName = `${user.firstname} ${user.lastname}`.toLowerCase()
+    return fullName.includes(searchTerm)
+  })
+  
+  const filteredContacts = availableContacts.value.filter(contact => {
+    const fullName = `${contact.firstname} ${contact.lastname}`.toLowerCase()
+    return fullName.includes(searchTerm)
+  })
+  
+  return { users: filteredUsers, contacts: filteredContacts }
+})
+
+// Computed property for filtered assignment users
+const filteredAssignmentUsers = computed(() => {
+  const searchTerm = assignmentSearchTerm.value.toLowerCase()
+  
+  return availableUsers.value.filter(user => {
+    const fullName = `${user.firstname} ${user.lastname}`.toLowerCase()
+    return fullName.includes(searchTerm)
+  })
+})
 
 // Computed property for user interventions for the selected ticket
 const userInterventionsForTicket = computed(() => {
@@ -2531,12 +2677,20 @@ const viewTicketDetails = async (ticket) => {
     console.log('✅ Ticket details response:', response)
     ticketDetails.value = response.data
     
-    // Load followers and available users/contacts
+    // Load followers, users/contacts, and company info
     await Promise.all([
       fetchTicketFollowers(ticket.id),
       fetchAvailableUsers(),
-      fetchAvailableContacts(response.data.fk_soc)
+      fetchAvailableContacts(response.data.fk_soc),
+      fetchCompanyInfo(response.data.fk_soc)
     ])
+    
+    // Log summary of loaded data
+    console.log('📊 Resumen de datos cargados para seguidores:')
+    console.log(`   - Usuarios activos: ${availableUsers.value.length}`)
+    console.log(`   - Contactos de empresa (${response.data.fk_soc}): ${availableContacts.value.length}`)
+    console.log(`   - Seguidores actuales: ${ticketFollowers.value.length}`)
+    console.log(`   - Empresa: ${currentCompany.value?.name || 'No encontrada'}`)
     
     // Try multiple methods to get interventions/messages for this ticket
     let interventions = []
@@ -2999,6 +3153,8 @@ const startEditAssignment = async () => {
 const cancelEditAssignment = () => {
   editingAssignment.value = false
   selectedAssignedUserId.value = ''
+  assignmentSearchTerm.value = ''
+  showAssignmentDropdown.value = false
 }
 
 const saveAssignment = async () => {
@@ -3033,6 +3189,8 @@ const saveAssignment = async () => {
     }
     
     editingAssignment.value = false
+    assignmentSearchTerm.value = ''
+    showAssignmentDropdown.value = false
     console.log('✅ Asignación actualizada correctamente')
     
   } catch (error) {
