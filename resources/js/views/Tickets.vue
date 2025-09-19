@@ -827,46 +827,79 @@
                   </div>
                 </div>
 
-                <!-- Reminders Section -->
+                <!-- Recordatorios Section -->
                 <div class="mb-6">
                   <div class="flex items-center justify-between mb-4">
-                    <button 
-                      @click="toggleInterventions"
-                      class="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-                    >
-                      <svg class="w-5 h-5" :class="isDark ? 'text-blue-400' : 'text-blue-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.828 4.828A4 4 0 015.5 4H9v1H5.5a3 3 0 00-2.121.879l-.707.707A1 1 0 002 7v10a1 1 0 00.293.707l.707.707A3 3 0 005.5 19H15v1H5.5a4 4 0 01-2.828-1.172l-.707-.707A2 2 0 011 17V7a2 2 0 01.586-1.414l.707-.707A4 4 0 014.828 4.828zM21 3a1 1 0 011 1v5a1 1 0 01-1 1h-5a1 1 0 01-1-1V4a1 1 0 011-1h5z" />
                       </svg>
                       <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-                        Mis Intervenciones ({{ userInterventionsForTicket?.length || 0 }})
+                        Recordatorios
                       </h3>
-                      <svg 
-                        class="w-4 h-4 transition-transform duration-200" 
-                        :class="[
-                          isDark ? 'text-gray-400' : 'text-gray-600',
-                          showInterventions ? 'rotate-180' : ''
-                        ]" 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </div>
+                    <button 
+                      @click="showReminderModal = true"
+                      class="p-1 rounded-lg hover:bg-opacity-10 hover:bg-gray-500 transition-colors"
+                      title="Agregar recordatorio"
+                    >
+                      <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                       </svg>
                     </button>
                   </div>
                   
-                  <div class="space-y-3">
-                    <div class="p-3 rounded-lg border" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'">
-                      <div class="flex items-start space-x-3">
-                        <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
-                          <span class="text-xs text-white font-medium">A</span>
-                        </div>
-                        <div class="flex-1">
-                          <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">Recordatorio para Admin</p>
-                          <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">24-09-2025 16:00:00</p>
-                          <p class="text-xs mt-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Seguimiento del ticket</p>
+                  <div class="space-y-2">
+                    <!-- Lista de recordatorios -->
+                    <div v-if="ticketReminders.length > 0" class="space-y-2">
+                      <div 
+                        v-for="reminder in ticketReminders" 
+                        :key="reminder.id"
+                        class="p-3 rounded-lg border" 
+                        :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'"
+                      >
+                        <div class="flex items-start justify-between">
+                          <div class="flex items-start space-x-3 flex-1">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-orange-600' : 'bg-orange-500'">
+                              <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z" />
+                              </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm font-medium truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                {{ reminder.title }}
+                              </p>
+                              <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                                📅 {{ formatDate(reminder.date) }}
+                              </p>
+                              <p class="text-xs mt-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                                👤 {{ reminder.assignedTo }}
+                              </p>
+                              <p v-if="reminder.description" class="text-xs mt-1 truncate" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                                {{ reminder.description }}
+                              </p>
+                            </div>
+                          </div>
+                          <button 
+                            @click="deleteReminder(reminder.id)"
+                            class="p-1 text-red-500 hover:text-red-700 transition-colors ml-2"
+                            title="Eliminar recordatorio"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
+                    </div>
+                    
+                    <!-- Estado vacío -->
+                    <div v-else class="text-center py-6">
+                      <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.828 4.828A4 4 0 015.5 4H9v1H5.5a3 3 0 00-2.121.879l-.707.707A1 1 0 002 7v10a1 1 0 00.293.707l.707.707A3 3 0 005.5 19H15v1H5.5a4 4 0 01-2.828-1.172l-.707-.707A2 2 0 011 17V7a2 2 0 01.586-1.414l.707-.707A4 4 0 014.828 4.828z" />
+                      </svg>
+                      <p class="text-sm font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Sin recordatorios</p>
+                      <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">Agrega recordatorios para este ticket</p>
                     </div>
                   </div>
                 </div>
@@ -1377,6 +1410,99 @@
     </div>
   </div>
 
+  <!-- Modal para agregar recordatorio -->
+  <div v-if="showReminderModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="rounded-lg p-6 w-full max-w-lg mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <h3 class="text-lg font-semibold mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">
+        Crear Recordatorio
+      </h3>
+      
+      <div class="space-y-4">
+        <!-- Fecha de notificación -->
+        <div>
+          <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            * Fecha de notificación
+          </label>
+          <input
+            v-model="newReminder.date"
+            type="datetime-local"
+            class="w-full p-2 border rounded-lg text-sm"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            required
+          />
+        </div>
+        
+        <!-- Asignar recordatorio a -->
+        <div>
+          <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            * Asignar recordatorio a
+          </label>
+          <select
+            v-model="newReminder.assignedTo"
+            class="w-full p-2 border rounded-lg text-sm"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            required
+          >
+            <option value="">Seleccionar usuario...</option>
+            <option 
+              v-for="user in availableUsers" 
+              :key="user.id" 
+              :value="`${user.firstname} ${user.lastname}`"
+            >
+              {{ user.firstname }} {{ user.lastname }}
+            </option>
+          </select>
+        </div>
+        
+        <!-- Descripción -->
+        <div>
+          <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            * Descripción
+          </label>
+          <textarea
+            v-model="newReminder.description"
+            rows="4"
+            class="w-full p-2 border rounded-lg text-sm resize-none"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+            placeholder="Describe el recordatorio..."
+            required
+          ></textarea>
+        </div>
+        
+        <!-- Enviar también email -->
+        <div class="flex items-center">
+          <input
+            v-model="newReminder.sendEmail"
+            type="checkbox"
+            id="sendEmail"
+            class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label for="sendEmail" class="ml-2 text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Enviar también un email para este recordatorio
+          </label>
+        </div>
+      </div>
+      
+      <!-- Modal Actions -->
+      <div class="flex justify-end space-x-3 mt-6">
+        <button
+          @click="closeReminderModal"
+          class="px-4 py-2 text-sm font-medium border rounded-md transition-colors"
+          :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700' : 'text-gray-700 border-gray-300 hover:bg-gray-50'"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="createReminder"
+          :disabled="!newReminder.date || !newReminder.assignedTo || !newReminder.description"
+          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
+        >
+          Crear Recordatorio
+        </button>
+      </div>
+    </div>
+  </div>
+
   </div>
 </template>
 
@@ -1426,7 +1552,7 @@ const sendingComment = ref(false)
 const messagesKey = ref(0) // Key to force re-render of messages
 const showInterventions = ref(false) // Control visibility of interventions list
 
-// Followers state
+// Followers state (internally intervinientes/contacts)
 const ticketFollowers = ref([])
 const availableUsers = ref([])
 const availableContacts = ref([])
@@ -1434,6 +1560,17 @@ const selectedFollower = ref('')
 const loadingFollowers = ref(false)
 const showFollowersDropdown = ref(false)
 const followersSearchTerm = ref('')
+
+// Reminders state
+const ticketReminders = ref([])
+const showReminderModal = ref(false)
+const newReminder = ref({
+  title: '',
+  date: '',
+  assignedTo: '',
+  description: '',
+  sendEmail: false
+})
 
 // Timer methods
 const handleTimerClick = (ticket) => {
@@ -1973,6 +2110,75 @@ const toggleInterventions = () => {
   showInterventions.value = !showInterventions.value
 }
 
+// Reminders methods
+const closeReminderModal = () => {
+  showReminderModal.value = false
+  newReminder.value = {
+    title: '',
+    date: '',
+    assignedTo: '',
+    description: '',
+    sendEmail: false
+  }
+}
+
+const createReminder = async () => {
+  try {
+    const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
+    
+    const reminderData = {
+      ticket_id: ticketId,
+      title: newReminder.value.description.substring(0, 50) + '...', // Título basado en descripción
+      date: newReminder.value.date,
+      assigned_to: newReminder.value.assignedTo,
+      description: newReminder.value.description,
+      send_email: newReminder.value.sendEmail
+    }
+    
+    console.log('📝 Creando recordatorio:', reminderData)
+    
+    // Aquí iría la llamada a la API para crear el recordatorio
+    // const response = await http.post('/api/doli/reminders', reminderData)
+    
+    // Por ahora, agregamos el recordatorio localmente
+    const newReminderItem = {
+      id: Date.now(), // ID temporal
+      title: reminderData.description.substring(0, 50) + (reminderData.description.length > 50 ? '...' : ''),
+      date: reminderData.date,
+      assignedTo: reminderData.assigned_to,
+      description: reminderData.description,
+      status: 'active'
+    }
+    
+    ticketReminders.value.push(newReminderItem)
+    
+    console.log('✅ Recordatorio creado exitosamente')
+    closeReminderModal()
+    
+  } catch (error) {
+    console.error('❌ Error creando recordatorio:', error)
+    alert('Error al crear recordatorio: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+const deleteReminder = async (reminderId) => {
+  try {
+    console.log('🗑️ Eliminando recordatorio:', reminderId)
+    
+    // Aquí iría la llamada a la API para eliminar el recordatorio
+    // await http.delete(`/api/doli/reminders/${reminderId}`)
+    
+    // Por ahora, eliminamos localmente
+    ticketReminders.value = ticketReminders.value.filter(reminder => reminder.id !== reminderId)
+    
+    console.log('✅ Recordatorio eliminado exitosamente')
+    
+  } catch (error) {
+    console.error('❌ Error eliminando recordatorio:', error)
+    alert('Error al eliminar recordatorio: ' + (error.response?.data?.message || error.message))
+  }
+}
+
 // Followers search methods
 const selectFollower = (value, displayText) => {
   selectedFollower.value = value
@@ -1987,15 +2193,19 @@ const selectAssignedUser = (userId, displayText) => {
   showAssignmentDropdown.value = false
 }
 
-// Followers methods
+// Followers methods (internally fetches intervinientes/contacts)
 const fetchTicketFollowers = async (ticketId) => {
   try {
-    console.log('🔍 Obteniendo seguidores del ticket:', ticketId)
-    const response = await http.get(`/api/doli/tickets/${ticketId}/contacts`)
+    console.log('🔍 Obteniendo intervinientes del ticket con endpoint personalizado:', ticketId)
+    const response = await http.get(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
     ticketFollowers.value = response.data || []
-    console.log('✅ Seguidores obtenidos:', ticketFollowers.value.length)
+    console.log('✅ Intervinientes obtenidos del endpoint personalizado:', ticketFollowers.value.length)
+    if (ticketFollowers.value.length > 0) {
+      console.log('📋 Primer interviniente:', ticketFollowers.value[0])
+    }
   } catch (error) {
-    console.warn('⚠️ Error obteniendo seguidores:', error)
+    console.warn('⚠️ Error obteniendo intervinientes del endpoint personalizado:', error)
+    console.warn('⚠️ Error details:', error.response?.data)
     ticketFollowers.value = []
   }
 }
@@ -2686,10 +2896,10 @@ const viewTicketDetails = async (ticket) => {
     ])
     
     // Log summary of loaded data
-    console.log('📊 Resumen de datos cargados para seguidores:')
+    console.log('📊 Resumen de datos cargados para intervinientes:')
     console.log(`   - Usuarios activos: ${availableUsers.value.length}`)
     console.log(`   - Contactos de empresa (${response.data.fk_soc}): ${availableContacts.value.length}`)
-    console.log(`   - Seguidores actuales: ${ticketFollowers.value.length}`)
+    console.log(`   - Intervinientes actuales: ${ticketFollowers.value.length}`)
     console.log(`   - Empresa: ${currentCompany.value?.name || 'No encontrada'}`)
     
     // Try multiple methods to get interventions/messages for this ticket
