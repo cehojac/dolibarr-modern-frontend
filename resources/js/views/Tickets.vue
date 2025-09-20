@@ -11,6 +11,71 @@
       </button>
     </div>
 
+    <!-- Tickets Overview Metrics -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Tickets Overview</h2>
+        <a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-medium">Tickets Overview →</a>
+      </div>
+      
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <!-- Open Tickets -->
+        <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.open }}</p>
+              <p class="text-sm font-medium text-red-500">Open</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">My Tickets: {{ ticketMetrics.myOpen }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- In Progress / Assigned -->
+        <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.inProgress }}</p>
+              <p class="text-sm font-medium text-blue-500">Assigned</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">My Tickets: {{ ticketMetrics.myInProgress }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pending -->
+        <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.pending }}</p>
+              <p class="text-sm font-medium text-orange-500">Pending</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">My Tickets: {{ ticketMetrics.myPending }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Awaiting Response -->
+        <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.awaiting }}</p>
+              <p class="text-sm font-medium text-yellow-500">Awaiting Response</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">My Tickets: {{ ticketMetrics.myAwaiting }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Closed -->
+        <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.closed }}</p>
+              <p class="text-sm font-medium text-green-500">Closed</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">My Tickets: {{ ticketMetrics.myClosed }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Search and Filters -->
     <div class="rounded-xl p-6 mb-6 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
       <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
@@ -259,8 +324,8 @@
               </td>
               <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
                 <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-2 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full"
-                      :class="getStatusClass(ticket.fk_statut)">
-                  {{ getStatusText(ticket.fk_statut) }}
+                      :class="getStatusClass(ticket.fk_statut, ticket)">
+                  {{ getStatusText(ticket.fk_statut, ticket) }}
                 </span>
               </td>
               <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-right text-sm xl:text-base 2xl:text-lg font-medium">
@@ -368,8 +433,8 @@
                 </div>
               </div>
               <div class="flex items-center space-x-3">
-                <span v-if="ticketDetails" class="inline-flex px-3 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut)">
-                  {{ getStatusText(ticketDetails.fk_statut) }}
+                <span v-if="ticketDetails" class="inline-flex px-3 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut, ticketDetails)">
+                  {{ getStatusText(ticketDetails.fk_statut, ticketDetails) }}
                 </span>
                 <button @click="closeModal" class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
                   <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -740,8 +805,8 @@
                   <div class="space-y-4">
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Estado:</label>
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut)">
-                        {{ getStatusText(ticketDetails.fk_statut) }}
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut, ticketDetails)">
+                        {{ getStatusText(ticketDetails.fk_statut, ticketDetails) }}
                       </span>
                     </div>
                     
@@ -2471,6 +2536,20 @@ console.log('getInterventionsForTicket:', getInterventionsForTicket)
 const tickets = ref([])
 const loading = ref(false)
 
+// Ticket metrics
+const ticketMetrics = ref({
+  open: 0,
+  inProgress: 0,
+  pending: 0,
+  awaiting: 0,
+  closed: 0,
+  myOpen: 0,
+  myInProgress: 0,
+  myPending: 0,
+  myAwaiting: 0,
+  myClosed: 0
+})
+
 // User filter - show only user's tickets by default
 const showOnlyMyTickets = ref(true)
 
@@ -2574,9 +2653,11 @@ const userInterventionsForTicket = computed(() => {
 const loadingDetails = ref(false)
 
 const fetchTickets = async () => {
+  console.log('🎫 Fetching tickets...')
   loading.value = true
   try {
     const response = await http.get('/api/doli/tickets')
+    console.log('✅ Tickets loaded:', response.data?.length || 0, 'tickets')
     const ticketsData = response.data || []
     
     // Enrich tickets with tercero names and assigned user names using cached data
@@ -2599,11 +2680,85 @@ const fetchTickets = async () => {
       
       return ticket
     })
+    
+    // Calculate metrics after loading tickets
+    calculateTicketMetrics()
+    console.log('✅ Tickets and metrics updated successfully')
   } catch (error) {
-    console.error('Error fetching tickets:', error)
+    console.error('❌ Error fetching tickets:', error)
+    console.error('❌ Error details:', error.response?.data)
   } finally {
     loading.value = false
   }
+}
+
+// Function to calculate ticket metrics
+const calculateTicketMetrics = () => {
+  const currentUserId = authStore.user?.id
+  
+  // Reset metrics
+  ticketMetrics.value = {
+    open: 0,
+    inProgress: 0,
+    pending: 0,
+    awaiting: 0,
+    closed: 0,
+    myOpen: 0,
+    myInProgress: 0,
+    myPending: 0,
+    myAwaiting: 0,
+    myClosed: 0
+  }
+  
+  tickets.value.forEach(ticket => {
+    const status = parseInt(ticket.fk_statut) || 0
+    const isMyTicket = ticket.fk_user_assign == currentUserId
+    const hasAssignedUser = ticket.fk_user_assign && ticket.fk_user_assign != '0'
+    
+    // Map Dolibarr ticket statuses to our categories
+    switch (status) {
+      case 0: // Not read
+      case 1: // Read
+        // Si tiene usuario asignado, considerarlo "In Progress" (Asignado)
+        if (hasAssignedUser) {
+          ticketMetrics.value.inProgress++
+          if (isMyTicket) ticketMetrics.value.myInProgress++
+        } else {
+          ticketMetrics.value.open++
+          if (isMyTicket) ticketMetrics.value.myOpen++
+        }
+        break
+      case 2: // Assigned
+      case 3: // In progress
+        ticketMetrics.value.inProgress++
+        if (isMyTicket) ticketMetrics.value.myInProgress++
+        break
+      case 4: // Need more info
+      case 5: // Need more info (customer)
+        ticketMetrics.value.pending++
+        if (isMyTicket) ticketMetrics.value.myPending++
+        break
+      case 6: // Waiting
+        ticketMetrics.value.awaiting++
+        if (isMyTicket) ticketMetrics.value.myAwaiting++
+        break
+      case 7: // Solved
+      case 8: // Closed
+      case 9: // Cancelled
+        ticketMetrics.value.closed++
+        if (isMyTicket) ticketMetrics.value.myClosed++
+        break
+      default:
+        // Estado desconocido: si tiene usuario asignado → "Asignado", sino → "Open"
+        if (hasAssignedUser) {
+          ticketMetrics.value.inProgress++
+          if (isMyTicket) ticketMetrics.value.myInProgress++
+        } else {
+          ticketMetrics.value.open++
+          if (isMyTicket) ticketMetrics.value.myOpen++
+        }
+    }
+  })
 }
 
 const fetchTerceros = async () => {
@@ -3005,11 +3160,22 @@ const viewTicketDetails = async (ticket) => {
   }
 }
 
-const closeModal = () => {
-  showModal.value = false
-  selectedTicket.value = null
-  ticketDetails.value = null
-  loadingDetails.value = false
+const closeModal = async () => {
+  try {
+    console.log('🔒 Closing ticket modal...')
+    showModal.value = false
+    selectedTicket.value = null
+    ticketDetails.value = null
+    loadingDetails.value = false
+    
+    // Force refresh tickets after closing modal
+    console.log('🔄 Refreshing tickets after modal close...')
+    await nextTick() // Wait for DOM updates
+    await fetchTickets()
+    console.log('✅ Modal closed and tickets refreshed successfully')
+  } catch (error) {
+    console.error('❌ Error closing modal:', error)
+  }
 }
 
 const formatDate = (dateString) => {
@@ -3017,7 +3183,7 @@ const formatDate = (dateString) => {
   return new Date(dateString * 1000).toLocaleDateString('es-ES')
 }
 
-const getStatusText = (status) => {
+const getStatusText = (status, ticket = null) => {
   const statuses = {
     '0': 'Borrador',
     '1': 'Abierto',
@@ -3026,10 +3192,21 @@ const getStatusText = (status) => {
     '8': 'Cerrado',
     '9': 'Cancelado'
   }
+  
+  // Si el estado no está definido pero tiene usuario asignado, mostrar "Asignado"
+  if (!statuses[status] && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
+    return 'Asignado'
+  }
+  
+  // Para estados 0 y 1, si tiene usuario asignado, mostrar "Asignado"
+  if ((status === '0' || status === '1') && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
+    return 'Asignado'
+  }
+  
   return statuses[status] || 'Desconocido'
 }
 
-const getStatusClass = (status) => {
+const getStatusClass = (status, ticket = null) => {
   const classes = {
     '0': 'bg-gray-600 text-gray-200',
     '1': 'bg-blue-600 text-blue-100',
@@ -3038,6 +3215,17 @@ const getStatusClass = (status) => {
     '8': 'bg-green-600 text-green-100',
     '9': 'bg-red-600 text-red-100'
   }
+  
+  // Si el estado no está definido pero tiene usuario asignado, usar estilo de "Asignado"
+  if (!classes[status] && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
+    return 'bg-yellow-600 text-yellow-100' // Mismo estilo que "Asignado"
+  }
+  
+  // Para estados 0 y 1, si tiene usuario asignado, usar estilo de "Asignado"
+  if ((status === '0' || status === '1') && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
+    return 'bg-yellow-600 text-yellow-100' // Mismo estilo que "Asignado"
+  }
+  
   return classes[status] || 'bg-gray-600 text-gray-200'
 }
 
@@ -3159,14 +3347,18 @@ const closeDropdowns = (event) => {
 }
 
 onMounted(async () => {
-  await fetchTickets()
+  try {
+    await fetchTickets()
+  } catch (error) {
+    console.error('❌ Error loading tickets:', error)
+  }
   
   // Fetch user interventions when component mounts
   if (authStore.user && authStore.user.id) {
     try {
       await fetchUserInterventions(true) // Force refresh
     } catch (error) {
-      console.warn('Error al obtener intervenciones del usuario:', error)
+      console.warn('⚠️ Error al obtener intervenciones del usuario:', error)
     }
   }
 })
@@ -3546,7 +3738,10 @@ const linkDocumentToTicket = async (documentId) => {
 
 
 const fetchTicketDocuments = async () => {
-  if (!ticketDetails.value?.id) return
+  if (!ticketDetails.value?.id) {
+    console.log('📋 No ticket ID, skipping document fetch')
+    return
+  }
   
   try {
     console.log('📋 Fetching documents for ticket:', ticketDetails.value.id)
@@ -3609,8 +3804,16 @@ const downloadDocument = (doc) => {
 
 // Watch for ticket details changes to load project and user info
 watch(ticketDetails, async (newDetails) => {
+  // Solo ejecutar si hay detalles del ticket (no null)
+  if (!newDetails) {
+    // Limpiar datos cuando se cierra el modal
+    currentProject.value = null
+    currentAssignedUser.value = null
+    return
+  }
+  
   // Load project info
-  if (newDetails?.fk_project) {
+  if (newDetails.fk_project) {
     try {
       const projectResponse = await http.get(`/api/doli/projects/${newDetails.fk_project}`)
       currentProject.value = projectResponse.data
@@ -3623,7 +3826,7 @@ watch(ticketDetails, async (newDetails) => {
   }
   
   // Load assigned user info
-  if (newDetails?.fk_user_assign) {
+  if (newDetails.fk_user_assign) {
     try {
       const userResponse = await http.get(`/api/doli/users/${newDetails.fk_user_assign}`)
       currentAssignedUser.value = userResponse.data
@@ -3636,10 +3839,10 @@ watch(ticketDetails, async (newDetails) => {
   }
   
   // Load ticket documents using custom module
-  if (newDetails?.id) {
+  if (newDetails.id) {
     await fetchTicketDocuments()
   }
-}, { immediate: true })
+})
 
 // Clean up event listener
 const cleanup = () => {

@@ -33,14 +33,6 @@ export function useAgendaCounter() {
       // Filtro SQL con strings de fecha
       const sqlFilters = `(t.datep:>=:'${currentDateTime}')AND(t.datep:<=:'${endDateTime}')`
       
-      console.log('🕐 Date filters:', {
-        currentTime: now.toLocaleString(),
-        endTime: endOfDay.toLocaleString(),
-        currentDateTime,
-        endDateTime,
-        currentTimestamp,
-        sqlFilters
-      })
       
       // Llamar a la API con filtros de fecha y usuario
       const response = await fetch(`/api/doli/agendaevents?limit=1000&user_ids=${authStore.user.id}&sqlfilters=${encodeURIComponent(sqlFilters)}`, {
@@ -69,30 +61,6 @@ export function useAgendaCounter() {
         events = Object.values(data)
       }
       
-      // Debug: mostrar detalles de cada evento antes del filtro
-      events.forEach((event, index) => {
-        // Convertir datep a timestamp si es string
-        let eventTimestamp
-        if (typeof event.datep === 'string') {
-          // Si es string "2025-09-20 18:00:00", convertir a timestamp
-          eventTimestamp = Math.floor(new Date(event.datep).getTime() / 1000)
-        } else {
-          // Si ya es timestamp numérico, usar directamente
-          eventTimestamp = event.datep
-        }
-        
-        const eventTime = new Date(eventTimestamp * 1000)
-        console.log(`📋 Event ${index + 1}:`, {
-          id: event.id,
-          label: event.label,
-          datep: event.datep,
-          datepType: typeof event.datep,
-          eventTimestamp: eventTimestamp,
-          eventTime: eventTime.toLocaleString(),
-          isFuture: eventTimestamp >= currentTimestamp,
-          type_code: event.type_code
-        })
-      })
       
       // Primero filtrar por hora (solo eventos futuros)
       const futureEvents = events.filter(event => {
