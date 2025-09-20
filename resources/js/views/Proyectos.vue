@@ -1,203 +1,311 @@
 <template>
-  <div class="min-h-screen p-6" :class="isDark ? 'bg-black' : 'bg-gray-50'">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Proyectos</h1>
-        <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Gestión de proyectos</p>
-      </div>
-      <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-medium transition-colors">
-        + Crear Proyecto
-      </button>
-    </div>
-
-    <!-- Search and Filters -->
-    <div class="rounded-xl p-6 mb-6 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Search -->
-        <div class="md:col-span-2">
-          <div class="relative">
-            <input
-              v-model="searchQuery"
-              @input="handleSearch"
-              type="text"
-              placeholder="Buscar proyectos..."
-              class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-            >
-            <svg class="absolute right-3 top-2.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-        </div>
+  <div class="h-full flex flex-col p-6" :class="isDark ? 'bg-gray-900' : 'bg-gray-50'">
+    <!-- Header con filtros de estado -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center space-x-6">
+        <!-- Botón nuevo proyecto -->
+        <button 
+          @click="showNewProjectModal = true"
+          class="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          New Project
+        </button>
         
-        <!-- Status Filter -->
-        <div>
-          <select
-            v-model="statusFilter"
-            @change="applyFilters"
-            class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
+        <!-- Filtros de estado tipo badges -->
+        <div class="flex items-center space-x-1">
+          <button
+            @click="setStatusFilter('')"
+            class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+            :class="statusFilter === '' 
+              ? (isDark ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-900')
+              : (isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900')
+            "
           >
-            <option value="">Todos los estados</option>
-            <option value="0">Borrador</option>
-            <option value="1">Validado</option>
-            <option value="2">En progreso</option>
-            <option value="3">Cerrado</option>
-          </select>
+            {{ getTotalCount() }} All
+          </button>
+          
+          <button
+            @click="setStatusFilter('0')"
+            class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+            :class="statusFilter === '0' 
+              ? 'bg-gray-500 text-white'
+              : (isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900')
+            "
+          >
+            {{ getStatusCount('0') }} Not Started
+          </button>
+          
+          <button
+            @click="setStatusFilter('2')"
+            class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+            :class="statusFilter === '2' 
+              ? 'bg-blue-500 text-white'
+              : (isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900')
+            "
+          >
+            {{ getStatusCount('2') }} In Progress
+          </button>
+          
+          <button
+            @click="setStatusFilter('1')"
+            class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+            :class="statusFilter === '1' 
+              ? 'bg-orange-500 text-white'
+              : (isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900')
+            "
+          >
+            {{ getStatusCount('1') }} On Hold
+          </button>
+          
+          <button
+            @click="setStatusFilter('4')"
+            class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+            :class="statusFilter === '4' 
+              ? 'bg-red-500 text-white'
+              : (isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900')
+            "
+          >
+            {{ getStatusCount('4') }} Cancelled
+          </button>
+          
+          <button
+            @click="setStatusFilter('3')"
+            class="px-3 py-1 text-sm font-medium rounded-full transition-colors"
+            :class="statusFilter === '3' 
+              ? 'bg-green-500 text-white'
+              : (isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900')
+            "
+          >
+            {{ getStatusCount('3') }} Finished
+          </button>
+        </div>
+      </div>
+      
+      <!-- Controles de la derecha -->
+      <div class="flex items-center space-x-3">
+        <!-- Selector de elementos por página -->
+        <select
+          v-model="itemsPerPage"
+          class="px-3 py-1 text-sm border rounded-lg"
+          :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
+        >
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+        
+        <!-- Botón export -->
+        <button class="px-3 py-1 text-sm border rounded-lg transition-colors" :class="isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
+          Export
+        </button>
+        
+        <!-- Botón filtros -->
+        <button 
+          @click="showFilters = !showFilters"
+          class="px-3 py-1 text-sm border rounded-lg transition-colors"
+          :class="isDark ? 'border-gray-700 text-gray-300 hover:bg-gray-800' : 'border-gray-300 text-gray-700 hover:bg-gray-50'"
+        >
+          <svg class="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de búsqueda y filtros expandidos -->
+    <div v-if="showFilters" class="mb-6 p-4 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div class="flex items-center space-x-4">
+        <!-- Búsqueda -->
+        <div class="flex-1 relative">
+          <input
+            v-model="searchQuery"
+            @input="handleSearch"
+            type="text"
+            placeholder="Search..."
+            class="w-full pl-10 pr-4 py-2 border rounded-lg text-sm"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+          >
+          <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="rounded-xl border overflow-hidden" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+    <!-- Tabla de proyectos -->
+    <div class="flex-1 rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-100'">
+          <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-50'">
             <tr>
-              <th @click="sortBy('ref')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'">
-                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
-                  <span>Ref.</span>
-                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                #
+              </th>
+              <th @click="sortBy('title')" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-opacity-50" :class="isDark ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'">
+                <div class="flex items-center space-x-1">
+                  <span>Project Name</span>
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th @click="sortBy('title')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'">
-                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
-                  <span>Título</span>
-                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                  </svg>
-                </div>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                Customer
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                Cliente
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                Tags
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                Estado
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                Start Date
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                Fecha Inicio
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                Deadline
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                Fecha Fin
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                Members
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                Acciones
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                Status
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y" :class="isDark ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-200'">
+          <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="8" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center text-gray-400">
-                <div class="flex items-center justify-center space-x-2 xl:space-x-3 2xl:space-x-4">
-                  <div class="animate-spin rounded-full h-6 w-6 xl:h-8 xl:w-8 2xl:h-10 2xl:w-10 border-b-2 border-blue-500"></div>
-                  <span class="text-sm xl:text-base 2xl:text-lg">Cargando proyectos...</span>
+              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                <div class="flex items-center justify-center space-x-2">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                  <span class="text-sm">Cargando proyectos...</span>
                 </div>
               </td>
             </tr>
             <tr v-else-if="paginatedProjects.length === 0">
-              <td colspan="8" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
-                <div class="flex flex-col items-center space-y-2 xl:space-y-3 2xl:space-y-4">
-                  <svg class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                <div class="flex flex-col items-center space-y-2">
+                  <svg class="w-12 h-12" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
-                  <span class="text-sm xl:text-base 2xl:text-lg">No hay proyectos que coincidan con los filtros</span>
+                  <span class="text-sm">No hay proyectos que coincidan con los filtros</span>
                 </div>
               </td>
             </tr>
-            <tr v-else v-for="project in paginatedProjects" :key="project.id" class="transition-colors" :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'">
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg font-medium">
+            <tr v-else v-for="(project, index) in paginatedProjects" :key="project.id" class="hover:bg-opacity-50 transition-colors" :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'">
+              <!-- Número de fila -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
+                {{ (currentPage - 1) * itemsPerPage + index + 1 }}
+              </td>
+              
+              <!-- Nombre del proyecto -->
+              <td class="px-6 py-4 whitespace-nowrap">
                 <button 
                   @click="viewProjectDetails(project)"
-                  class="transition-colors cursor-pointer font-medium" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
+                  class="text-sm font-medium hover:underline transition-colors" 
+                  :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
                 >
-                  {{ project.ref }}
+                  {{ project.title || project.ref }}
                 </button>
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-sm xl:text-base 2xl:text-lg max-w-xs xl:max-w-sm 2xl:max-w-md truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
-                {{ project.title }}
-              </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              
+              <!-- Cliente -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
                 {{ project.thirdparty_name || '-' }}
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
-                <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-1.5 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full"
-                      :class="getStatusClass(project.fk_statut)">
-                  {{ getStatusText(project.fk_statut) }}
-                </span>
+              
+              <!-- Tags -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    v-for="tag in getProjectTags(project)" 
+                    :key="tag"
+                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                    :class="getTagClass(tag)"
+                  >
+                    {{ tag }}
+                  </span>
+                </div>
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ formatDate(project.datec) }}
+              
+              <!-- Fecha inicio -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
+                {{ formatDate(project.date_start || project.datec) }}
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              
+              <!-- Deadline -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
                 {{ formatDate(project.date_end) }}
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-right text-sm xl:text-base 2xl:text-lg font-medium">
-                <div class="flex items-center justify-end space-x-2 xl:space-x-3 2xl:space-x-4">
-                  <button 
-                    @click="viewProjectDetails(project)"
-                    class="transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
-                    title="Ver detalles"
+              
+              <!-- Miembros -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex -space-x-2">
+                  <div 
+                    v-for="member in getProjectMembers(project)" 
+                    :key="member.id"
+                    class="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-gray-300 flex items-center justify-center text-xs font-medium"
+                    :class="isDark ? 'ring-gray-800' : 'ring-white'"
+                    :title="member.name"
                   >
-                    <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    {{ member.initials }}
+                  </div>
+                  <div 
+                    v-if="getProjectMembers(project).length === 0"
+                    class="inline-block h-8 w-8 rounded-full ring-2 bg-gray-200 flex items-center justify-center text-xs"
+                    :class="isDark ? 'ring-gray-800 bg-gray-600' : 'ring-white bg-gray-200'"
+                  >
+                    <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                  </button>
-                  <button class="transition-colors" :class="isDark ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-800'" title="Editar">
-                    <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
+                  </div>
                 </div>
+              </td>
+              
+              <!-- Estado -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" :class="getStatusBadgeClass(project.fk_statut)">
+                  {{ getStatusText(project.fk_statut) }}
+                </span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       
-      <!-- Pagination -->
-      <div class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
-        <div class="flex items-center justify-between">
-          <div class="text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
-            Mostrando {{ startIndex + 1 }} a {{ Math.min(endIndex, filteredProjects.length) }} de {{ filteredProjects.length }} proyectos
-          </div>
-          <div class="flex items-center space-x-2 xl:space-x-3 2xl:space-x-4">
-            <button
-              @click="previousPage"
-              :disabled="currentPage === 1"
-              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-2.5 2xl:py-3 rounded-lg transition-colors text-sm xl:text-base 2xl:text-lg"
-              :class="[
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : (isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-50'),
-                isDark ? 'bg-gray-700 text-white' : 'bg-white text-gray-700 border border-gray-300'
-              ]"
-            >
-              Anterior
-            </button>
-            
-            <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
-              <button
-                v-for="page in visiblePages"
-                :key="page"
-                @click="goToPage(page)"
-                :class="page === currentPage ? 'bg-blue-500 text-white' : (isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50')"
-                class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-2.5 2xl:py-3 rounded-lg transition-colors text-sm xl:text-base 2xl:text-lg"
-              >
-                {{ page }}
-              </button>
-            </div>
-            
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-700'"
-              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-2.5 2xl:py-3 rounded-lg bg-gray-700 text-white transition-colors text-sm xl:text-base 2xl:text-lg"
-            >
-              Siguiente
-            </button>
-          </div>
+      <!-- Paginación simple -->
+      <div class="px-6 py-3 border-t flex items-center justify-between" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
+        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+          Showing {{ startIndex + 1 }} to {{ Math.min(endIndex, filteredProjects.length) }} of {{ filteredProjects.length }} entries
+        </div>
+        <div class="flex items-center space-x-2">
+          <button
+            @click="previousPage"
+            :disabled="currentPage === 1"
+            class="px-3 py-1 text-sm border rounded transition-colors"
+            :class="[
+              currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '',
+              isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+            ]"
+          >
+            Previous
+          </button>
+          
+          <span class="px-3 py-1 text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+            {{ currentPage }}
+          </span>
+          
+          <button
+            @click="nextPage"
+            :disabled="currentPage === totalPages"
+            class="px-3 py-1 text-sm border rounded transition-colors"
+            :class="[
+              currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '',
+              isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+            ]"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>
@@ -340,13 +448,17 @@ const projects = ref([])
 const loading = ref(false)
 const terceros = ref([])
 
+// UI state
+const showFilters = ref(false)
+const showNewProjectModal = ref(false)
+
 // Filters and search
 const searchQuery = ref('')
 const statusFilter = ref('')
 
 // Pagination
 const currentPage = ref(1)
-const itemsPerPage = ref(50)
+const itemsPerPage = ref(25)
 
 // Sorting
 const sortField = ref('')
@@ -600,24 +712,91 @@ const formatCurrency = (amount) => {
   }).format(amount)
 }
 
+// Funciones para filtros de estado
+const setStatusFilter = (status) => {
+  statusFilter.value = status
+  currentPage.value = 1
+}
+
+const getTotalCount = () => {
+  return projects.value.length
+}
+
+const getStatusCount = (status) => {
+  return projects.value.filter(project => project.fk_statut === status).length
+}
+
+// Funciones para tags y miembros
+const getProjectTags = (project) => {
+  const tags = []
+  
+  // Agregar tags basados en el tipo de proyecto o características
+  if (project.title?.toLowerCase().includes('website') || project.title?.toLowerCase().includes('web')) {
+    tags.push('wordpress')
+  }
+  if (project.title?.toLowerCase().includes('seo')) {
+    tags.push('wordpress')
+  }
+  if (project.title?.toLowerCase().includes('review') || project.title?.toLowerCase().includes('redesign')) {
+    tags.push('review')
+  }
+  
+  return tags
+}
+
+const getTagClass = (tag) => {
+  const tagClasses = {
+    'wordpress': 'bg-blue-100 text-blue-800',
+    'review': 'bg-orange-100 text-orange-800',
+    'design': 'bg-purple-100 text-purple-800'
+  }
+  return tagClasses[tag] || 'bg-gray-100 text-gray-800'
+}
+
+const getProjectMembers = (project) => {
+  // Simular miembros del proyecto
+  const members = [
+    { id: 1, name: 'John Doe', initials: 'JD' },
+    { id: 2, name: 'Jane Smith', initials: 'JS' },
+    { id: 3, name: 'Mike Johnson', initials: 'MJ' }
+  ]
+  
+  // Retornar algunos miembros aleatorios basados en el ID del proyecto
+  const memberCount = (parseInt(project.id) % 3) + 1
+  return members.slice(0, memberCount)
+}
+
 const getStatusText = (status) => {
   const statuses = {
-    '0': 'Borrador',
-    '1': 'Validado',
-    '2': 'En progreso',
-    '3': 'Cerrado'
+    '0': 'Not Started',
+    '1': 'On Hold', 
+    '2': 'In Progress',
+    '3': 'Finished',
+    '4': 'Cancelled'
   }
-  return statuses[status] || 'Desconocido'
+  return statuses[status] || 'Unknown'
 }
 
 const getStatusClass = (status) => {
   const classes = {
     '0': 'bg-gray-600 text-gray-200',
-    '1': 'bg-blue-600 text-blue-100',
-    '2': 'bg-green-600 text-green-100',
-    '3': 'bg-red-600 text-red-100'
+    '1': 'bg-orange-600 text-orange-100',
+    '2': 'bg-blue-600 text-blue-100',
+    '3': 'bg-green-600 text-green-100',
+    '4': 'bg-red-600 text-red-100'
   }
   return classes[status] || 'bg-gray-600 text-gray-200'
+}
+
+const getStatusBadgeClass = (status) => {
+  const classes = {
+    '0': 'bg-gray-100 text-gray-800',
+    '1': 'bg-orange-100 text-orange-800',
+    '2': 'bg-blue-100 text-blue-800', 
+    '3': 'bg-green-100 text-green-800',
+    '4': 'bg-red-100 text-red-800'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
 }
 
 // Watch for filter changes to reset pagination
