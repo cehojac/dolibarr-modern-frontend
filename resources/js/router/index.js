@@ -24,14 +24,84 @@ const routes = [
         component: () => import('../views/Terceros.vue')
       },
       {
+        path: '/terceros/clientes',
+        name: 'Clientes',
+        component: () => import('../views/terceros/Clientes.vue')
+      },
+      {
+        path: '/terceros/proveedores',
+        name: 'Proveedores',
+        component: () => import('../views/terceros/Proveedores.vue')
+      },
+      {
+        path: '/terceros/contactos',
+        name: 'Contactos',
+        component: () => import('../views/terceros/Contactos.vue')
+      },
+      {
+        path: '/terceros/socios',
+        name: 'Socios',
+        component: () => import('../views/terceros/Socios.vue')
+      },
+      {
         path: '/productos',
-        name: 'Productos',
+        name: 'Productos / Servicios',
         component: () => import('../views/Productos.vue')
       },
       {
-        path: '/servicios',
-        name: 'Servicios',
-        component: () => import('../views/Servicios.vue')
+        path: '/comercial/clientes-potenciales',
+        name: 'Clientes Potenciales',
+        component: () => import('../views/comercial/ClientesPotenciales.vue')
+      },
+      {
+        path: '/comercial/presupuestos',
+        name: 'Presupuestos',
+        component: () => import('../views/comercial/Presupuestos.vue')
+      },
+      {
+        path: '/comercial/contratos',
+        name: 'Contratos',
+        component: () => import('../views/comercial/Contratos.vue')
+      },
+      {
+        path: '/financiera/facturas-clientes',
+        name: 'Facturas a Clientes',
+        component: () => import('../views/financiera/FacturasClientes.vue')
+      },
+      {
+        path: '/financiera/facturas-proveedores',
+        name: 'Facturas de Proveedor',
+        component: () => import('../views/financiera/FacturasProveedores.vue')
+      },
+      {
+        path: '/financiera/pedidos-facturables',
+        name: 'Pedidos Facturables',
+        component: () => import('../views/financiera/PedidosFacturables.vue')
+      },
+      {
+        path: '/financiera/donaciones',
+        name: 'Donaciones',
+        component: () => import('../views/financiera/Donaciones.vue')
+      },
+      {
+        path: '/financiera/impuestos',
+        name: 'Impuestos',
+        component: () => import('../views/financiera/Impuestos.vue')
+      },
+      {
+        path: '/financiera/prestamos',
+        name: 'Préstamos',
+        component: () => import('../views/financiera/Prestamos.vue')
+      },
+      {
+        path: '/financiera/pagos-varios',
+        name: 'Pagos Varios',
+        component: () => import('../views/financiera/PagosVarios.vue')
+      },
+      {
+        path: '/financiera/margenes',
+        name: 'Márgenes',
+        component: () => import('../views/financiera/Margenes.vue')
       },
       {
         path: '/proyectos',
