@@ -124,11 +124,15 @@
           <div
             v-for="day in monthDays"
             :key="day.date"
-            class="border-r border-b p-2 min-h-[120px] relative cursor-pointer hover:bg-opacity-50 group"
+            class="border-r border-b p-2 min-h-[120px] relative group"
             :class="[
-              isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-100',
+              isDark ? 'border-gray-700' : 'border-gray-200',
               day.isCurrentMonth ? '' : (isDark ? 'bg-gray-900 text-gray-600' : 'bg-gray-50 text-gray-400'),
-              day.isToday ? (isDark ? 'bg-blue-900' : 'bg-blue-50') : ''
+              day.isToday ? (isDark ? 'bg-blue-900' : 'bg-blue-50') : '',
+              // Estilos para fechas pasadas
+              isPastDate(day.date) ? 
+                (isDark ? 'bg-gray-800 text-gray-600 cursor-not-allowed' : 'bg-gray-100 text-gray-400 cursor-not-allowed') :
+                (isDark ? 'cursor-pointer hover:bg-gray-700' : 'cursor-pointer hover:bg-gray-100')
             ]"
             @click="handleDayClick(day.date)"
           >
@@ -158,7 +162,7 @@
               
               <!-- Indicador para crear evento si no hay eventos -->
               <div 
-                v-if="getEventsForDay(day.date).length === 0 && day.isCurrentMonth"
+                v-if="getEventsForDay(day.date).length === 0 && day.isCurrentMonth && !isPastDate(day.date)"
                 class="text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 + Crear evento
@@ -216,10 +220,15 @@
               <div
                 v-for="hour in hours"
                 :key="hour"
-                class="h-16 border-b p-1 relative cursor-pointer"
-                :class="isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'"
+                class="h-16 border-b p-1 relative"
+                :class="[
+                  isDark ? 'border-gray-700' : 'border-gray-200',
+                  isPastHour(day - 1, hour) ? 
+                    (isDark ? 'bg-gray-800 cursor-not-allowed' : 'bg-gray-100 cursor-not-allowed') :
+                    (isDark ? 'cursor-pointer hover:bg-gray-700' : 'cursor-pointer hover:bg-gray-50')
+                ]"
                 @click="handleHourClick(day - 1, hour)"
-                :title="`Crear evento a las ${hour}:00`"
+                :title="isPastHour(day - 1, hour) ? 'Hora pasada' : `Crear evento a las ${hour}:00`"
               >
                 <!-- Eventos en esta hora -->
                 <div
@@ -251,10 +260,15 @@
           <div
             v-for="hour in hours"
             :key="hour"
-            class="border-b p-4 min-h-[80px] relative cursor-pointer"
-            :class="isDark ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'"
+            class="border-b p-4 min-h-[80px] relative"
+            :class="[
+              isDark ? 'border-gray-700' : 'border-gray-200',
+              isPastDayHour(hour) ? 
+                (isDark ? 'bg-gray-800 cursor-not-allowed' : 'bg-gray-100 cursor-not-allowed') :
+                (isDark ? 'cursor-pointer hover:bg-gray-700' : 'cursor-pointer hover:bg-gray-50')
+            ]"
             @click="handleDayHourClick(hour)"
-            :title="`Crear evento a las ${hour}:00`"
+            :title="isPastDayHour(hour) ? 'Hora pasada' : `Crear evento a las ${hour}:00`"
           >
             <div class="flex items-start space-x-4">
               <div class="text-sm font-medium w-16" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
@@ -302,12 +316,19 @@
           <div class="grid grid-cols-4 gap-4 items-center">
             <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Tipo</label>
             <div class="col-span-3">
-              <select v-model="newEvent.type" class="w-full border rounded-lg px-3 py-2 text-sm" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'">
-                <option value="AC_OTH">Cita</option>
-                <option value="AC_MEETING">Reunión</option>
-                <option value="AC_PHONE">Llamada</option>
-                <option value="AC_EMAIL">Email</option>
-                <option value="AC_RDV">Cita médica</option>
+              <select 
+                v-model="newEvent.type" 
+                class="w-full border rounded-lg px-3 py-2 text-sm" 
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+              >
+                <option value="AC_RDV">Cita</option>
+                <option value="AC_TEL">Llamada telefónica</option>
+                <option value="AC_INT">Intervención in situ</option>
+                <option value="AC_OTH">Otra</option>
+                <option value="AC_EO_ONLINECONF">Online/Virtual conference</option>
+                <option value="AC_EO_INDOORCONF">Indoor conference</option>
+                <option value="AC_EO_ONLINEBOOTH">Online/Virtual booth</option>
+                <option value="AC_EO_INDOORBOOTH">Indoor booth</option>
               </select>
             </div>
           </div>
@@ -341,6 +362,7 @@
                   v-model="newEvent.date" 
                   type="date" 
                   required
+                  :min="new Date().toISOString().split('T')[0]"
                   class="border rounded-lg px-3 py-2 text-sm" 
                   :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
                 >
@@ -457,10 +479,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '../composables/useTheme'
 import { useAuthStore } from '../stores/auth'
+import { useAgendaCounter } from '../composables/useAgendaCounter'
 import http from '../utils/http'
 
 const { isDark } = useTheme()
 const authStore = useAuthStore()
+const { incrementTodayCount } = useAgendaCounter()
 
 // Estado del calendario
 const currentDate = ref(new Date())
@@ -474,7 +498,7 @@ const showSystemAuto = ref(false)
 const showCreateEventModal = ref(false)
 const creating = ref(false)
 const newEvent = ref({
-  type: 'AC_OTH',
+  type: 'AC_RDV',
   label: '',
   date: '',
   startTime: '',
@@ -584,6 +608,35 @@ const userInitials = computed(() => {
   }
   return 'U'
 })
+
+// Verificar si una fecha está en el pasado
+const isPastDate = (date) => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0) // Resetear a medianoche para comparar solo fechas
+  const compareDate = new Date(date)
+  compareDate.setHours(0, 0, 0, 0)
+  return compareDate < today
+}
+
+// Verificar si una hora específica en la vista semana está en el pasado
+const isPastHour = (dayIndex, hour) => {
+  const weekStart = getWeekStart(currentDate.value)
+  const targetDate = new Date(weekStart)
+  targetDate.setDate(weekStart.getDate() + dayIndex)
+  targetDate.setHours(hour, 0, 0, 0)
+  
+  const now = new Date()
+  return targetDate < now
+}
+
+// Verificar si una hora específica en la vista día está en el pasado
+const isPastDayHour = (hour) => {
+  const targetDateTime = new Date(selectedDate.value)
+  targetDateTime.setHours(hour, 0, 0, 0)
+  
+  const now = new Date()
+  return targetDateTime < now
+}
 
 // Navegación del calendario
 const navigateCalendar = (direction) => {
@@ -780,6 +833,11 @@ const closeCreateEventModal = () => {
 
 // Manejar click en hora de la vista semana
 const handleHourClick = (dayIndex, hour) => {
+  // No permitir crear eventos en horas pasadas
+  if (isPastHour(dayIndex, hour)) {
+    return
+  }
+  
   const weekStart = getWeekStart(currentDate.value)
   const targetDate = new Date(weekStart)
   targetDate.setDate(weekStart.getDate() + dayIndex)
@@ -793,6 +851,11 @@ const handleHourClick = (dayIndex, hour) => {
 
 // Manejar click en hora de la vista día
 const handleDayHourClick = (hour) => {
+  // No permitir crear eventos en horas pasadas
+  if (isPastDayHour(hour)) {
+    return
+  }
+  
   // Verificar si ya hay eventos en esa hora
   const existingEvents = getEventsForSelectedDayHour(hour)
   if (existingEvents.length === 0) {
@@ -802,6 +865,16 @@ const handleDayHourClick = (hour) => {
 
 // Manejar click en día de la vista mes
 const handleDayClick = (date) => {
+  // No permitir crear eventos en fechas pasadas
+  if (isPastDate(date)) {
+    // Si hay eventos, permitir ver detalles
+    const existingEvents = getEventsForDay(date)
+    if (existingEvents.length > 0) {
+      selectDate(date)
+    }
+    return
+  }
+  
   // Si es un doble click rápido o si no hay eventos, abrir modal de creación
   const existingEvents = getEventsForDay(date)
   
@@ -821,15 +894,24 @@ const createEvent = async () => {
     console.log('🔄 Creando evento...', newEvent.value)
     
     // Preparar los datos del evento para la API de Dolibarr
+    // Basado en la estructura de eventos existentes de Dolibarr
     const eventData = {
-      type: newEvent.value.type,
+      type_code: newEvent.value.type, // AC_OTH, AC_RDV, etc.
       label: newEvent.value.label,
-      note: newEvent.value.note,
+      note_private: newEvent.value.note, // Dolibarr usa note_private
       location: newEvent.value.location,
       status: parseInt(newEvent.value.status),
       percentage: parseInt(newEvent.value.percentage),
-      userassigned: authStore.user?.id || 1
+      userownerid: parseInt(authStore.user?.id) || 1,
+      transparency: "0",
+      priority: "0",
+      fulldayevent: newEvent.value.allDay ? "1" : "0",
+      ponctuel: "1", // Evento puntual
+      entity: "1" // Entidad por defecto
     }
+    
+    console.log('📤 Datos del evento preparados:', eventData)
+    console.log('🔍 type_code específicamente:', eventData.type_code)
     
     // Calcular timestamp para datep
     if (newEvent.value.allDay) {
@@ -870,6 +952,16 @@ const createEvent = async () => {
     }
     
     eventos.value.push(createdEvent)
+    
+    // Si el evento es del día actual y futuro, incrementar el contador
+    const today = new Date()
+    const eventDateTime = new Date(eventData.datep * 1000)
+    const isToday = eventDateTime.toDateString() === today.toDateString()
+    
+    if (isToday) {
+      // Pasar el timestamp directamente al contador
+      incrementTodayCount(eventData.datep)
+    }
     
     // Cerrar el modal
     closeCreateEventModal()
