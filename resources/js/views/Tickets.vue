@@ -6,7 +6,10 @@
         <h1 class="text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Tickets</h1>
         <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Sistema de soporte y tickets</p>
       </div>
-      <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-medium transition-colors">
+      <button 
+        @click="openCreateTicketModal"
+        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-medium transition-colors"
+      >
         + Crear Ticket
       </button>
     </div>
@@ -109,10 +112,10 @@
               :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'"
             >
             <!-- Tercero Dropdown -->
-            <div v-if="showTerceroDropdown && filteredTerceros.length > 0" 
+            <div v-if="showTerceroDropdown && filteredTercerosForFilters.length > 0" 
                  class="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-48 overflow-y-auto"
                  :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'">
-              <div v-for="tercero in filteredTerceros" :key="tercero.id"
+              <div v-for="tercero in filteredTercerosForFilters" :key="tercero.id"
                    @click="selectTercero(tercero)"
                    class="px-4 py-2 cursor-pointer transition-colors"
                    :class="isDark ? 'hover:bg-gray-700 text-white' : 'hover:bg-gray-100 text-gray-900'">
@@ -138,11 +141,11 @@
               :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500'"
             >
             <!-- User Dropdown -->
-            <div v-if="showUserDropdown && filteredUsers.length > 0" 
+            <div v-if="showUserDropdown && filteredUsersForFilters.length > 0" 
                  class="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-48 overflow-y-auto"
                  :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'">
-              <div v-for="user in filteredUsers" :key="user.id"
-                   @click="selectUser(user)"
+              <div v-for="user in filteredUsersForFilters" :key="user.id"
+                   @click="selectUserFilter(user)"
                    class="px-4 py-2 cursor-pointer transition-colors"
                    :class="isDark ? 'hover:bg-gray-700 text-white' : 'hover:bg-gray-100 text-gray-900'">
                 <div class="font-medium">{{ user.firstname }} {{ user.lastname }}</div>
@@ -215,85 +218,87 @@
 
     <!-- Table -->
     <div class="rounded-xl border overflow-hidden" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-      <div class="overflow-x-auto">
-        <table class="min-w-full">
+      <div class="overflow-x-auto min-w-0">
+        <table class="min-w-full table-auto">
           <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-100'">
             <tr>
-              <th @click="sortBy('ref')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
-                  <span>Ref.</span>
-                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <th @click="sortBy('ref')" class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors w-20 sm:w-24" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1">
+                  <span class="hidden sm:inline">Ref.</span>
+                  <span class="sm:hidden">ID</span>
+                  <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th @click="sortBy('subject')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
+              <th @click="sortBy('subject')" class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1">
                   <span>Asunto</span>
-                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                Grupo de Ticket
+              <th class="hidden lg:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                Grupo
               </th>
-              <th @click="sortBy('severity')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
-                  <span>Gravedad</span>
-                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <th @click="sortBy('severity')" class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors w-16 sm:w-20" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1">
+                  <span class="hidden sm:inline">Gravedad</span>
+                  <span class="sm:hidden">Grav.</span>
+                  <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <th class="hidden md:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 Tercero
               </th>
-              <th @click="sortBy('datec')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
-                  <span>Fecha de creación</span>
-                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <th @click="sortBy('datec')" class="hidden lg:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1">
+                  <span>Fecha</span>
+                  <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                Asignada a
+              <th class="hidden sm:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                Asignado
               </th>
-              <th @click="sortBy('fk_statut')" class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-left text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
+              <th @click="sortBy('fk_statut')" class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                <div class="flex items-center space-x-1">
                   <span>Estado</span>
-                  <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-right text-xs xl:text-sm 2xl:text-base font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                Acciones
+              <th class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-right text-xs font-medium uppercase tracking-wider w-16" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                <span class="sr-only">Acciones</span>
               </th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="9" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex items-center justify-center space-x-2 xl:space-x-3 2xl:space-x-4">
-                  <div class="animate-spin rounded-full h-6 w-6 xl:h-8 xl:w-8 2xl:h-10 2xl:w-10 border-b-2 border-blue-500"></div>
-                  <span class="text-sm xl:text-base 2xl:text-lg">Cargando tickets...</span>
+              <td colspan="8" class="px-4 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <div class="flex items-center justify-center space-x-2">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                  <span class="text-sm">Cargando tickets...</span>
                 </div>
               </td>
             </tr>
             <tr v-else-if="paginatedTickets.length === 0">
-              <td colspan="9" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex flex-col items-center space-y-2 xl:space-y-3 2xl:space-y-4">
-                  <svg class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <td colspan="8" class="px-4 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <div class="flex flex-col items-center space-y-3">
+                  <svg class="w-12 h-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span class="text-sm xl:text-base 2xl:text-lg">No hay tickets que coincidan con los filtros</span>
+                  <span class="text-sm">No hay tickets que coincidan con los filtros</span>
                 </div>
               </td>
             </tr>
             <tr v-else v-for="ticket in paginatedTickets" :key="ticket.id" class="transition-colors" :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'">
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg font-medium">
+              <td class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm font-medium">
                 <button 
                   @click="viewTicketDetails(ticket)"
                   class="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer font-medium"
@@ -301,22 +306,23 @@
                   {{ ticket.ref }}
                 </button>
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-sm xl:text-base 2xl:text-lg max-w-xs xl:max-w-sm 2xl:max-w-md truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+              <td class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 text-xs sm:text-sm max-w-xs truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ ticket.subject }}
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="hidden lg:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ ticket.category_code || ticket.category || '-' }}
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
-                <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-2 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full"
+              <td class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap">
+                <span class="inline-flex px-1 sm:px-2 py-1 text-xs font-semibold rounded-full"
                       :class="getPriorityClass(ticket.severity_code || ticket.severity)">
-                  {{ getPriorityText(ticket.severity_code || ticket.severity) }}
+                  <span class="hidden sm:inline">{{ getPriorityText(ticket.severity_code || ticket.severity) }}</span>
+                  <span class="sm:hidden">{{ getPriorityText(ticket.severity_code || ticket.severity).charAt(0) }}</span>
                 </span>
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="hidden md:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm max-w-32 truncate" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ ticket.thirdparty_name || '-' }}
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="hidden lg:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(ticket.datec) }}
               </td>
               <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
@@ -436,7 +442,16 @@
                 </div>
                 <div>
                   <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketDetails?.subject || 'Cargando...' }}</h3>
-                  <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Ticket {{ selectedTicket?.ref }}</p>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Ticket {{ selectedTicket?.ref }}</p>
+                    <span 
+                      v-if="ticketDetails?.track_id" 
+                      class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                      :class="isDark ? 'bg-blue-900/30 text-blue-300 border border-blue-700/50' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                    >
+                      🔗 Track: {{ ticketDetails.track_id }}
+                    </span>
+                  </div>
                 </div>
               </div>
               <div class="flex items-center space-x-3">
@@ -464,11 +479,16 @@
               <div class="flex-1 p-6 overflow-y-auto min-w-0">
                 <!-- Action Buttons -->
                 <div class="flex items-center space-x-3 mb-6">
-                  <button class="flex items-center space-x-2 px-3 py-2 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'">
+                  <button 
+                    @click="showCompleteModal = true"
+                    :disabled="completingTicket"
+                    class="flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors" 
+                    :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'"
+                  >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span class="text-sm">Marcar completo</span>
+                    <span class="text-sm">{{ completingTicket ? 'Cerrando...' : 'Marcar completo' }}</span>
                   </button>
                   
                   <!-- Timer Button in Modal -->
@@ -689,13 +709,41 @@
                     <!-- Action Buttons -->
                     <div class="flex justify-between items-center mt-3">
                       <div class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
-                        <span v-if="commentType === 'email'" class="flex items-center">
-                          <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                            <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-                          </svg>
-                          Se enviará notificación por email
-                        </span>
+                        <div v-if="commentType === 'email'" class="space-y-2">
+                          <div class="flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                            </svg>
+                            Se enviará notificación por email a:
+                          </div>
+                          
+                          <!-- Lista de destinatarios -->
+                          <div class="ml-4 space-y-1">
+                            <div 
+                              v-for="recipient in emailRecipientsPreview" 
+                              :key="recipient.email"
+                              class="flex items-center space-x-2"
+                            >
+                              <span 
+                                class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium"
+                                :class="recipient.type === 'internal' 
+                                  ? 'bg-green-100 text-green-700 border border-green-200' 
+                                  : 'bg-blue-100 text-blue-700 border border-blue-200'"
+                              >
+                                {{ recipient.type === 'internal' ? 'INT' : 'EXT' }}
+                              </span>
+                              <span class="font-medium">{{ recipient.name }}</span>
+                              <span class="text-gray-400">({{ recipient.email }})</span>
+                            </div>
+                            
+                            <!-- Mensaje si no hay destinatarios -->
+                            <div v-if="emailRecipientsPreview.length === 0" class="text-gray-400 italic">
+                              No se encontraron destinatarios
+                            </div>
+                          </div>
+                        </div>
+                        
                         <span v-else class="flex items-center">
                           <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
@@ -911,7 +959,7 @@
                       </h3>
                     </div>
                     <button 
-                      @click="showReminderModal = true"
+                      @click="openReminderModal"
                       class="p-1 rounded-lg hover:bg-opacity-10 hover:bg-gray-500 transition-colors"
                       title="Agregar recordatorio"
                     >
@@ -933,16 +981,16 @@
                         <div class="flex items-start justify-between">
                           <div class="flex items-start space-x-3 flex-1">
                             <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-orange-600' : 'bg-orange-500'">
-                              <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <!-- <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z" />
-                              </svg>
+                              </svg> -->
                             </div>
                             <div class="flex-1 min-w-0">
                               <p class="text-sm font-medium truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
                                 {{ reminder.title }}
                               </p>
                               <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
-                                📅 {{ formatDate(reminder.date) }}
+                                📅 {{ reminder.date }}
                               </p>
                               <p class="text-xs mt-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                                 👤 {{ reminder.assignedTo }}
@@ -1564,6 +1612,28 @@
           />
         </div>
         
+        <!-- Tipo de recordatorio -->
+        <div>
+          <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            * Tipo de recordatorio
+          </label>
+          <select
+            v-model="newReminder.actionCode"
+            class="w-full p-2 border rounded-lg text-sm"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            required
+          >
+            <option value="AC_RDV">Cita</option>
+            <option value="AC_TEL">Llamada telefónica</option>
+            <option value="AC_INT">Intervención in situ</option>
+            <option value="AC_OTH">Otra</option>
+            <option value="AC_EO_ONLINECONF">Online/Virtual conference</option>
+            <option value="AC_EO_INDOORCONF">Indoor conference</option>
+            <option value="AC_EO_ONLINEBOOTH">Online/Virtual booth</option>
+            <option value="AC_EO_INDOORBOOTH">Indoor booth</option>
+          </select>
+        </div>
+        
         <!-- Asignar recordatorio a -->
         <div>
           <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
@@ -1576,12 +1646,20 @@
             required
           >
             <option value="">Seleccionar usuario...</option>
+            <!-- Usuario actual como primera opción -->
+            <option 
+              v-if="authStore.user"
+              :value="`${authStore.user.firstname || ''} ${authStore.user.lastname || ''}`.trim()"
+            >
+              {{ `${authStore.user.firstname || ''} ${authStore.user.lastname || ''}`.trim() }} (Yo)
+            </option>
+            <!-- Otros usuarios disponibles -->
             <option 
               v-for="user in availableUsers" 
               :key="user.id" 
-              :value="`${user.firstname} ${user.lastname}`"
+              :value="`${user.firstname || ''} ${user.lastname || ''}`.trim()"
             >
-              {{ user.firstname }} {{ user.lastname }}
+              {{ `${user.firstname || ''} ${user.lastname || ''}`.trim() }}
             </option>
           </select>
         </div>
@@ -1626,11 +1704,491 @@
         </button>
         <button
           @click="createReminder"
-          :disabled="!newReminder.date || !newReminder.assignedTo || !newReminder.description"
+          :disabled="!newReminder.date || !newReminder.assignedTo || !newReminder.description || !newReminder.actionCode"
           class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors"
         >
           Crear Recordatorio
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación para completar ticket -->
+  <div v-if="showCompleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="rounded-lg p-6 w-full max-w-md mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+          Completar Ticket
+        </h3>
+      </div>
+      
+      <p class="text-sm mb-6" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+        ¿Estás seguro de que deseas marcar este ticket como completado? Esta acción cambiará el estado del ticket a "Cerrado".
+      </p>
+      
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
+        <div class="flex items-start space-x-2">
+          <svg class="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <div>
+            <p class="text-xs font-medium text-yellow-800">Información importante</p>
+            <p class="text-xs text-yellow-700 mt-1">Una vez cerrado, el ticket no podrá recibir nuevas actualizaciones sin ser reabierto.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Actions -->
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="showCompleteModal = false"
+          :disabled="completingTicket"
+          class="px-4 py-2 text-sm font-medium border rounded-md transition-colors"
+          :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700 disabled:opacity-50' : 'text-gray-700 border-gray-300 hover:bg-gray-50 disabled:opacity-50'"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="completeTicket"
+          :disabled="completingTicket"
+          class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center space-x-2"
+        >
+          <svg v-if="completingTicket" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ completingTicket ? 'Cerrando...' : 'Sí, completar ticket' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Modal de crear ticket -->
+  <div v-if="showCreateTicketModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+            Crear Nuevo Ticket
+          </h3>
+        </div>
+        <button @click="closeCreateTicketModal" class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form Content -->
+      <div class="p-6">
+        <form @submit.prevent="createTicket" class="space-y-6">
+          <!-- Row 1: Ref, Tipo, Grupo -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Ref -->
+            <div>
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Ref.
+              </label>
+              <input
+                v-model="newTicket.ref"
+                type="text"
+                placeholder="TS2509-0295"
+                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+              />
+            </div>
+
+            <!-- Tipo de solicitud -->
+            <div>
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Tipo de solicitud
+              </label>
+              <select 
+                v-model="newTicket.type" 
+                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-no-repeat bg-right pr-10"
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 4 5&quot;><path fill=&quot;%23666&quot; d=&quot;M2 0L0 2h4zm0 5L0 3h4z&quot;/></svg>'); background-position: right 0.7rem center; background-size: 0.65rem auto;"
+              >
+                <option v-for="type in ticketTypes" :key="type.value" :value="type.value">
+                  {{ type.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Grupo de Ticket -->
+            <div>
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Grupo de Ticket
+              </label>
+              <select 
+                v-model="newTicket.group" 
+                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-no-repeat bg-right pr-10"
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 4 5&quot;><path fill=&quot;%23666&quot; d=&quot;M2 0L0 2h4zm0 5L0 3h4z&quot;/></svg>'); background-position: right 0.7rem center; background-size: 0.65rem auto;"
+              >
+                <option v-for="group in ticketGroups" :key="group.value" :value="group.value">
+                  {{ group.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Gravedad, Asunto -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Gravedad -->
+            <div>
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Gravedad
+              </label>
+              <select
+                v-model="newTicket.severity"
+                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-no-repeat bg-right pr-10"
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 4 5&quot;><path fill=&quot;%23666&quot; d=&quot;M2 0L0 2h4zm0 5L0 3h4z&quot;/></svg>'); background-position: right 0.7rem center; background-size: 0.65rem auto;"
+              >
+                <option v-for="severity in severityLevels" :key="severity.value" :value="severity.value">
+                  {{ severity.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Asunto -->
+            <div class="md:col-span-3">
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Asunto *
+              </label>
+              <input
+                v-model="newTicket.subject"
+                type="text"
+                placeholder="Describe brevemente el problema..."
+                required
+                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+              />
+            </div>
+          </div>
+
+          <!-- Mensaje (WYSIWYG Editor) -->
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Mensaje
+            </label>
+            <div class="border rounded-lg" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
+              <!-- Editor Toolbar -->
+              <div class="flex items-center space-x-2 p-3 border-b" :class="isDark ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'">
+                <button type="button" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Negrita">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M5 3v14h5.5c2.5 0 4.5-2 4.5-4.5 0-1.5-.7-2.8-1.8-3.5C14.3 8.2 15 6.9 15 5.5 15 3 13 1 10.5 1H5v2zm2 2h3.5c1.4 0 2.5 1.1 2.5 2.5S11.9 10 10.5 10H7V5zm0 7h4c1.7 0 3 1.3 3 3s-1.3 3-3 3H7v-6z"/>
+                  </svg>
+                </button>
+                <button type="button" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Cursiva">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8 1h8v2h-2.5L9.8 17H12v2H4v-2h2.5L10.2 3H8V1z"/>
+                  </svg>
+                </button>
+                <button type="button" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Subrayado">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M4 18h12v2H4v-2zM10 2C7.8 2 6 3.8 6 6v6c0 2.2 1.8 4 4 4s4-1.8 4-4V6c0-2.2-1.8-4-4-4zm2 10c0 1.1-.9 2-2 2s-2-.9-2-2V6c0-1.1.9-2 2-2s2 .9 2 2v6z"/>
+                  </svg>
+                </button>
+                <div class="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                <button type="button" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Lista">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4h2v2H3V4zm0 5h2v2H3V9zm0 5h2v2H3v-2zm4-10h10v2H7V4zm0 5h10v2H7V9zm0 5h10v2H7v-2z"/>
+                  </svg>
+                </button>
+                <button type="button" class="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600" title="Enlace">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"/>
+                  </svg>
+                </button>
+              </div>
+              <!-- Editor Content -->
+              <textarea
+                v-model="newTicket.message"
+                rows="8"
+                placeholder="Describe detalladamente el problema o solicitud..."
+                class="w-full p-3 resize-none focus:outline-none rounded-b-lg"
+                :class="isDark ? 'bg-gray-700 text-white placeholder-gray-400' : 'bg-white text-gray-900 placeholder-gray-500'"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Row 3: Tercero y Contacto -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Tercero -->
+            <div class="relative">
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Tercero
+              </label>
+              <div class="relative">
+                <input
+                  v-model="thirdpartySearch"
+                  @focus="showThirdpartyDropdown = true"
+                  @blur="setTimeout(() => showThirdpartyDropdown = false, 200)"
+                  type="text"
+                  placeholder="Buscar tercero..."
+                  class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                />
+                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                
+                <!-- Dropdown -->
+                <div v-if="showThirdpartyDropdown" class="absolute z-10 w-full mt-1 rounded-lg shadow-lg border max-h-60 overflow-y-auto" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'">
+                  <div v-if="filteredTerceros.length === 0 && thirdpartySearch.length > 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    No se encontraron terceros
+                  </div>
+                  <div v-if="filteredTerceros.length === 0 && thirdpartySearch.length === 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    Escribe para buscar terceros...
+                  </div>
+                  <div 
+                    v-for="tercero in filteredTerceros" 
+                    :key="tercero.id"
+                    @click="selectThirdparty(tercero)"
+                    class="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                  >
+                    <div class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ tercero.name }}</div>
+                    <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                      {{ tercero.email || 'Sin email' }}
+                      <span v-if="tercero.phone" class="ml-2">• {{ tercero.phone }}</span>
+                    </div>
+                    <div v-if="tercero.town || tercero.country_code" class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+                      {{ tercero.town }}{{ tercero.town && tercero.country_code ? ', ' : '' }}{{ tercero.country_code }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contacto/Dirección -->
+            <div class="relative">
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Contacto/Dirección
+              </label>
+              <div class="relative">
+                <input
+                  v-model="contactSearch"
+                  @focus="showContactDropdown = true"
+                  @blur="setTimeout(() => showContactDropdown = false, 200)"
+                  type="text"
+                  placeholder="Buscar contacto..."
+                  class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                />
+                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                
+                <!-- Dropdown -->
+                <div v-if="showContactDropdown" class="absolute z-10 w-full mt-1 rounded-lg shadow-lg border max-h-60 overflow-y-auto" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'">
+                  <div 
+                    v-for="contact in filteredContacts" 
+                    :key="contact.id"
+                    @click="selectContact(contact)"
+                    class="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                  >
+                    <div class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ contact.firstname }} {{ contact.lastname }}</div>
+                    <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ contact.email }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notificar a los terceros -->
+          <div class="flex items-center justify-between p-4 rounded-lg border" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'">
+            <div>
+              <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Notificar a los terceros en la creación
+              </label>
+              <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                Enviar email de notificación al tercero y contactos seleccionados
+              </p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input 
+                v-model="newTicket.notifyThirdparty" 
+                type="checkbox" 
+                class="sr-only peer"
+              />
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <!-- Row 4: Asignada a, Proyecto, Contrato -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Asignada a -->
+            <div class="relative">
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Asignada a
+              </label>
+              <div class="relative">
+                <input
+                  v-model="userSearch"
+                  @focus="showUserDropdown = true"
+                  @blur="setTimeout(() => showUserDropdown = false, 200)"
+                  type="text"
+                  placeholder="Buscar usuario..."
+                  class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                />
+                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                
+                <!-- Dropdown -->
+                <div v-if="showUserDropdown" class="absolute z-10 w-full mt-1 rounded-lg shadow-lg border max-h-60 overflow-y-auto" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'">
+                  <div v-if="filteredUsers.length === 0 && userSearch.length > 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    No se encontraron usuarios
+                  </div>
+                  <div v-if="filteredUsers.length === 0 && userSearch.length === 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    Escribe para buscar usuarios...
+                  </div>
+                  <div 
+                    v-for="user in filteredUsers" 
+                    :key="user.id"
+                    @click="selectUser(user)"
+                    class="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                  >
+                    <div class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ user.firstname }} {{ user.lastname }}</div>
+                    <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                      {{ user.login }}
+                      <span v-if="user.email" class="ml-2">• {{ user.email }}</span>
+                    </div>
+                    <div v-if="user.job || user.office_phone" class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+                      <span v-if="user.job">{{ user.job }}</span>
+                      <span v-if="user.job && user.office_phone"> • </span>
+                      <span v-if="user.office_phone">{{ user.office_phone }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Proyecto -->
+            <div class="relative">
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Proyecto
+              </label>
+              <div class="relative">
+                <input
+                  v-model="projectSearch"
+                  @focus="showProjectDropdown = true"
+                  @blur="setTimeout(() => showProjectDropdown = false, 200)"
+                  type="text"
+                  placeholder="Buscar proyecto..."
+                  :disabled="!newTicket.thirdparty"
+                  class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                />
+                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                
+                <!-- Dropdown -->
+                <div v-if="showProjectDropdown && newTicket.thirdparty" class="absolute z-10 w-full mt-1 rounded-lg shadow-lg border max-h-60 overflow-y-auto" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'">
+                  <!-- Búsqueda sin resultados -->
+                  <div v-if="filteredProjects.length === 0 && projectSearch.length > 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    No se encontraron proyectos para "{{ projectSearch }}"
+                  </div>
+                  
+                  <!-- Tercero sin proyectos -->
+                  <div v-if="filteredProjects.length === 0 && projectSearch.length === 0 && availableProjectsForTicket.length === 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {{ newTicket.thirdparty.name }} no tiene proyectos
+                    </div>
+                  </div>
+                  
+                  <!-- Instrucción de búsqueda -->
+                  <div v-if="filteredProjects.length === 0 && projectSearch.length === 0 && availableProjectsForTicket.length > 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    Escribe para buscar entre {{ availableProjectsForTicket.length }} proyecto(s)...
+                  </div>
+                  
+                  <!-- Lista de proyectos -->
+                  <div 
+                    v-for="project in filteredProjects" 
+                    :key="project.id"
+                    @click="selectProject(project)"
+                    class="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-600 last:border-b-0"
+                  >
+                    <div class="font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ project.title || project.ref }}</div>
+                    <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                      Ref: {{ project.ref }}
+                      <span v-if="project.date_start" class="ml-2">• Inicio: {{ formatDate(project.date_start) }}</span>
+                    </div>
+                    <div v-if="project.description" class="text-xs mt-1 truncate" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+                      {{ project.description }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="!newTicket.thirdparty" class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+                Selecciona un tercero primero
+              </div>
+            </div>
+
+            <!-- Contrato -->
+            <div class="relative">
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Contrato
+              </label>
+              <div class="relative">
+                <input
+                  v-model="contractSearch"
+                  @focus="showContractDropdown = true"
+                  @blur="setTimeout(() => showContractDropdown = false, 200)"
+                  type="text"
+                  placeholder="Buscar contrato..."
+                  class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                />
+                <svg class="absolute right-3 top-2.5 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-end space-x-3 pt-6 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+            <button
+              type="button"
+              @click="closeCreateTicketModal"
+              class="px-6 py-2 text-sm font-medium border rounded-lg transition-colors"
+              :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700' : 'text-gray-700 border-gray-300 hover:bg-gray-50'"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              :disabled="!newTicket.subject || creatingTicket"
+              class="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <svg v-if="creatingTicket" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ creatingTicket ? 'Creando...' : 'Crear Ticket' }}</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -1650,6 +2208,7 @@ import { useAuthStore } from '../stores/auth'
 
 const { isDark } = useTheme()
 const authStore = useAuthStore()
+const { refreshCounter: updateTicketsCounter } = useTicketsCounter()
 
 // Debug: Check if useInterventions is working
 console.log('=== IMPORTING INTERVENTIONS ===')
@@ -1698,13 +2257,100 @@ const followersSearchTerm = ref('')
 // Reminders state
 const ticketReminders = ref([])
 const showReminderModal = ref(false)
+
+// Complete ticket state
+const showCompleteModal = ref(false)
+const completingTicket = ref(false)
+
+// Email state (no modal needed, shown inline)
+// emailRecipientsPreview computed property handles the display
+
+// Create ticket modal state
+const showCreateTicketModal = ref(false)
+const creatingTicket = ref(false)
+const newTicket = ref({
+  ref: '',
+  type: '',
+  group: '',
+  severity: 'NORMAL',
+  subject: '',
+  message: '',
+  thirdparty: null,
+  contact: null,
+  assignedTo: null,
+  project: null,
+  contract: null,
+  notifyThirdparty: false
+})
+
+// Options for selectors (valores reales de Dolibarr)
+const ticketTypes = ref([
+  { value: '', label: 'Seleccionar tipo...' },
+  { value: 'COM', label: 'Pregunta comercial' },
+  { value: 'HELP', label: 'Solicitud de ayuda funcional' },
+  { value: 'ISSUE', label: 'Problema o error' },
+  { value: 'REQUEST', label: 'Solicitud de cambio o mejora' },
+  { value: 'OTHER', label: 'Otro' }
+])
+
+const ticketGroups = ref([
+  { value: '', label: 'Seleccionar grupo...' },
+  { value: 'PLUGIN', label: 'Plugin' },
+  { value: 'HOSTING', label: 'Hosting' },
+  { value: 'MANTENIMIENTO', label: 'Mantenimiento' },
+  { value: 'PROGRAMACION', label: 'Programación' },
+  { value: 'KIT-DIGITAL', label: 'Kit Digital' },
+  { value: 'OTHER', label: 'Otro' }
+])
+
+const severityLevels = ref([
+  { value: '', label: 'Seleccionar gravedad...' },
+  { value: 'LOW', label: 'Bajo' },
+  { value: 'NORMAL', label: 'Normal' },
+  { value: 'HIGH', label: 'Alto' },
+  { value: 'BLOCKING', label: 'Crítico, Bloqueo' }
+])
+
+// Search states for selectors
+const thirdpartySearch = ref('')
+const contactSearch = ref('')
+const userSearch = ref('')
+const projectSearch = ref('')
+const contractSearch = ref('')
+
+// Dropdown states
+const showThirdpartyDropdown = ref(false)
+const showContactDropdown = ref(false)
+const showUserDropdown = ref(false)
+const showProjectDropdown = ref(false)
+const showContractDropdown = ref(false)
+
+// Data for selectors
+const availableProjectsForTicket = ref([])
+const availableUsersForTicket = ref([])
 const newReminder = ref({
   title: '',
   date: '',
   assignedTo: '',
   description: '',
-  sendEmail: false
+  sendEmail: false,
+  actionCode: 'AC_RDV' // Tipo de recordatorio por defecto
 })
+
+// Función para inicializar el formulario de recordatorio
+const initializeReminderForm = () => {
+  const currentUser = authStore.user
+  const defaultAssignedTo = currentUser ? `${currentUser.firstname || ''} ${currentUser.lastname || ''}`.trim() : ''
+  
+  newReminder.value = {
+    title: '',
+    date: '',
+    assignedTo: defaultAssignedTo, // Asignar al usuario actual por defecto
+    description: '',
+    sendEmail: false,
+    actionCode: 'AC_RDV'
+  }
+}
 
 // Timer methods
 const handleTimerClick = (ticket) => {
@@ -2245,6 +2891,11 @@ const toggleInterventions = () => {
 }
 
 // Reminders methods
+const openReminderModal = () => {
+  initializeReminderForm()
+  showReminderModal.value = true
+}
+
 const closeReminderModal = () => {
   showReminderModal.value = false
   newReminder.value = {
@@ -2252,57 +2903,95 @@ const closeReminderModal = () => {
     date: '',
     assignedTo: '',
     description: '',
-    sendEmail: false
+    sendEmail: false,
+    actionCode: 'AC_RDV' // Reset al valor por defecto
   }
 }
 
 const createReminder = async () => {
   try {
     const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
+    const ticketData = ticketDetails.value || selectedTicket.value
     
-    const reminderData = {
-      ticket_id: ticketId,
-      title: newReminder.value.description.substring(0, 50) + '...', // Título basado en descripción
-      date: newReminder.value.date,
-      assigned_to: newReminder.value.assignedTo,
-      description: newReminder.value.description,
-      send_email: newReminder.value.sendEmail
+    if (!ticketId || !ticketData) {
+      throw new Error('No se encontró información del ticket')
     }
     
-    console.log('📝 Creando recordatorio:', reminderData)
+    console.log('📝 Creando recordatorio para ticket:', ticketId)
+    console.log('📋 Datos del ticket:', {
+      id: ticketId,
+      fk_soc: ticketData.fk_soc,
+      fk_project: ticketData.fk_project
+    })
     
-    // Aquí iría la llamada a la API para crear el recordatorio
-    // const response = await http.post('/api/doli/reminders', reminderData)
+    // Convertir fecha datetime-local a timestamp
+    const eventDate = new Date(newReminder.value.date)
+    const timestamp = Math.floor(eventDate.getTime() / 1000)
     
-    // Por ahora, agregamos el recordatorio localmente
+    // Crear evento en agenda con datos adicionales del ticket
+    const eventData = {
+      label: `Recordatorio: ${newReminder.value.description.substring(0, 50)}${newReminder.value.description.length > 50 ? '...' : ''}`,
+      datep: timestamp,
+      datef: timestamp + 3600, // 1 hora después por defecto
+      type_id: 1, // Tipo de evento estándar
+      type_code: newReminder.value.actionCode, // Código de tipo de acción seleccionado
+      userownerid: authStore.user?.id?.toString() || "1", // Usuario propietario del evento
+      track_id: ticketId.toString(), // ID de seguimiento requerido
+      note_private: newReminder.value.description,
+      // Datos adicionales del ticket
+      socid: ticketData.fk_soc?.toString() || "",
+      fk_project: ticketData.fk_project?.toString() || "",
+      fk_task: parseInt(ticketId), // Enviar como número, no string
+      elementid: ticketId.toString(),
+      elementtype: "ticket"
+    }
+    
+    console.log('📅 Creando evento en agenda:', eventData)
+    console.log('📋 Campos enviados:', Object.keys(eventData))
+    console.log('📋 track_id value:', eventData.track_id)
+    console.log('📋 fk_task value:', eventData.fk_task)
+    console.log('📋 fk_task type:', typeof eventData.fk_task)
+    console.log('📋 ticketId:', ticketId)
+    
+    const eventResponse = await http.post('/api/doli/agendaevents', eventData)
+    console.log('✅ Evento creado:', eventResponse.data)
+    
+    const eventId = eventResponse.data?.id || eventResponse.data
+    
+    if (!eventId) {
+      throw new Error('No se pudo obtener el ID del evento creado')
+    }
+    
+    // Agregar recordatorio a la lista local
     const newReminderItem = {
-      id: Date.now(), // ID temporal
-      title: reminderData.description.substring(0, 50) + (reminderData.description.length > 50 ? '...' : ''),
-      date: reminderData.date,
-      assignedTo: reminderData.assigned_to,
-      description: reminderData.description,
+      id: eventId,
+      title: eventData.label,
+      date: newReminder.value.date,
+      assignedTo: newReminder.value.assignedTo,
+      description: newReminder.value.description,
       status: 'active'
     }
     
     ticketReminders.value.push(newReminderItem)
     
-    console.log('✅ Recordatorio creado exitosamente')
+    console.log('✅ Recordatorio creado exitosamente con ID:', eventId)
     closeReminderModal()
     
   } catch (error) {
     console.error('❌ Error creando recordatorio:', error)
+    console.error('❌ Error details:', error.response?.data)
     alert('Error al crear recordatorio: ' + (error.response?.data?.message || error.message))
   }
 }
 
 const deleteReminder = async (reminderId) => {
   try {
-    console.log('🗑️ Eliminando recordatorio:', reminderId)
+    console.log('🗑️ Eliminando recordatorio (evento):', reminderId)
     
-    // Aquí iría la llamada a la API para eliminar el recordatorio
-    // await http.delete(`/api/doli/reminders/${reminderId}`)
+    // Eliminar evento de la agenda
+    await http.delete(`/api/doli/agendaevents/${reminderId}`)
     
-    // Por ahora, eliminamos localmente
+    // Eliminar de la lista local
     ticketReminders.value = ticketReminders.value.filter(reminder => reminder.id !== reminderId)
     
     console.log('✅ Recordatorio eliminado exitosamente')
@@ -2310,6 +2999,308 @@ const deleteReminder = async (reminderId) => {
   } catch (error) {
     console.error('❌ Error eliminando recordatorio:', error)
     alert('Error al eliminar recordatorio: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+// Email recipients are now handled by the computed property emailRecipientsPreview
+// No separate functions needed since we show them inline
+
+// Create ticket functions
+const openCreateTicketModal = async () => {
+  console.log('🎫 Abriendo modal de crear ticket...')
+  
+  // Cargar terceros si no están cargados
+  if (terceros.value.length === 0) {
+    console.log('📋 Cargando terceros...')
+    await fetchTerceros()
+  }
+  
+  // Cargar usuarios para el ticket
+  if (availableUsersForTicket.value.length === 0) {
+    console.log('👥 Cargando usuarios para ticket...')
+    await fetchUsersForTicket()
+  }
+  
+  showCreateTicketModal.value = true
+}
+
+// Función para cargar proyectos del tercero
+const fetchProjectsForThirdparty = async (thirdpartyId) => {
+  try {
+    console.log('📋 Cargando proyectos para tercero ID:', thirdpartyId)
+    
+    // Usar sqlfilters para filtrar por tercero específico
+    const response = await http.get(`/api/doli/projects?limit=1000&sqlfilters=(t.fk_soc:=:${thirdpartyId})`)
+    
+    availableProjectsForTicket.value = response.data || []
+    console.log('✅ Proyectos cargados para tercero:', availableProjectsForTicket.value.length)
+    console.log('📋 Proyectos:', availableProjectsForTicket.value.map(p => ({ id: p.id, title: p.title, ref: p.ref })))
+  } catch (error) {
+    console.error('❌ Error cargando proyectos:', error)
+    console.error('❌ Error details:', error.response?.data)
+    availableProjectsForTicket.value = []
+  }
+}
+
+// Función para cargar todos los usuarios activos
+const fetchUsersForTicket = async () => {
+  try {
+    console.log('👥 Cargando usuarios para ticket...')
+    const response = await http.get('/api/doli/users?limit=1000&status=1')
+    availableUsersForTicket.value = response.data || []
+    console.log('✅ Usuarios cargados:', availableUsersForTicket.value.length)
+  } catch (error) {
+    console.error('❌ Error cargando usuarios:', error)
+    availableUsersForTicket.value = []
+  }
+}
+
+const closeCreateTicketModal = () => {
+  showCreateTicketModal.value = false
+  // Reset form
+  newTicket.value = {
+    ref: '',
+    type: '',
+    group: '',
+    severity: 'NORMAL',
+    subject: '',
+    message: '',
+    thirdparty: null,
+    contact: null,
+    assignedTo: null,
+    project: null,
+    contract: null,
+    notifyThirdparty: false
+  }
+  // Reset search states
+  thirdpartySearch.value = ''
+  contactSearch.value = ''
+  userSearch.value = ''
+  projectSearch.value = ''
+  contractSearch.value = ''
+  // Reset dropdown states
+  showThirdpartyDropdown.value = false
+  showContactDropdown.value = false
+  showUserDropdown.value = false
+  showProjectDropdown.value = false
+  showContractDropdown.value = false
+  // Reset data
+  availableProjectsForTicket.value = []
+}
+
+const createTicket = async () => {
+  if (!newTicket.value.subject.trim()) {
+    return
+  }
+
+  creatingTicket.value = true
+
+  try {
+    console.log('🎫 Creando nuevo ticket:', newTicket.value)
+
+    // Preparar datos para el API de Dolibarr
+    const ticketData = {
+      subject: newTicket.value.subject.trim(),
+      message: newTicket.value.message.trim(),
+      fk_soc: newTicket.value.thirdparty?.id || null,
+      fk_user_assign: newTicket.value.assignedTo?.id || null,
+      fk_project: newTicket.value.project?.id || null,
+      type_code: newTicket.value.type || null,
+      category_code: newTicket.value.group || null,
+      severity_code: newTicket.value.severity || 'Normal',
+      notify_tiers_at_create: newTicket.value.notifyThirdparty ? 1 : 0
+    }
+
+    // Si se especificó una referencia, agregarla
+    if (newTicket.value.ref.trim()) {
+      ticketData.ref = newTicket.value.ref.trim()
+    }
+
+    console.log('📤 Datos del ticket para API:', ticketData)
+
+    const response = await http.post('/api/doli/tickets', ticketData)
+    console.log('✅ Ticket creado exitosamente:', response.data)
+
+    // Cerrar modal
+    closeCreateTicketModal()
+
+    // Mostrar mensaje de éxito
+    console.log('🎉 Ticket creado con ID:', response.data.id || response.data)
+
+    // Recargar lista de tickets
+    await fetchTickets()
+
+    // Actualizar contador
+    await updateTicketsCounter()
+
+  } catch (error) {
+    console.error('❌ Error creando ticket:', error)
+    console.error('❌ Error response:', error.response?.data)
+    
+    let errorMessage = 'Error al crear el ticket'
+    if (error.response?.data?.message) {
+      errorMessage += ': ' + error.response.data.message
+    } else if (error.message) {
+      errorMessage += ': ' + error.message
+    }
+    
+    alert(errorMessage)
+  } finally {
+    creatingTicket.value = false
+  }
+}
+
+// Selector functions
+const selectThirdparty = (tercero) => {
+  newTicket.value.thirdparty = tercero
+  thirdpartySearch.value = tercero.name
+  showThirdpartyDropdown.value = false
+  
+  // Limpiar proyecto seleccionado ya que cambió el tercero
+  newTicket.value.project = null
+  projectSearch.value = ''
+  
+  // Limpiar lista de proyectos anterior
+  availableProjectsForTicket.value = []
+  
+  // Cargar contactos del tercero seleccionado
+  if (tercero.id) {
+    fetchAvailableContacts(tercero.id)
+    // Cargar proyectos del tercero seleccionado
+    fetchProjectsForThirdparty(tercero.id)
+  }
+  
+  console.log('🏢 Tercero seleccionado:', tercero)
+  console.log('📋 Proyectos disponibles limpiados, cargando nuevos...')
+}
+
+const selectContact = (contact) => {
+  newTicket.value.contact = contact
+  contactSearch.value = `${contact.firstname} ${contact.lastname}`
+  showContactDropdown.value = false
+  console.log('👤 Contacto seleccionado:', contact)
+}
+
+const selectUser = (user) => {
+  newTicket.value.assignedTo = user
+  userSearch.value = `${user.firstname} ${user.lastname}`
+  showUserDropdown.value = false
+  console.log('👨‍💼 Usuario asignado:', user)
+}
+
+const selectProject = (project) => {
+  newTicket.value.project = project
+  projectSearch.value = project.title || project.ref
+  showProjectDropdown.value = false
+  console.log('📋 Proyecto seleccionado:', project)
+}
+
+// Computed properties for filtered options
+const filteredTerceros = computed(() => {
+  // Si no hay búsqueda, mostrar los primeros 10 terceros
+  if (!thirdpartySearch.value) return terceros.value.slice(0, 10)
+  
+  // Filtrar terceros por nombre o email
+  return terceros.value.filter(tercero => 
+    tercero.name.toLowerCase().includes(thirdpartySearch.value.toLowerCase()) ||
+    (tercero.email && tercero.email.toLowerCase().includes(thirdpartySearch.value.toLowerCase()))
+  ).slice(0, 20) // Mostrar hasta 20 resultados
+})
+
+const filteredContacts = computed(() => {
+  if (!contactSearch.value) return availableContacts.value.slice(0, 10)
+  return availableContacts.value.filter(contact => 
+    `${contact.firstname} ${contact.lastname}`.toLowerCase().includes(contactSearch.value.toLowerCase()) ||
+    (contact.email && contact.email.toLowerCase().includes(contactSearch.value.toLowerCase()))
+  ).slice(0, 10)
+})
+
+const filteredUsers = computed(() => {
+  if (!userSearch.value) return availableUsersForTicket.value.slice(0, 10)
+  return availableUsersForTicket.value.filter(user => 
+    `${user.firstname} ${user.lastname}`.toLowerCase().includes(userSearch.value.toLowerCase()) ||
+    user.login.toLowerCase().includes(userSearch.value.toLowerCase())
+  ).slice(0, 20)
+})
+
+const filteredProjects = computed(() => {
+  // Solo mostrar proyectos si hay un tercero seleccionado
+  if (!newTicket.value.thirdparty) return []
+  
+  // Si no hay búsqueda, mostrar todos los proyectos del tercero (máximo 10)
+  if (!projectSearch.value) return availableProjectsForTicket.value.slice(0, 10)
+  
+  // Filtrar proyectos por título o referencia
+  return availableProjectsForTicket.value.filter(project => 
+    (project.title && project.title.toLowerCase().includes(projectSearch.value.toLowerCase())) ||
+    (project.ref && project.ref.toLowerCase().includes(projectSearch.value.toLowerCase()))
+  ).slice(0, 20)
+})
+
+// Complete ticket function
+const completeTicket = async () => {
+  try {
+    completingTicket.value = true
+    const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
+    
+    if (!ticketId) {
+      throw new Error('No se encontró el ID del ticket')
+    }
+    
+    console.log('🎯 Cerrando ticket:', ticketId)
+    
+    // Datos para cerrar el ticket
+    const updateData = {
+      fk_statut: 8, // Estado cerrado
+      status: 8     // Status cerrado
+    }
+    
+    console.log('📝 Datos de actualización:', updateData)
+    
+    // Enviar PUT request para actualizar el ticket
+    const response = await http.put(`/api/doli/tickets/${ticketId}`, updateData)
+    console.log('✅ Ticket cerrado exitosamente:', response.data)
+    
+    // Actualizar el estado local del ticket
+    if (ticketDetails.value) {
+      ticketDetails.value.fk_statut = 8
+      ticketDetails.value.status = 8
+    }
+    
+    if (selectedTicket.value) {
+      selectedTicket.value.fk_statut = 8
+      selectedTicket.value.status = 8
+    }
+    
+    // Actualizar el ticket en la lista principal
+    const ticketIndex = tickets.value.findIndex(t => t.id === ticketId)
+    if (ticketIndex !== -1) {
+      tickets.value[ticketIndex].fk_statut = 8
+      tickets.value[ticketIndex].status = 8
+    }
+    
+    // Cerrar modal de confirmación
+    showCompleteModal.value = false
+    
+    // Cerrar modal del ticket
+    closeModal()
+    
+    // Mostrar mensaje de éxito
+    console.log('✅ Ticket marcado como completado exitosamente')
+    // TODO: Implementar notificación toast más elegante en el futuro
+    
+    // Recalcular métricas
+    calculateTicketMetrics()
+    
+    // Actualizar contador del menú lateral
+    await updateTicketsCounter()
+    
+  } catch (error) {
+    console.error('❌ Error cerrando ticket:', error)
+    console.error('❌ Error details:', error.response?.data)
+    alert('Error al cerrar ticket: ' + (error.response?.data?.message || error.message))
+  } finally {
+    completingTicket.value = false
   }
 }
 
@@ -2398,6 +3389,56 @@ const fetchTicketFollowers = async (ticketId) => {
     ticketFollowers.value = []
     internalFollowers.value = []
     externalFollowers.value = []
+  }
+}
+
+// Function to fetch ticket reminders (events linked to ticket)
+const fetchTicketReminders = async (ticketId) => {
+  try {
+    console.log('📅 Obteniendo recordatorios del ticket:', ticketId)
+    
+    // Buscar eventos de agenda vinculados al ticket
+    const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=ASC&limit=100&sqlfilters=(t.fk_task:=:${ticketId})`)
+    
+    const events = response.data || []
+    console.log('📅 Eventos encontrados:', events.length)
+    
+    // Convertir eventos a formato de recordatorios
+    ticketReminders.value = events.map(event => {
+      let formattedDate = ''
+      if (event.datep) {
+        try {
+          // Convertir timestamp a fecha legible
+          const eventDate = new Date(event.datep * 1000)
+          formattedDate = eventDate.toLocaleString('es-ES', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        } catch (error) {
+          console.warn('Error convirtiendo fecha:', event.datep, error)
+          formattedDate = 'Fecha inválida'
+        }
+      }
+      
+      return {
+        id: event.id,
+        title: event.label || 'Recordatorio',
+        date: formattedDate,
+        assignedTo: event.userownerid ? `Usuario ${event.userownerid}` : 'Sin asignar',
+        description: event.note_private || event.note || 'Sin descripción',
+        status: 'active'
+      }
+    })
+    
+    console.log('✅ Recordatorios cargados:', ticketReminders.value.length)
+    
+  } catch (error) {
+    console.warn('⚠️ Error obteniendo recordatorios:', error)
+    console.warn('⚠️ Error details:', error.response?.data)
+    ticketReminders.value = []
   }
 }
 
@@ -2535,10 +3576,22 @@ const sendComment = async () => {
       track_id: trackId
     })
 
+    // Si es email, agregar información de destinatarios al mensaje
+    let finalMessage = newComment.value.trim()
+    if (commentType.value === 'email' && emailRecipientsPreview.value.length > 0) {
+      const recipientsList = emailRecipientsPreview.value
+        .map(r => `${r.name} (${r.email}) [${r.type === 'internal' ? 'INT' : 'EXT'}]`)
+        .join(', ')
+      
+      finalMessage += `\n\n--- Destinatarios del email ---\n${recipientsList}`
+      
+      console.log('📧 Destinatarios agregados al mensaje:', recipientsList)
+    }
+
     // Preparar datos según el endpoint de Dolibarr
     const commentData = {
       track_id: trackId,
-      message: newComment.value.trim(),
+      message: finalMessage,
       private: commentType.value === 'email' ? 0 : 1  // 0 = email, 1 = mensaje interno
     }
 
@@ -2555,73 +3608,84 @@ const sendComment = async () => {
     try {
       const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
       if (ticketId) {
-        console.log('🔄 Refrescando detalles del ticket...')
-        const response = await http.get(`/api/doli/tickets/${ticketId}`)
-        ticketDetails.value = response.data
+        console.log('🔄 Refrescando detalles del ticket...', {
+          ticketId,
+          commentType: commentType.value,
+          messagesKeyBefore: messagesKey.value
+        })
         
-        // Intentar obtener mensajes actualizados
-        console.log('🔄 Refrescando mensajes del ticket...')
-        console.log('📋 Estructura del ticket response:', Object.keys(response.data))
-        console.log('📋 Mensajes en response.data.messages:', response.data.messages)
+        // Log mensajes antes de recargar
+        console.log('📋 Mensajes antes de recargar:', ticketDetails.value?.messages?.length || 0)
         
-        let messages = []
+        // Pequeño delay para que el servidor procese el mensaje
+        await new Promise(resolve => setTimeout(resolve, 500))
         
-        // Method 1: Check if messages are in the ticket response
-        if (response.data.messages && Array.isArray(response.data.messages)) {
-          messages = response.data.messages
-          console.log('✅ Mensajes obtenidos del ticket response:', messages.length)
-          console.log('📋 Primer mensaje:', messages[0])
-        } else {
-          console.log('⚠️ No hay mensajes en response.data.messages')
-        }
+        // Recargar detalles completos del ticket SIN CACHÉ
+        const currentTicket = selectedTicket.value || { id: ticketId }
+        const timestamp = Date.now()
+        console.log('🔄 Recargando ticket sin caché con timestamp:', timestamp)
         
-        // Method 2: Los mensajes ya están en el ticket response, no hay endpoint GET separado
-        console.log('ℹ️ Usando solo mensajes del ticket response (no hay endpoint GET para mensajes)')
-        
-        // Method 3: Force refresh - try agendaevents
-        try {
-          console.log('🔄 Intentando endpoint agendaevents...')
-          const agendaResponse = await http.get(`/api/doli/agendaevents?elementtype=ticket&elementid=${ticketId}`)
-          console.log('📋 Agenda events response:', agendaResponse.data)
-          
-          if (agendaResponse.data && Array.isArray(agendaResponse.data) && agendaResponse.data.length > 0) {
-            console.log('📋 Eventos de agenda encontrados:', agendaResponse.data.length)
-            // If we have agenda events, they might be the messages
-            if (messages.length === 0) {
-              messages = agendaResponse.data
-              console.log('✅ Usando eventos de agenda como mensajes')
-            }
+        const response = await http.get(`/api/doli/tickets/${ticketId}?_t=${timestamp}`, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           }
-        } catch (agendaErr) {
-          console.warn('⚠️ Agenda events endpoint failed:', agendaErr)
-        }
+        })
         
-        // Update messages in ticketDetails
-        console.log('🔄 Actualizando ticketDetails.messages...')
-        console.log('📋 Mensajes antes:', ticketDetails.value?.messages?.length || 0)
+        console.log('📋 Response completa del servidor:', response.data)
+        console.log('📋 Mensajes en response:', response.data.messages?.length || 0)
         
-        if (ticketDetails.value) {
-          // Simple update - just update messages and force re-render of comments section
-          console.log('🔄 Actualizando solo la sección de comentarios...')
-          
-          // Update messages directly
-          ticketDetails.value.messages = [...messages]
-          
-          console.log('📋 Mensajes después:', ticketDetails.value.messages?.length || 0)
-          
-          // Log the last few messages to verify they're there
-          const lastMessages = ticketDetails.value.messages.slice(-3)
-          console.log('📋 Últimos 3 mensajes:', lastMessages.map(m => ({ id: m.id, message: m.message })))
-          
-          // Force re-render ONLY of the comments section by updating key
-          messagesKey.value++
-          console.log('🔄 Actualizando messagesKey a:', messagesKey.value, '(solo sección comentarios)')
-          
+        // Forzar reactividad creando un nuevo objeto completamente
+        const newTicketDetails = JSON.parse(JSON.stringify(response.data))
+        ticketDetails.value = newTicketDetails
+        
+        // Recargar también los datos relacionados
+        await Promise.all([
+          fetchTicketFollowers(ticketId),
+          fetchTicketReminders(ticketId),
+          fetchCompanyInfo(response.data.fk_soc)
+        ])
+        
+        // Log mensajes después de recargar
+        console.log('📋 Mensajes después de recargar:', ticketDetails.value?.messages?.length || 0)
+        
+        // Forzar actualización de mensajes con múltiples técnicas
+        console.log('🔄 Forzando re-render de sección de comentarios...')
+        
+        // Técnica 1: Incrementar key
+        const oldKey = messagesKey.value
+        messagesKey.value = Date.now() // Usar timestamp para key única
+        console.log('📋 MessagesKey cambiado de', oldKey, 'a', messagesKey.value)
+        
+        // Técnica 2: Forzar actualización con nextTick
+        await nextTick()
+        
+        // Técnica 3: Trigger reactivity en el array de mensajes
+        if (ticketDetails.value?.messages) {
+          const messages = ticketDetails.value.messages
+          ticketDetails.value.messages = []
           await nextTick()
-          console.log('✅ Sección de comentarios actualizada')
+          ticketDetails.value.messages = messages
+          console.log('📋 Array de mensajes re-asignado para forzar reactividad')
         }
         
-        console.log('✅ Detalles del ticket refrescados con', messages.length, 'mensajes')
+        console.log('✅ Detalles del ticket y mensajes actualizados', {
+          messagesKeyAfter: messagesKey.value,
+          totalMessages: ticketDetails.value?.messages?.length || 0,
+          lastMessage: ticketDetails.value?.messages?.[ticketDetails.value.messages.length - 1]?.message?.substring(0, 50) + '...'
+        })
+        
+        // Log para verificar que el template debería actualizarse
+        console.log('🔍 Verificando estado para template:', {
+          hasTicketDetails: !!ticketDetails.value,
+          hasMessages: !!(ticketDetails.value?.messages),
+          messagesLength: ticketDetails.value?.messages?.length || 0,
+          messagesKeyValue: messagesKey.value
+        })
+        
+        // Verificación final
+        console.log('✅ Proceso de actualización completado')
       }
     } catch (refreshError) {
       console.warn('⚠️ Error al refrescar detalles del ticket:', refreshError)
@@ -2688,13 +3752,13 @@ const priorityFilter = ref('')
 const terceros = ref([])
 const users = ref([])
 const terceroSearch = ref('')
-const userSearch = ref('')
+// userSearch is already declared above for create ticket form
 const selectedTercero = ref(null)
 const selectedUser = ref(null)
 const showTerceroDropdown = ref(false)
-const showUserDropdown = ref(false)
-const filteredTerceros = ref([])
-const filteredUsers = ref([])
+// showUserDropdown is already declared above for create ticket form
+const filteredTercerosForFilters = ref([])
+const filteredUsersForFilters = ref([])
 
 // Project management
 const editingProject = ref(false)
@@ -2916,12 +3980,12 @@ const fetchUsers = async () => {
 
 const searchTerceros = () => {
   if (terceroSearch.value.length < 2) {
-    filteredTerceros.value = []
+    filteredTercerosForFilters.value = []
     return
   }
   
   const query = terceroSearch.value.toLowerCase()
-  filteredTerceros.value = terceros.value.filter(tercero => 
+  filteredTercerosForFilters.value = terceros.value.filter(tercero => 
     tercero.name?.toLowerCase().includes(query) ||
     tercero.email?.toLowerCase().includes(query)
   ).slice(0, 10)
@@ -2929,12 +3993,12 @@ const searchTerceros = () => {
 
 const searchUsers = () => {
   if (userSearch.value.length < 2) {
-    filteredUsers.value = []
+    filteredUsersForFilters.value = []
     return
   }
   
   const query = userSearch.value.toLowerCase()
-  filteredUsers.value = users.value.filter(user => 
+  filteredUsersForFilters.value = users.value.filter(user => 
     user.firstname?.toLowerCase().includes(query) ||
     user.lastname?.toLowerCase().includes(query) ||
     user.login?.toLowerCase().includes(query) ||
@@ -2949,7 +4013,7 @@ const selectTercero = (tercero) => {
   applyFilters()
 }
 
-const selectUser = (user) => {
+const selectUserFilter = (user) => {
   selectedUser.value = user
   userSearch.value = `${user.firstname} ${user.lastname}`
   showUserDropdown.value = false
@@ -2966,8 +4030,8 @@ const clearFilters = () => {
   selectedUser.value = null
   showTerceroDropdown.value = false
   showUserDropdown.value = false
-  filteredTerceros.value = []
-  filteredUsers.value = []
+  filteredTercerosForFilters.value = []
+  filteredUsersForFilters.value = []
   // Keep showOnlyMyTickets as true by default
   showOnlyMyTickets.value = true
   applyFilters()
@@ -3077,6 +4141,60 @@ const visiblePages = computed(() => {
   return pages
 })
 
+// Email recipients computed
+const emailRecipientsPreview = computed(() => {
+  const recipients = []
+  
+  // 1. Email del cliente (tercero)
+  if (currentCompany.value?.email) {
+    recipients.push({
+      email: currentCompany.value.email,
+      name: currentCompany.value.name || 'Cliente',
+      type: 'external'
+    })
+  }
+  
+  // 2. Email del usuario asignado (si existe)
+  if (ticketDetails.value?.fk_user_assign && authStore.user?.email) {
+    recipients.push({
+      email: authStore.user.email,
+      name: `${authStore.user.firstname || ''} ${authStore.user.lastname || ''}`.trim() || 'Usuario Asignado',
+      type: 'internal'
+    })
+  }
+  
+  // 3. Emails de seguidores (si existen)
+  if (externalFollowers.value && externalFollowers.value.length > 0) {
+    externalFollowers.value.forEach(follower => {
+      if (follower.email) {
+        recipients.push({
+          email: follower.email,
+          name: follower.name || follower.email,
+          type: 'external'
+        })
+      }
+    })
+  }
+  
+  // Si no hay destinatarios reales, mostrar ejemplos
+  if (recipients.length === 0) {
+    recipients.push(
+      {
+        email: 'cliente@ejemplo.com',
+        name: 'Cliente Ejemplo',
+        type: 'external'
+      },
+      {
+        email: 'usuario@empresa.com',
+        name: 'Usuario Interno',
+        type: 'internal'
+      }
+    )
+  }
+  
+  return recipients
+})
+
 // Computed property for total registered time
 const totalRegisteredTime = computed(() => {
   if (!ticketInterventions.value || ticketInterventions.value.length === 0) {
@@ -3170,9 +4288,10 @@ const viewTicketDetails = async (ticket) => {
     console.log('✅ Ticket details response:', response)
     ticketDetails.value = response.data
     
-    // Load followers, users/contacts, and company info
+    // Load followers, users/contacts, reminders, and company info
     await Promise.all([
       fetchTicketFollowers(ticket.id),
+      fetchTicketReminders(ticket.id),
       fetchAvailableUsers(),
       fetchAvailableContacts(response.data.fk_soc),
       fetchCompanyInfo(response.data.fk_soc)
@@ -3996,6 +5115,7 @@ watch(ticketDetails, async (newDetails) => {
     ticketFollowers.value = []
     internalFollowers.value = []
     externalFollowers.value = []
+    ticketReminders.value = []
     return
   }
   
