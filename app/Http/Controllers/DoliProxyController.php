@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Services\CacheService;
+use App\Http\Clients\PleskHttpClient;
 
 class DoliProxyController extends Controller
 {
@@ -61,10 +62,7 @@ class DoliProxyController extends Controller
             return response()->json($cachedData)->header('X-Cache', 'HIT');
         }
 
-        $client = Http::withHeaders([
-            'DOLAPIKEY' => $token,
-            'Accept' => 'application/json',
-        ])->timeout(60)->retry(3, 1000);
+        $client = PleskHttpClient::withDolibarrToken($token);
 
         // Construir URL completa con parámetros por defecto para tickets
         $queryParams = [];

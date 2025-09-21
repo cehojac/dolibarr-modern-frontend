@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use App\Http\Clients\PleskHttpClient;
 
 class AuthController extends Controller
 {
@@ -21,7 +22,7 @@ class AuthController extends Controller
 
         // Autenticar con Dolibarr API usando GET con query parameters
         try {
-            $response = Http::timeout(60)->retry(3, 1000)->get(config('services.dolibarr.base_url') . '/login', [
+            $response = PleskHttpClient::get(config('services.dolibarr.base_url') . '/login', [
                 'login' => $login,
                 'password' => $password
             ]);
@@ -48,10 +49,7 @@ class AuthController extends Controller
                     
                     $userInfo = [];
                     foreach ($endpoints as $endpoint) {
-                        $userInfoResponse = Http::withHeaders([
-                            'DOLAPIKEY' => $token,
-                            'Accept' => 'application/json',
-                        ])->timeout(30)->get(config('services.dolibarr.base_url') . $endpoint);
+                        $userInfoResponse = PleskHttpClient::withDolibarrToken($token)->get(config('services.dolibarr.base_url') . $endpoint);
                         
                         if ($userInfoResponse->successful()) {
                             $userInfo = $userInfoResponse->json();
@@ -72,10 +70,7 @@ class AuthController extends Controller
                         ]);
                         
                         // Enfoque 2: Intentar con /users (lista completa) si tiene permisos
-                        $usersResponse = Http::withHeaders([
-                            'DOLAPIKEY' => $token,
-                            'Accept' => 'application/json',
-                        ])->timeout(30)->get(config('services.dolibarr.base_url') . '/users');
+                        $usersResponse = PleskHttpClient::withDolibarrToken($token)->get(config('services.dolibarr.base_url') . '/users');
                         
                         if ($usersResponse->successful()) {
                             $users = $usersResponse->json();
