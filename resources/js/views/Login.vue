@@ -98,9 +98,9 @@
       </div>
       
       <!-- Overlay for better contrast -->
-      <div class="absolute inset-0 transition-colors duration-200"
+    <!-- <div class="absolute inset-0 transition-colors duration-200"
            :class="isDark ? 'bg-black bg-opacity-40' : 'bg-blue-900 bg-opacity-30'">
-      </div>
+      </div> -->
       
       <!-- Subtle gradient overlay -->
       <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black opacity-20"></div>
