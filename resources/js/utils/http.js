@@ -7,11 +7,18 @@ import router from '../router'
 const http = axios.create({
   baseURL: '/',
   timeout: 30000,
+  withCredentials: true, // Importante para cookies de sesión
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }
 })
+
+// Configurar token CSRF automáticamente
+const token = document.head.querySelector('meta[name="csrf-token"]')
+if (token) {
+  http.defaults.headers.common['X-CSRF-TOKEN'] = token.content
+}
 
 // Request interceptor
 http.interceptors.request.use(
@@ -45,6 +52,14 @@ http.interceptors.response.use(
           
         case 403:
           notificationStore.error('No tienes permisos para realizar esta acción.')
+          break
+          
+        case 419:
+          notificationStore.error('Sesión expirada. Recargando página...')
+          // Recargar la página para obtener un nuevo token CSRF
+          setTimeout(() => {
+            window.location.reload()
+          }, 1500)
           break
           
         case 404:
