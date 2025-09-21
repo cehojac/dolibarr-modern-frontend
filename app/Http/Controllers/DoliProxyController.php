@@ -64,7 +64,7 @@ class DoliProxyController extends Controller
         $client = Http::withHeaders([
             'DOLAPIKEY' => $token,
             'Accept' => 'application/json',
-        ])->timeout(30);
+        ])->timeout(60)->retry(3, 1000);
 
         // Construir URL completa con parámetros por defecto para tickets
         $queryParams = [];
