@@ -377,11 +377,11 @@ const visiblePages = computed(() => {
 const loadPartners = async () => {
   loading.value = true
   try {
-    console.log('🔄 Cargando socios...')
+     console.log('🔄 Cargando socios...')
     // Filtrar terceros que son tanto cliente como proveedor (socios)
     const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.client:=:1)AND(t.fournisseur:=:1)AND(t.status:=:1)')
     partners.value = response.data || []
-    console.log('✅ Socios cargados:', partners.value.length)
+     console.log('✅ Socios cargados:', partners.value.length)
   } catch (error) {
     console.error('❌ Error loading partners:', error)
     partners.value = []
@@ -447,15 +447,15 @@ const handleSearch = () => {
 }
 
 const viewPartner = (partner) => {
-  console.log('View partner:', partner)
+   console.log('View partner:', partner)
 }
 
 const editPartner = (partner) => {
-  console.log('Edit partner:', partner)
+   console.log('Edit partner:', partner)
 }
 
 const manageAgreement = (partner) => {
-  console.log('Manage agreement for partner:', partner)
+   console.log('Manage agreement for partner:', partner)
 }
 
 // Pagination methods

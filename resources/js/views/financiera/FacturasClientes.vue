@@ -335,10 +335,10 @@ const visiblePages = computed(() => {
 const loadInvoices = async () => {
   loading.value = true
   try {
-    console.log('🔄 Cargando facturas...')
+     console.log('🔄 Cargando facturas...')
     const response = await http.get('/api/doli/invoices?limit=1000&sortfield=date&sortorder=DESC')
     invoices.value = response.data || []
-    console.log('✅ Facturas cargadas:', invoices.value.length)
+     console.log('✅ Facturas cargadas:', invoices.value.length)
   } catch (error) {
     console.error('❌ Error loading invoices:', error)
     invoices.value = []
@@ -400,15 +400,15 @@ const handleSearch = () => {
 }
 
 const viewInvoice = (invoice) => {
-  console.log('View invoice:', invoice)
+   console.log('View invoice:', invoice)
 }
 
 const downloadPDF = (invoice) => {
-  console.log('Download PDF for invoice:', invoice)
+   console.log('Download PDF for invoice:', invoice)
 }
 
 const sendReminder = (invoice) => {
-  console.log('Send reminder for invoice:', invoice)
+   console.log('Send reminder for invoice:', invoice)
 }
 
 // Pagination methods

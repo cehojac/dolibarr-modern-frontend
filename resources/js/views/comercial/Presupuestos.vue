@@ -343,10 +343,10 @@ const visiblePages = computed(() => {
 const loadProposals = async () => {
   loading.value = true
   try {
-    console.log('🔄 Cargando presupuestos...')
+     console.log('🔄 Cargando presupuestos...')
     const response = await http.get('/api/doli/proposals?limit=1000')
     proposals.value = response.data || []
-    console.log('✅ Presupuestos cargados:', proposals.value.length)
+     console.log('✅ Presupuestos cargados:', proposals.value.length)
   } catch (error) {
     console.error('❌ Error loading proposals:', error)
     proposals.value = []
@@ -410,15 +410,15 @@ const handleSearch = () => {
 }
 
 const viewProposalDetails = (proposal) => {
-  console.log('View proposal:', proposal)
+   console.log('View proposal:', proposal)
 }
 
 const editProposal = (proposal) => {
-  console.log('Edit proposal:', proposal)
+   console.log('Edit proposal:', proposal)
 }
 
 const downloadProposal = (proposal) => {
-  console.log('Download proposal:', proposal)
+   console.log('Download proposal:', proposal)
 }
 
 // Pagination methods

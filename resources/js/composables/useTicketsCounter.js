@@ -9,23 +9,22 @@ export function useTicketsCounter() {
   const authStore = useAuthStore()
 
   const fetchAssignedTicketsCount = async () => {
-    console.log('Auth store user:', authStore.user)
+    // console.log('Auth store user:', authStore.user)
     
     if (!authStore.user) {
-      console.log('No user found in auth store')
+      // console.log('No user found in auth store')
       return
     }
     
-    // Try different possible ID fields, fallback to login if no ID
     const userId = authStore.user.id || authStore.user.rowid || authStore.user.user_id
     const userLogin = authStore.user.login
     
     if (!userId && !userLogin) {
-      console.log('No user ID or login found:', Object.keys(authStore.user))
+      // console.log('No user ID or login found:', Object.keys(authStore.user))
       return
     }
     
-    console.log('Using user ID:', userId, 'or login:', userLogin)
+    // console.log('Using user ID:', userId, 'or login:', userLogin)
 
     loading.value = true
     try {
@@ -33,8 +32,8 @@ export function useTicketsCounter() {
       const response = await http.get('/api/doli/tickets')
       const tickets = response.data || []
       
-      console.log('Total tickets fetched:', tickets.length)
-      console.log('Current user ID:', userId)
+       // console.log('Total tickets fetched:', tickets.length)
+       // console.log('Current user ID:', userId)
       
       // Count tickets assigned to current user that are not closed
       const assignedTickets = tickets.filter(ticket => {
@@ -44,11 +43,11 @@ export function useTicketsCounter() {
         const isAssigned = isAssignedById || isAssignedByLogin
         const isNotClosed = ticket.fk_statut !== '8'
         
-        console.log(`Ticket ${ticket.id}: assigned to ${ticket.fk_user_assign} (login: ${ticket.fk_user_assign_login}), status: ${ticket.fk_statut}, matches user: ${isAssigned}, not closed: ${isNotClosed}`)
+         // console.log(`Ticket ${ticket.id}: assigned to ${ticket.fk_user_assign} (login: ${ticket.fk_user_assign_login}), status: ${ticket.fk_statut}, matches user: ${isAssigned}, not closed: ${isNotClosed}`)
         return isAssigned && isNotClosed
       })
       
-      console.log('Assigned active tickets:', assignedTickets.length)
+       // console.log('Assigned active tickets:', assignedTickets.length)
       assignedTicketsCount.value = assignedTickets.length
     } catch (error) {
       console.error('Error fetching assigned tickets count:', error)
@@ -74,7 +73,7 @@ export function useTicketsCounter() {
   // Watch for user changes and refresh counter
   watch(() => authStore.user, (newUser, oldUser) => {
     if (newUser && (!oldUser || newUser.id !== oldUser.id || newUser.login !== oldUser.login)) {
-      console.log('🔄 User changed, refreshing tickets counter:', {
+       console.log('🔄 User changed, refreshing tickets counter:', {
         oldUser: oldUser ? { id: oldUser.id, login: oldUser.login } : null,
         newUser: { id: newUser.id, login: newUser.login }
       })

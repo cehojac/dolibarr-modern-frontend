@@ -185,15 +185,15 @@ const openSubmenus = ref(JSON.parse(localStorage.getItem('openSubmenus') || '[]'
 
 // Debug the counter values
 watch(assignedTicketsCount, (newValue) => {
-  console.log('🎫 Assigned tickets count changed:', newValue)
+   // console.log('🎫 Assigned tickets count changed:', newValue)
 }, { immediate: true })
 
 watch(assignedTasksCount, (newValue) => {
-  console.log('📋 Assigned tasks count changed:', newValue)
+   // console.log('📋 Assigned tasks count changed:', newValue)
 }, { immediate: true })
 
 watch(todayEventsCount, (newValue) => {
-  console.log('📅 Today events count changed:', newValue)
+   // console.log('📅 Today events count changed:', newValue)
 }, { immediate: true })
 
 // Debug navigation computed (movido después de la definición de navigation)
@@ -221,7 +221,7 @@ const userInitials = computed(() => {
 })
 
 const navigation = computed(() => {
-  console.log('🔄 Navigation computed - Tasks count:', assignedTasksCount.value, 'Tickets count:', assignedTicketsCount.value, 'Today events count:', todayEventsCount.value)
+   // console.log('🔄 Navigation computed - Tasks count:', assignedTasksCount.value, 'Tickets count:', assignedTicketsCount.value, 'Today events count:', todayEventsCount.value)
   return [
     { name: 'Dashboard', href: '/', iconPath: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z' },
     { 

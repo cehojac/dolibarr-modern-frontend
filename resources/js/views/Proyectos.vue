@@ -471,7 +471,7 @@ const projectDetails = ref(null)
 const loadingDetails = ref(false)
 
 const fetchProjects = async () => {
-  console.log('🔄 fetchProjects called')
+   console.log('🔄 fetchProjects called')
   loading.value = true
   try {
     const [projectsResponse, tercerosResponse] = await Promise.all([
@@ -482,14 +482,14 @@ const fetchProjects = async () => {
     const projectsData = projectsResponse.data || []
     terceros.value = tercerosResponse.data || []
     
-    console.log('📊 Raw data loaded:', {
+     console.log('📊 Raw data loaded:', {
       projects: projectsData.length,
       terceros: terceros.value.length
     })
     
     // Debug actual project structure
-    console.log('🔍 First project structure:', projectsData[0])
-    console.log('🔍 Project keys:', Object.keys(projectsData[0] || {}))
+     console.log('🔍 First project structure:', projectsData[0])
+     console.log('🔍 Project keys:', Object.keys(projectsData[0] || {}))
     
     // Create terceros lookup map (same as Dashboard)
     const tercerosMap = {}
@@ -513,7 +513,7 @@ const fetchProjects = async () => {
       }
     })
     
-    console.log('✅ Enriched projects sample:', enrichedProjects.slice(0, 3).map(p => ({
+     console.log('✅ Enriched projects sample:', enrichedProjects.slice(0, 3).map(p => ({
       ref: p.ref,
       fk_soc: p.fk_soc,
       client_id: p.client_id,
@@ -523,23 +523,23 @@ const fetchProjects = async () => {
     
     // Check if any projects have thirdparty_name
     const withThirdparty = enrichedProjects.filter(p => p.thirdparty_name).length
-    console.log(`📈 Projects with thirdparty: ${withThirdparty}/${enrichedProjects.length}`)
+     console.log(`📈 Projects with thirdparty: ${withThirdparty}/${enrichedProjects.length}`)
     
     // Sample terceros for debugging
-    console.log('🏢 Sample terceros:', Object.keys(tercerosMap).slice(0, 5), 'Total:', Object.keys(tercerosMap).length)
+     console.log('🏢 Sample terceros:', Object.keys(tercerosMap).slice(0, 5), 'Total:', Object.keys(tercerosMap).length)
     
     // Debug specific project fk_soc values
-    console.log('🔍 Project fk_soc values:', projectsData.slice(0, 5).map(p => ({ ref: p.ref, fk_soc: p.fk_soc, type: typeof p.fk_soc })))
+     console.log('🔍 Project fk_soc values:', projectsData.slice(0, 5).map(p => ({ ref: p.ref, fk_soc: p.fk_soc, type: typeof p.fk_soc })))
     
     // Debug terceros IDs
-    console.log('🔍 Terceros IDs:', terceros.value.slice(0, 5).map(t => ({ id: t.id, name: t.name, type: typeof t.id })))
+     console.log('🔍 Terceros IDs:', terceros.value.slice(0, 5).map(t => ({ id: t.id, name: t.name, type: typeof t.id })))
     
     // Debug the actual matching process
     projectsData.slice(0, 3).forEach(project => {
       const directMatch = tercerosMap[project.fk_soc]
       const stringMatch = tercerosMap[String(project.fk_soc)]
       const numberMatch = tercerosMap[Number(project.fk_soc)]
-      console.log(`🔍 Project ${project.ref} (fk_soc: ${project.fk_soc}):`, {
+       console.log(`🔍 Project ${project.ref} (fk_soc: ${project.fk_soc}):`, {
         directMatch: !!directMatch,
         stringMatch: !!stringMatch,
         numberMatch: !!numberMatch,
@@ -552,7 +552,7 @@ const fetchProjects = async () => {
     
     // Check if projects have null or 0 fk_soc
     const projectsWithoutClient = projectsData.filter(p => !p.fk_soc || p.fk_soc === '0' || p.fk_soc === 0)
-    console.log(`📊 Projects without client: ${projectsWithoutClient.length}/${projectsData.length}`)
+     console.log(`📊 Projects without client: ${projectsWithoutClient.length}/${projectsData.length}`)
     
     projects.value = enrichedProjects
     
@@ -560,7 +560,7 @@ const fetchProjects = async () => {
     console.error('❌ Error fetching projects:', error)
   } finally {
     loading.value = false
-    console.log('🏁 fetchProjects completed, projects count:', projects.value.length)
+     console.log('🏁 fetchProjects completed, projects count:', projects.value.length)
   }
 }
 
@@ -806,7 +806,7 @@ watch([searchQuery, statusFilter], () => {
 
 // Debug watcher to monitor projects data changes
 watch(projects, (newProjects, oldProjects) => {
-  console.log('🔍 Projects data changed:', {
+   console.log('🔍 Projects data changed:', {
     oldCount: oldProjects?.length || 0,
     newCount: newProjects?.length || 0,
     sampleNew: newProjects?.slice(0, 2)?.map(p => ({
@@ -817,7 +817,7 @@ watch(projects, (newProjects, oldProjects) => {
 }, { deep: true })
 
 onMounted(() => {
-  console.log('🚀 Component mounted, calling fetchProjects')
+   console.log('🚀 Component mounted, calling fetchProjects')
   fetchProjects()
 })
 </script>

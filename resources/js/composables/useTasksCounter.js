@@ -10,7 +10,6 @@ export function useTasksCounter() {
 
   const fetchAssignedTasksCount = async () => {
     if (!authStore.user) {
-      console.log('🚫 No user found, skipping tasks counter')
       return
     }
     
@@ -18,10 +17,7 @@ export function useTasksCounter() {
     const userId = authStore.user.id || authStore.user.rowid || authStore.user.user_id
     const userLogin = authStore.user.login
     
-    console.log('👤 Tasks Counter - User info:', { userId, userLogin })
-    
     if (!userId && !userLogin) {
-      console.log('🚫 No user ID or login found')
       return
     }
 
@@ -31,7 +27,7 @@ export function useTasksCounter() {
       const response = await http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
       const tasks = response.data || []
       
-      console.log('📋 Tasks Counter - Total tasks fetched:', tasks.length)
+       // console.log('📋 Tasks Counter - Total tasks fetched:', tasks.length)
       
       // Check for role-based assignment first
       let taskCount = 0
@@ -45,7 +41,7 @@ export function useTasksCounter() {
             const roleResponse = await http.get(`/tasks/${task.id}/roles?userid=${userId}`)
             if (roleResponse.data && roleResponse.data.length > 0) {
               isAssigned = true
-              console.log(`✅ User ${userId} has role in task ${task.ref}`)
+               // console.log(`✅ User ${userId} has role in task ${task.ref}`)
             }
           } catch (error) {
             // No role found, continue with fallback logic
@@ -66,11 +62,11 @@ export function useTasksCounter() {
         }
       }
       
-      console.log('🎯 Tasks Counter - Final count:', taskCount)
+       // console.log('🎯 Tasks Counter - Final count:', taskCount)
       assignedTasksCount.value = taskCount
       
       // Force reactivity update
-      console.log('📊 Tasks Counter - Value set to:', assignedTasksCount.value)
+       // console.log('📊 Tasks Counter - Value set to:', assignedTasksCount.value)
     } catch (error) {
       console.error('❌ Tasks Counter - Error:', error)
       assignedTasksCount.value = 0
@@ -95,7 +91,7 @@ export function useTasksCounter() {
   // Watch for user changes and refresh counter
   watch(() => authStore.user, (newUser, oldUser) => {
     if (newUser && (!oldUser || newUser.id !== oldUser.id || newUser.login !== oldUser.login)) {
-      console.log('🔄 User changed, refreshing tasks counter:', {
+       console.log('🔄 User changed, refreshing tasks counter:', {
         oldUser: oldUser ? { id: oldUser.id, login: oldUser.login } : null,
         newUser: { id: newUser.id, login: newUser.login }
       })

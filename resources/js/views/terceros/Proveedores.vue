@@ -374,11 +374,11 @@ const visiblePages = computed(() => {
 const loadSuppliers = async () => {
   loading.value = true
   try {
-    console.log('🔄 Cargando proveedores...')
+     console.log('🔄 Cargando proveedores...')
     // Filtrar solo proveedores (fournisseur = 1) y activos
     const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.fournisseur:=:1)AND(t.status:=:1)')
     suppliers.value = response.data || []
-    console.log('✅ Proveedores cargados:', suppliers.value.length)
+     console.log('✅ Proveedores cargados:', suppliers.value.length)
   } catch (error) {
     console.error('❌ Error loading suppliers:', error)
     suppliers.value = []
@@ -453,15 +453,15 @@ const handleSearch = () => {
 }
 
 const viewSupplier = (supplier) => {
-  console.log('View supplier:', supplier)
+   console.log('View supplier:', supplier)
 }
 
 const editSupplier = (supplier) => {
-  console.log('Edit supplier:', supplier)
+   console.log('Edit supplier:', supplier)
 }
 
 const createOrder = (supplier) => {
-  console.log('Create order for supplier:', supplier)
+   console.log('Create order for supplier:', supplier)
 }
 
 // Pagination methods

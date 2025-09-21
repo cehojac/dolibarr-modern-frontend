@@ -375,12 +375,12 @@ const loadTodos = async () => {
 
     // Build projects map
     if (projectsResponse.data && Array.isArray(projectsResponse.data)) {
-      console.log('🏗️ Projects loaded:', projectsResponse.data.length)
+     // console.log('🏗️ Projects loaded:', projectsResponse.data.length)
       projectsResponse.data.forEach(project => {
-        console.log('📋 Project mapping:', { id: project.id, title: project.title, ref: project.ref })
+       // console.log('📋 Project mapping:', { id: project.id, title: project.title, ref: project.ref })
         projectsMap[project.id] = project
       })
-      console.log('🗺️ Projects map keys:', Object.keys(projectsMap))
+    //  console.log('🗺️ Projects map keys:', Object.keys(projectsMap))
     }
 
     // Build users map
@@ -455,7 +455,7 @@ const loadTodos = async () => {
             assignedTasksCounter++
           }
           
-          console.log('🔍 Task data for Dashboard:', {
+       /*   console.log('🔍 Task data for Dashboard:', {
             taskId: task.id,
             projectId: task.fk_project,
             projectIdType: typeof task.fk_project,
@@ -467,6 +467,7 @@ const loadTodos = async () => {
             project_name: project ? project.title || project.ref : null,
             project_tags: project ? project.category : null
           })
+            */
           
           todoItems.push({
             id: task.id,

@@ -370,11 +370,11 @@ const visiblePages = computed(() => {
 const loadClients = async () => {
   loading.value = true
   try {
-    console.log('🔄 Cargando clientes...')
+     console.log('🔄 Cargando clientes...')
     // Filtrar solo clientes (client = 1 o 3) y activos
     const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.client:in:1,3)AND(t.status:=:1)')
     clients.value = response.data || []
-    console.log('✅ Clientes cargados:', clients.value.length)
+     console.log('✅ Clientes cargados:', clients.value.length)
   } catch (error) {
     console.error('❌ Error loading clients:', error)
     clients.value = []
@@ -423,11 +423,11 @@ const handleSearch = () => {
 }
 
 const viewClient = (client) => {
-  console.log('View client:', client)
+   console.log('View client:', client)
 }
 
 const editClient = (client) => {
-  console.log('Edit client:', client)
+   console.log('Edit client:', client)
 }
 
 // Pagination methods

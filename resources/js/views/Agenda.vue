@@ -721,16 +721,16 @@ const getWeekDayNumber = (dayName) => {
 // Cargar eventos
 const loadEventos = async () => {
   try {
-    console.log('🔍 Cargando eventos de la agenda...')
+     console.log('🔍 Cargando eventos de la agenda...')
     
     // Obtener el ID del usuario logueado
     const userId = authStore.user?.id || 1
-    console.log('👤 Usuario ID:', userId)
+     console.log('👤 Usuario ID:', userId)
     
     // Llamar a la API de Dolibarr con los parámetros especificados
     const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=100&user_ids=${userId}`)
     eventos.value = response.data || []
-    console.log('✅ Eventos cargados:', eventos.value.length)
+     console.log('✅ Eventos cargados:', eventos.value.length)
     
     // Procesar eventos para asegurar formato correcto
     eventos.value = eventos.value.map(event => ({
@@ -743,7 +743,7 @@ const loadEventos = async () => {
       duration: event.duration || event.duree || '1h'
     }))
     
-    console.log('📅 Eventos procesados:', eventos.value.slice(0, 3)) // Mostrar primeros 3 para debug
+     console.log('📅 Eventos procesados:', eventos.value.slice(0, 3)) // Mostrar primeros 3 para debug
     
     // Contar eventos systemauto para información
     const systemautoCount = eventos.value.filter(event => {
@@ -754,12 +754,12 @@ const loadEventos = async () => {
     }).length
     
     if (systemautoCount > 0) {
-      console.log(`🤖 Eventos systemauto encontrados: ${systemautoCount} (ocultos por defecto)`)
+       console.log(`🤖 Eventos systemauto encontrados: ${systemautoCount} (ocultos por defecto)`)
     }
     
     // Si no hay eventos, agregar algunos de ejemplo para mostrar funcionalidad
     if (eventos.value.length === 0) {
-      console.log('📝 No hay eventos, agregando ejemplos...')
+       console.log('📝 No hay eventos, agregando ejemplos...')
       eventos.value = [
         {
           id: 'example-1',
@@ -823,7 +823,7 @@ const openCreateEventModal = (date, hour = null) => {
   }
   
   showCreateEventModal.value = true
-  console.log('📅 Abriendo modal para crear evento:', { date: formattedDate, hour })
+   console.log('📅 Abriendo modal para crear evento:', { date: formattedDate, hour })
 }
 
 const closeCreateEventModal = () => {
@@ -891,7 +891,7 @@ const createEvent = async () => {
   creating.value = true
   
   try {
-    console.log('🔄 Creando evento...', newEvent.value)
+     console.log('🔄 Creando evento...', newEvent.value)
     
     // Preparar los datos del evento para la API de Dolibarr
     // Basado en la estructura de eventos existentes de Dolibarr
@@ -910,8 +910,8 @@ const createEvent = async () => {
       entity: "1" // Entidad por defecto
     }
     
-    console.log('📤 Datos del evento preparados:', eventData)
-    console.log('🔍 type_code específicamente:', eventData.type_code)
+     console.log('📤 Datos del evento preparados:', eventData)
+     console.log('🔍 type_code específicamente:', eventData.type_code)
     
     // Calcular timestamp para datep
     if (newEvent.value.allDay) {
@@ -932,12 +932,12 @@ const createEvent = async () => {
       }
     }
     
-    console.log('📤 Enviando datos del evento:', eventData)
+     console.log('📤 Enviando datos del evento:', eventData)
     
     // Llamar a la API de Dolibarr para crear el evento
     const response = await http.post('/api/doli/agendaevents', eventData)
     
-    console.log('✅ Evento creado exitosamente:', response.data)
+     console.log('✅ Evento creado exitosamente:', response.data)
     
     // Agregar el evento creado a la lista local
     const createdEvent = {
@@ -967,7 +967,7 @@ const createEvent = async () => {
     closeCreateEventModal()
     
     // Mostrar mensaje de éxito
-    console.log('🎉 Evento agregado al calendario')
+     console.log('🎉 Evento agregado al calendario')
     
   } catch (error) {
     console.error('❌ Error creando evento:', error)

@@ -441,19 +441,19 @@ const loadTasks = async () => {
           }
         })
 
-        console.log('Tareas - Projects loaded:', projects.value.length)
-        console.log('Tareas - Terceros loaded:', terceros.value.length)
-        console.log('Tareas - Users loaded:', users.value.length)
-        console.log('Tareas - Sample project:', projects.value[0])
-        console.log('Tareas - Sample tercero:', terceros.value[0])
-        console.log('Tareas - Projects map keys:', Object.keys(projectsMap).slice(0, 10))
-        console.log('Tareas - Terceros map keys:', Object.keys(tercerosMap).slice(0, 10))
-        console.log('Tareas - Users map keys:', Object.keys(usersMap).slice(0, 10))
+         console.log('Tareas - Projects loaded:', projects.value.length)
+         console.log('Tareas - Terceros loaded:', terceros.value.length)
+         console.log('Tareas - Users loaded:', users.value.length)
+         console.log('Tareas - Sample project:', projects.value[0])
+         console.log('Tareas - Sample tercero:', terceros.value[0])
+         console.log('Tareas - Projects map keys:', Object.keys(projectsMap).slice(0, 10))
+         console.log('Tareas - Terceros map keys:', Object.keys(tercerosMap).slice(0, 10))
+         console.log('Tareas - Users map keys:', Object.keys(usersMap).slice(0, 10))
 
         // Process tasks with enrichment (including role-based assignment)
         const taskPromises = tasksResponse.data.map(async (task, index) => {
           if (index < 3) {
-            console.log(`Sample task ${index}:`, task)
+             console.log(`Sample task ${index}:`, task)
           }
           
           // Try multiple possible project ID fields
@@ -461,10 +461,10 @@ const loadTasks = async () => {
           const projectIds = [task.fk_project, task.fk_projet, task.project_id, task.projectid]
           
           if (index < 3) {
-            console.log(`Task ${task.ref} project IDs to try:`, projectIds)
-            console.log(`Looking for project ID '${projectIds[0]}' in map:`, !!projectsMap[projectIds[0]])
+             console.log(`Task ${task.ref} project IDs to try:`, projectIds)
+             console.log(`Looking for project ID '${projectIds[0]}' in map:`, !!projectsMap[projectIds[0]])
             if (projectIds[0]) {
-              console.log(`Available project IDs near '${projectIds[0]}':`, Object.keys(projectsMap).filter(key => key.includes(projectIds[0].toString().slice(-2))))
+               console.log(`Available project IDs near '${projectIds[0]}':`, Object.keys(projectsMap).filter(key => key.includes(projectIds[0].toString().slice(-2))))
             }
           }
           
@@ -472,7 +472,7 @@ const loadTasks = async () => {
             if (projectId && projectsMap[projectId]) {
               project = projectsMap[projectId]
               if (index < 3) {
-                console.log(`Found project for task ${task.ref}:`, project)
+                 console.log(`Found project for task ${task.ref}:`, project)
               }
               break
             }
@@ -488,11 +488,11 @@ const loadTasks = async () => {
               if (roleResponse.data && roleResponse.data.length > 0) {
                 isUserAssigned = true
                 assignedUser = currentUser.value
-                console.log(`User ${currentUser.value.id} is assigned to task ${task.ref}`)
+                 console.log(`User ${currentUser.value.id} is assigned to task ${task.ref}`)
               }
             } catch (error) {
               // No role found or API error - continue with fallback logic
-              console.log(`No role found for user ${currentUser.value.id} in task ${task.ref}`)
+               console.log(`No role found for user ${currentUser.value.id} in task ${task.ref}`)
             }
           }
 
@@ -531,7 +531,7 @@ const loadTasks = async () => {
             }
           }
 
-          console.log(`Task ${task.ref}: project=${project?.title || project?.ref || 'none'}, tercero=${tercero?.name || 'none'}`)
+           console.log(`Task ${task.ref}: project=${project?.title || project?.ref || 'none'}, tercero=${tercero?.name || 'none'}`)
           
           return {
             ...task,

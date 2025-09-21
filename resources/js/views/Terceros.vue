@@ -379,7 +379,7 @@ const loadTerceros = async () => {
   try {
     const response = await http.get('/api/doli/thirdparties?limit=1000')
     terceros.value = response.data || []
-    console.log('✅ Terceros cargados:', terceros.value.length)
+     console.log('✅ Terceros cargados:', terceros.value.length)
   } catch (error) {
     console.error('❌ Error loading terceros:', error)
     terceros.value = []
@@ -479,12 +479,12 @@ const formatDate = (dateString) => {
 
 const viewTerceroDetails = (tercero) => {
   // Navigate to tercero details or open modal
-  console.log('View tercero:', tercero)
+   console.log('View tercero:', tercero)
 }
 
 const editTercero = (tercero) => {
   // Navigate to edit tercero or open modal
-  console.log('Edit tercero:', tercero)
+   console.log('Edit tercero:', tercero)
 }
 
 // Pagination methods

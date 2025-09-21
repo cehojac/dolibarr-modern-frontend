@@ -230,10 +230,10 @@ const loadProductos = async () => {
   const notificationStore = useNotificationStore()
   
   try {
-    console.log('🔄 Cargando productos...')
+     console.log('🔄 Cargando productos...')
     const response = await http.get('/doli/products')
     productos.value = response.data || []
-    console.log('✅ Productos cargados:', productos.value.length)
+     console.log('✅ Productos cargados:', productos.value.length)
     
     if (productos.value.length === 0) {
       notificationStore.info('No se encontraron productos registrados')
@@ -250,10 +250,10 @@ const loadServicios = async () => {
   const notificationStore = useNotificationStore()
   
   try {
-    console.log('🔄 Cargando servicios...')
+     console.log('🔄 Cargando servicios...')
     const response = await http.get('/doli/services')
     servicios.value = response.data || []
-    console.log('✅ Servicios cargados:', servicios.value.length)
+     console.log('✅ Servicios cargados:', servicios.value.length)
     
     if (servicios.value.length === 0) {
       notificationStore.info('No se encontraron servicios registrados')

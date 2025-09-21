@@ -16,10 +16,10 @@ export const useAuthStore = defineStore('auth', {
     storage: localStorage,
     paths: ['isAuthenticated', 'user'],
     beforeRestore: (context) => {
-      console.log('Restaurando sesión desde localStorage')
+       // console.log('Restaurando sesión desde localStorage')
     },
     afterRestore: (context) => {
-      console.log('Sesión restaurada:', context.store.isAuthenticated)
+       // console.log('Sesión restaurada:', context.store.isAuthenticated)
     }
   },
 
@@ -38,9 +38,9 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.user && response.data.user.id) {
           try {
             await initInterventions()
-            console.log('Intervenciones del usuario cargadas correctamente')
+             // console.log('Intervenciones del usuario cargadas correctamente')
           } catch (interventionError) {
-            console.warn('Error al cargar intervenciones del usuario:', interventionError)
+            // console.warn('Error al cargar intervenciones del usuario:', interventionError)
             // No interrumpir el login por este error
           }
         }

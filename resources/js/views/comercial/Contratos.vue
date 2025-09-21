@@ -368,10 +368,10 @@ const visiblePages = computed(() => {
 const loadContracts = async () => {
   loading.value = true
   try {
-    console.log('🔄 Cargando contratos...')
+     console.log('🔄 Cargando contratos...')
     const response = await http.get('/api/doli/contracts?limit=1000')
     contracts.value = response.data || []
-    console.log('✅ Contratos cargados:', contracts.value.length)
+     console.log('✅ Contratos cargados:', contracts.value.length)
   } catch (error) {
     console.error('❌ Error loading contracts:', error)
     contracts.value = []
@@ -455,15 +455,15 @@ const handleSearch = () => {
 }
 
 const viewContractDetails = (contract) => {
-  console.log('View contract:', contract)
+   console.log('View contract:', contract)
 }
 
 const editContract = (contract) => {
-  console.log('Edit contract:', contract)
+   console.log('Edit contract:', contract)
 }
 
 const renewContract = (contract) => {
-  console.log('Renew contract:', contract)
+   console.log('Renew contract:', contract)
 }
 
 // Pagination methods

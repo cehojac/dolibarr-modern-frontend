@@ -384,10 +384,10 @@ const visiblePages = computed(() => {
 const loadContacts = async () => {
   loading.value = true
   try {
-    console.log('🔄 Cargando contactos...')
+     console.log('🔄 Cargando contactos...')
     const response = await http.get('/api/doli/contacts?limit=1000&sqlfilters=(t.statut:=:1)')
     contacts.value = response.data || []
-    console.log('✅ Contactos cargados:', contacts.value.length)
+     console.log('✅ Contactos cargados:', contacts.value.length)
   } catch (error) {
     console.error('❌ Error loading contacts:', error)
     contacts.value = []
@@ -443,15 +443,15 @@ const handleSearch = () => {
 }
 
 const viewContact = (contact) => {
-  console.log('View contact:', contact)
+   console.log('View contact:', contact)
 }
 
 const editContact = (contact) => {
-  console.log('Edit contact:', contact)
+   console.log('Edit contact:', contact)
 }
 
 const sendEmail = (contact) => {
-  console.log('Send email to contact:', contact)
+   console.log('Send email to contact:', contact)
   window.open(`mailto:${contact.email}`)
 }
 

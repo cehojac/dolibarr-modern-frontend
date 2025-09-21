@@ -44,7 +44,7 @@ const loadTimersFromStorage = () => {
         }
       })
       
-      console.log('🔄 Timers restaurados desde localStorage:', timersData)
+      //  console.log('🔄 Timers restaurados desde localStorage:', timersData)
     }
   } catch (error) {
     console.error('❌ Error cargando timers desde localStorage:', error)
@@ -111,7 +111,7 @@ export function useTicketTimer() {
     }, 1000)
     
     intervals.value.set(ticketId, interval)
-    console.log('⏱️ Timer iniciado para ticket:', ticketId)
+    //  console.log('⏱️ Timer iniciado para ticket:', ticketId)
   }
   
   const stopTimer = (ticketId) => {
@@ -135,7 +135,7 @@ export function useTicketTimer() {
     // Update localStorage
     saveTimersToStorage()
     
-    console.log('⏹️ Timer detenido para ticket:', ticketId, 'Tiempo:', Math.floor(finalElapsed / 1000), 'segundos')
+    //  console.log('⏹️ Timer detenido para ticket:', ticketId, 'Tiempo:', Math.floor(finalElapsed / 1000), 'segundos')
     return Math.floor(finalElapsed / 1000) // Return seconds
   }
   

@@ -57,12 +57,12 @@ export const useUserInterventionsStore = defineStore('userInterventions', {
         })
 
         const response = await http.get(`/api/doli/interventions?${params.toString()}`)
-        console.log('API Response:', response)
+         console.log('API Response:', response)
         
         this.interventions = response.data || []
         this.lastFetch = new Date().toISOString()
         
-        console.log(`Cargadas ${this.interventions.length} intervenciones para el usuario ${userId}`)
+         console.log(`Cargadas ${this.interventions.length} intervenciones para el usuario ${userId}`)
         
         return this.interventions
       } catch (error) {

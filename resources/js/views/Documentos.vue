@@ -396,7 +396,7 @@ const handleFileUpload = async (event) => {
   if (files.length === 0) return
 
   try {
-    console.log('📤 Subiendo archivos:', files.length)
+     console.log('📤 Subiendo archivos:', files.length)
     
     for (const file of files) {
       const formData = new FormData()
@@ -404,7 +404,7 @@ const handleFileUpload = async (event) => {
       formData.append('path', currentPath.value)
       
       // Simular subida (aquí iría la llamada real a Dolibarr)
-      console.log(`📄 Subiendo: ${file.name} (${formatFileSize(file.size)})`)
+       console.log(`📄 Subiendo: ${file.name} (${formatFileSize(file.size)})`)
       
       // Agregar archivo localmente para demostración
       const newFile = {
@@ -420,7 +420,7 @@ const handleFileUpload = async (event) => {
       files.value.push(newFile)
     }
     
-    console.log('✅ Archivos subidos exitosamente')
+     console.log('✅ Archivos subidos exitosamente')
     
   } catch (error) {
     console.error('❌ Error subiendo archivos:', error)
@@ -441,7 +441,7 @@ const createFolder = async () => {
   if (!newFolderName.value.trim()) return
 
   try {
-    console.log('📁 Creando carpeta:', newFolderName.value)
+     console.log('📁 Creando carpeta:', newFolderName.value)
     
     const folderData = {
       name: newFolderName.value.trim(),
@@ -464,7 +464,7 @@ const createFolder = async () => {
     
     folders.value.push(newFolder)
     
-    console.log('✅ Carpeta creada exitosamente')
+     console.log('✅ Carpeta creada exitosamente')
     closeNewFolderModal()
     
   } catch (error) {
@@ -495,14 +495,14 @@ const showContextMenu = (event, item, type) => {
 
 // Acciones de archivos
 const openFile = (file) => {
-  console.log('📂 Abriendo archivo:', file.name)
+   console.log('📂 Abriendo archivo:', file.name)
   // Aquí se podría abrir el archivo o mostrar un preview
   downloadFile(file)
 }
 
 const downloadFile = async (file) => {
   try {
-    console.log('⬇️ Descargando archivo:', file.name)
+     console.log('⬇️ Descargando archivo:', file.name)
     
     // Aquí iría la llamada real para descargar desde Dolibarr
     // const response = await http.get(`/api/doli/documents/download/${file.id}`, { responseType: 'blob' })
@@ -521,7 +521,7 @@ const downloadFile = async (file) => {
 const renameItem = (item) => {
   const newName = prompt(`Renombrar ${contextMenu.value.type === 'folder' ? 'carpeta' : 'archivo'}:`, item.name)
   if (newName && newName.trim() !== item.name) {
-    console.log(`✏️ Renombrando ${item.name} a ${newName}`)
+     console.log(`✏️ Renombrando ${item.name} a ${newName}`)
     item.name = newName.trim()
     // Aquí iría la llamada a la API
   }
@@ -532,7 +532,7 @@ const deleteItem = async (item) => {
   const itemType = contextMenu.value.type === 'folder' ? 'carpeta' : 'archivo'
   if (confirm(`¿Estás seguro de que quieres eliminar esta ${itemType}?`)) {
     try {
-      console.log(`🗑️ Eliminando ${itemType}:`, item.name)
+       console.log(`🗑️ Eliminando ${itemType}:`, item.name)
       
       // Aquí iría la llamada a la API de Dolibarr
       // await http.delete(`/api/doli/documents/${contextMenu.value.type}s/${item.id}`)
@@ -544,7 +544,7 @@ const deleteItem = async (item) => {
         files.value = files.value.filter(f => f.id !== item.id)
       }
       
-      console.log(`✅ ${itemType} eliminado exitosamente`)
+       console.log(`✅ ${itemType} eliminado exitosamente`)
       
     } catch (error) {
       console.error(`❌ Error eliminando ${itemType}:`, error)
@@ -611,7 +611,7 @@ const getFileIconPath = (extension) => {
 // Cargar documentos
 const loadDocuments = async () => {
   try {
-    console.log('🔍 Cargando documentos para ruta:', currentPath.value)
+     console.log('🔍 Cargando documentos para ruta:', currentPath.value)
     
     // Aquí irían las llamadas reales a la API de Dolibarr
     // const [foldersResponse, filesResponse] = await Promise.all([
@@ -680,10 +680,10 @@ const loadDocuments = async () => {
         }
       ]
       
-      console.log('📝 Cargados datos de ejemplo')
+       console.log('📝 Cargados datos de ejemplo')
     }
     
-    console.log('✅ Documentos cargados:', {
+     console.log('✅ Documentos cargados:', {
       carpetas: currentFolders.value.length,
       archivos: currentFiles.value.length
     })
