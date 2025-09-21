@@ -1,8 +1,79 @@
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onUnmounted, onMounted } from 'vue'
 
 // Global timer state
 const activeTimers = ref(new Map())
 const intervals = ref(new Map())
+let isInitialized = false
+
+// LocalStorage key for persisting timers
+const STORAGE_KEY = 'dolibarr_active_timers'
+
+// Load timers from localStorage
+const loadTimersFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const timersData = JSON.parse(stored)
+      const now = Date.now()
+      
+      // Restore active timers and recalculate elapsed time
+      Object.entries(timersData).forEach(([ticketId, timerData]) => {
+        if (timerData.isRunning) {
+          // Calculate elapsed time since last save
+          const elapsedSinceStart = now - timerData.startTime
+          
+          activeTimers.value.set(ticketId, {
+            startTime: timerData.startTime,
+            elapsed: elapsedSinceStart,
+            isRunning: true
+          })
+          
+          // Restart the interval
+          const interval = setInterval(() => {
+            const timer = activeTimers.value.get(ticketId)
+            if (timer && timer.isRunning) {
+              timer.elapsed = Date.now() - timer.startTime
+              // Trigger reactivity
+              activeTimers.value = new Map(activeTimers.value)
+              // Save to localStorage
+              saveTimersToStorage()
+            }
+          }, 1000)
+          
+          intervals.value.set(ticketId, interval)
+        }
+      })
+      
+      console.log('🔄 Timers restaurados desde localStorage:', timersData)
+    }
+  } catch (error) {
+    console.error('❌ Error cargando timers desde localStorage:', error)
+  }
+}
+
+// Save timers to localStorage
+const saveTimersToStorage = () => {
+  try {
+    const timersData = {}
+    activeTimers.value.forEach((timer, ticketId) => {
+      timersData[ticketId] = {
+        startTime: timer.startTime,
+        elapsed: timer.elapsed,
+        isRunning: timer.isRunning
+      }
+    })
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(timersData))
+  } catch (error) {
+    console.error('❌ Error guardando timers en localStorage:', error)
+  }
+}
+
+// Save timers before page unload
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    saveTimersToStorage()
+  })
+}
 
 export function useTicketTimer() {
   
@@ -18,17 +89,29 @@ export function useTicketTimer() {
       isRunning: true
     })
     
+    // Save to localStorage immediately
+    saveTimersToStorage()
+    
     // Create interval for this timer
+    let saveCounter = 0
     const interval = setInterval(() => {
       const timer = activeTimers.value.get(ticketId)
       if (timer && timer.isRunning) {
         timer.elapsed = Date.now() - timer.startTime
         // Trigger reactivity
         activeTimers.value = new Map(activeTimers.value)
+        
+        // Save to localStorage every 10 seconds to reduce overhead
+        saveCounter++
+        if (saveCounter >= 10) {
+          saveTimersToStorage()
+          saveCounter = 0
+        }
       }
     }, 1000)
     
     intervals.value.set(ticketId, interval)
+    console.log('⏱️ Timer iniciado para ticket:', ticketId)
   }
   
   const stopTimer = (ticketId) => {
@@ -49,6 +132,10 @@ export function useTicketTimer() {
     activeTimers.value.delete(ticketId)
     activeTimers.value = new Map(activeTimers.value)
     
+    // Update localStorage
+    saveTimersToStorage()
+    
+    console.log('⏹️ Timer detenido para ticket:', ticketId, 'Tiempo:', Math.floor(finalElapsed / 1000), 'segundos')
     return Math.floor(finalElapsed / 1000) // Return seconds
   }
   
@@ -79,15 +166,28 @@ export function useTicketTimer() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
   
+  // Initialize timers from localStorage on first use
+  const initializeTimers = () => {
+    loadTimersFromStorage()
+  }
+  
   // Cleanup function
   const cleanup = () => {
     intervals.value.forEach(interval => clearInterval(interval))
     intervals.value.clear()
     activeTimers.value.clear()
+    // Clear localStorage when cleaning up
+    localStorage.removeItem(STORAGE_KEY)
   }
   
   // Auto cleanup on unmount
   onUnmounted(cleanup)
+  
+  // Load timers on first initialization
+  if (!isInitialized) {
+    initializeTimers()
+    isInitialized = true
+  }
   
   return {
     startTimer,
@@ -97,6 +197,7 @@ export function useTicketTimer() {
     getElapsedTime,
     formatElapsedTime,
     activeTimers: computed(() => activeTimers.value),
+    initializeTimers,
     cleanup
   }
 }

@@ -313,7 +313,7 @@
                 {{ ticket.category_code || ticket.category || '-' }}
               </td>
               <td class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap">
-                <span class="inline-flex px-1 sm:px-2 py-1 text-xs font-semibold rounded-full"
+                <span class="inline-flex px-1 sm:px-2 py-1 text-xs font-medium rounded-lg"
                       :class="getPriorityClass(ticket.severity_code || ticket.severity)">
                   <span class="hidden sm:inline">{{ getPriorityText(ticket.severity_code || ticket.severity) }}</span>
                   <span class="sm:hidden">{{ getPriorityText(ticket.severity_code || ticket.severity).charAt(0) }}</span>
@@ -325,51 +325,40 @@
               <td class="hidden lg:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(ticket.datec) }}
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
+              <td class="hidden sm:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap">
                 <div v-if="ticket.assigned_to" class="flex items-center justify-center">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium" 
+                  <div class="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-medium" 
                        :class="getUserAvatarColor(ticket.assigned_to)"
                        :title="ticket.assigned_to">
                     {{ getUserInitials(ticket.assigned_to) }}
                   </div>
                 </div>
-                <span v-else class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">-</span>
+                <span v-else class="text-xs sm:text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">-</span>
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
-                <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-2 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full"
+              <td class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap">
+                <span class="inline-flex px-1 sm:px-2 py-1 text-xs font-medium rounded-lg"
                       :class="getStatusClass(ticket.fk_statut, ticket)">
-                  {{ getStatusText(ticket.fk_statut, ticket) }}
+                  <span class="hidden sm:inline">{{ getStatusText(ticket.fk_statut, ticket) }}</span>
+                  <span class="sm:hidden">{{ getStatusText(ticket.fk_statut, ticket).charAt(0) }}</span>
                 </span>
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-right text-sm xl:text-base 2xl:text-lg font-medium">
-                <div class="flex items-center justify-end space-x-2 xl:space-x-3 2xl:space-x-4">
-                  <button 
-                    @click="viewTicketDetails(ticket)"
-                    class="text-blue-400 hover:text-blue-300 transition-colors"
-                    title="Ver detalles"
-                  >
-                    <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              <td class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
+                <button 
+                  @click.stop="handleTimerClick(ticket)"
+                  :class="isTimerRunning(ticket.id) ? 'text-red-500 hover:text-red-400 bg-red-50 hover:bg-red-100 border-red-200' : 'text-green-500 hover:text-green-400 bg-green-50 hover:bg-green-100 border-green-200'"
+                  class="transition-colors px-2 py-1 rounded-md border text-xs"
+                  :title="isTimerRunning(ticket.id) ? 'Parar cronómetro' : 'Iniciar cronómetro'"
+                >
+                  <div class="flex items-center space-x-1">
+                    <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path v-if="!isTimerRunning(ticket.id)" d="M8 5v14l11-7z"/>
+                      <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
                     </svg>
-                  </button>
-                  <button 
-                    @click.stop="handleTimerClick(ticket)"
-                    :class="isTimerRunning(ticket.id) ? 'text-red-500 hover:text-red-400 bg-red-50 hover:bg-red-100' : 'text-green-500 hover:text-green-400 bg-green-50 hover:bg-green-100'"
-                    class="transition-colors px-2 py-1 rounded-md border"
-                    :title="isTimerRunning(ticket.id) ? 'Parar cronómetro' : 'Iniciar cronómetro'"
-                  >
-                    <div class="flex items-center space-x-1">
-                      <svg class="w-4 h-4 xl:w-5 xl:h-5 2xl:w-6 2xl:h-6" fill="currentColor" viewBox="0 0 24 24">
-                        <path v-if="!isTimerRunning(ticket.id)" d="M8 5v14l11-7z"/>
-                        <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                      </svg>
-                      <span v-if="isTimerRunning(ticket.id)" class="text-xs font-mono font-bold">
-                        {{ formatElapsedTime(ticket.id) }}
-                      </span>
-                    </div>
-                  </button>
-                </div>
+                    <span v-if="isTimerRunning(ticket.id)" class="text-xs font-mono font-bold hidden sm:inline">
+                      {{ formatElapsedTime(ticket.id) }}
+                    </span>
+                  </div>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -377,12 +366,12 @@
       </div>
       
       <!-- Pagination -->
-      <div class="px-6 py-4 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
-        <div class="flex items-center justify-between">
-          <div class="text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
-            Mostrando {{ startIndex + 1 }} a {{ Math.min(endIndex, filteredTickets.length) }} de {{ filteredTickets.length }} tickets
+      <div class="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-t" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
+        <div class="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0">
+          <div class="text-xs sm:text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+            <span class="hidden sm:inline">Mostrando</span> {{ startIndex + 1 }}-{{ Math.min(endIndex, filteredTickets.length) }} <span class="hidden sm:inline">de</span> {{ filteredTickets.length }}
           </div>
-          <div class="flex items-center space-x-2 xl:space-x-3 2xl:space-x-4">
+          <div class="flex items-center space-x-1 sm:space-x-2">
             <button
               @click="previousPage"
               :disabled="currentPage === 1"
@@ -390,18 +379,19 @@
                 currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '',
                 isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               ]"
-              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
+              class="px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm rounded-md transition-colors"
             >
-              Anterior
+              <span class="hidden sm:inline">Anterior</span>
+              <span class="sm:hidden">‹</span>
             </button>
             
-            <div class="flex items-center space-x-1 xl:space-x-2 2xl:space-x-3">
+            <div class="flex items-center space-x-1">
               <button
                 v-for="page in visiblePages"
                 :key="page"
                 @click="goToPage(page)"
                 :class="page === currentPage ? 'bg-blue-500 text-white' : (isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')"
-                class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
+                class="px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm rounded-md transition-colors min-w-[32px] sm:min-w-[36px]"
               >
                 {{ page }}
               </button>
@@ -414,9 +404,10 @@
                 currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '',
                 isDark ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               ]"
-              class="px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg rounded-lg transition-colors"
+              class="px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm rounded-md transition-colors"
             >
-              Siguiente
+              <span class="hidden sm:inline">Siguiente</span>
+              <span class="sm:hidden">›</span>
             </button>
           </div>
         </div>
@@ -455,7 +446,7 @@
                 </div>
               </div>
               <div class="flex items-center space-x-3">
-                <span v-if="ticketDetails" class="inline-flex px-3 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut, ticketDetails)">
+                <span v-if="ticketDetails" class="inline-flex px-3 py-1 text-xs font-medium rounded-lg" :class="getStatusClass(ticketDetails.fk_statut, ticketDetails)">
                   {{ getStatusText(ticketDetails.fk_statut, ticketDetails) }}
                 </span>
                 <button @click="closeModal" class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
@@ -614,7 +605,7 @@
                             <span class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
                               Intervención {{ intervention.ref }}
                             </span>
-                            <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full" 
+                            <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded-lg" 
                                   :class="getInterventionStatusClass(intervention.status)">
                               {{ getInterventionStatusText(intervention.status) }}
                             </span>
@@ -860,7 +851,7 @@
                   <div class="space-y-4">
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Estado:</label>
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(ticketDetails.fk_statut, ticketDetails)">
+                      <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getStatusClass(ticketDetails.fk_statut, ticketDetails)">
                         {{ getStatusText(ticketDetails.fk_statut, ticketDetails) }}
                       </span>
                     </div>
@@ -930,7 +921,7 @@
                     
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Prioridad:</label>
-                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getPriorityClass(ticketDetails.severity)">
+                      <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getPriorityClass(ticketDetails.severity)">
                         {{ getPriorityText(ticketDetails.severity) }}
                       </span>
                     </div>
@@ -4462,25 +4453,25 @@ const getStatusText = (status, ticket = null) => {
 
 const getStatusClass = (status, ticket = null) => {
   const classes = {
-    '0': 'bg-gray-600 text-gray-200',
-    '1': 'bg-blue-600 text-blue-100',
-    '4': 'bg-yellow-600 text-yellow-100',
-    '5': 'bg-purple-600 text-purple-100',
-    '8': 'bg-green-600 text-green-100',
-    '9': 'bg-red-600 text-red-100'
+    '0': 'bg-red-50 text-red-600 border border-red-200', // Open/Abierto
+    '1': 'bg-green-50 text-green-600 border border-green-200', // In Progress/En progreso
+    '4': 'bg-yellow-50 text-yellow-600 border border-yellow-200', // Assigned/Asignado
+    '5': 'bg-blue-50 text-blue-600 border border-blue-200', // Answered/Respondido
+    '8': 'bg-green-50 text-green-600 border border-green-200', // Closed/Cerrado
+    '9': 'bg-gray-50 text-gray-600 border border-gray-200' // On Hold/En espera
   }
   
   // Si el estado no está definido pero tiene usuario asignado, usar estilo de "Asignado"
   if (!classes[status] && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
-    return 'bg-yellow-600 text-yellow-100' // Mismo estilo que "Asignado"
+    return 'bg-yellow-50 text-yellow-600 border border-yellow-200' // Mismo estilo que "Asignado"
   }
   
   // Para estados 0 y 1, si tiene usuario asignado, usar estilo de "Asignado"
   if ((status === '0' || status === '1') && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
-    return 'bg-yellow-600 text-yellow-100' // Mismo estilo que "Asignado"
+    return 'bg-yellow-50 text-yellow-600 border border-yellow-200' // Mismo estilo que "Asignado"
   }
   
-  return classes[status] || 'bg-gray-600 text-gray-200'
+  return classes[status] || 'bg-gray-50 text-gray-600 border border-gray-200'
 }
 
 const getPriorityText = (priority) => {
@@ -4508,19 +4499,19 @@ const getPriorityText = (priority) => {
 
 const getPriorityClass = (priority) => {
   const classes = {
-    '1': 'bg-green-600 text-green-100',
-    '2': 'bg-blue-600 text-blue-100',
-    '3': 'bg-yellow-600 text-yellow-100',
-    '4': 'bg-red-600 text-red-100',
+    '1': 'bg-green-50 text-green-600 border border-green-200',
+    '2': 'bg-blue-50 text-blue-600 border border-blue-200',
+    '3': 'bg-yellow-50 text-yellow-600 border border-yellow-200',
+    '4': 'bg-red-50 text-red-600 border border-red-200',
     // Add common severity codes
-    'LOW': 'bg-green-600 text-green-100',
-    'NORMAL': 'bg-blue-600 text-blue-100',
-    'HIGH': 'bg-yellow-600 text-yellow-100',
-    'URGENT': 'bg-red-600 text-red-100',
-    'CRITICAL': 'bg-red-800 text-red-100',
-    'BLOCKING': 'bg-red-900 text-red-100'
+    'LOW': 'bg-green-50 text-green-600 border border-green-200',
+    'NORMAL': 'bg-blue-50 text-blue-600 border border-blue-200',
+    'HIGH': 'bg-yellow-50 text-yellow-600 border border-yellow-200',
+    'URGENT': 'bg-red-50 text-red-600 border border-red-200',
+    'CRITICAL': 'bg-red-50 text-red-700 border border-red-300',
+    'BLOCKING': 'bg-red-50 text-red-800 border border-red-400'
   }
-  return classes[priority] || classes[String(priority)] || 'bg-blue-600 text-blue-100'
+  return classes[priority] || classes[String(priority)] || 'bg-blue-50 text-blue-600 border border-blue-200'
 }
 
 // Funciones para manejar intervenciones
@@ -4536,12 +4527,12 @@ const getInterventionStatusText = (status) => {
 
 const getInterventionStatusClass = (status) => {
   const classes = {
-    '0': 'bg-gray-100 text-gray-800',
-    '1': 'bg-green-100 text-green-800',
-    '2': 'bg-blue-100 text-blue-800',
-    '3': 'bg-purple-100 text-purple-800'
+    '0': 'bg-gray-50 text-gray-600 border border-gray-200',
+    '1': 'bg-green-50 text-green-600 border border-green-200',
+    '2': 'bg-blue-50 text-blue-600 border border-blue-200',
+    '3': 'bg-purple-50 text-purple-600 border border-purple-200'
   }
-  return classes[status] || 'bg-gray-100 text-gray-800'
+  return classes[status] || 'bg-gray-50 text-gray-600 border border-gray-200'
 }
 
 const formatInterventionDate = (dateString) => {
