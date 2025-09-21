@@ -21,7 +21,7 @@ class AuthController extends Controller
 
         // Autenticar con Dolibarr API usando GET con query parameters
         try {
-            $response = Http::timeout(10)->get(config('services.dolibarr.base_url') . '/login', [
+            $response = Http::timeout(60)->retry(3, 1000)->get(config('services.dolibarr.base_url') . '/login', [
                 'login' => $login,
                 'password' => $password
             ]);
@@ -51,7 +51,7 @@ class AuthController extends Controller
                         $userInfoResponse = Http::withHeaders([
                             'DOLAPIKEY' => $token,
                             'Accept' => 'application/json',
-                        ])->get(config('services.dolibarr.base_url') . $endpoint);
+                        ])->timeout(30)->get(config('services.dolibarr.base_url') . $endpoint);
                         
                         if ($userInfoResponse->successful()) {
                             $userInfo = $userInfoResponse->json();
@@ -75,7 +75,7 @@ class AuthController extends Controller
                         $usersResponse = Http::withHeaders([
                             'DOLAPIKEY' => $token,
                             'Accept' => 'application/json',
-                        ])->get(config('services.dolibarr.base_url') . '/users');
+                        ])->timeout(30)->get(config('services.dolibarr.base_url') . '/users');
                         
                         if ($usersResponse->successful()) {
                             $users = $usersResponse->json();
