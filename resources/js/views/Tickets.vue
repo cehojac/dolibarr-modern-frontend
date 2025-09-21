@@ -319,8 +319,15 @@
               <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(ticket.datec) }}
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ ticket.assigned_to || '-' }}
+              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
+                <div v-if="ticket.assigned_to" class="flex items-center justify-center">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium" 
+                       :class="getUserAvatarColor(ticket.assigned_to)"
+                       :title="ticket.assigned_to">
+                    {{ getUserInitials(ticket.assigned_to) }}
+                  </div>
+                </div>
+                <span v-else class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">-</span>
               </td>
               <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
                 <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-2 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full"
@@ -1088,6 +1095,10 @@
                       <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                         Seguidores ({{ ticketFollowers.length }})
                       </h3>
+                      <div class="flex items-center space-x-4 text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                        <span>👥 Internos: {{ internalFollowers.length }}</span>
+                        <span>📧 Externos: {{ externalFollowers.length }}</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -1165,39 +1176,95 @@
                     </div>
                     
                     <!-- Current Followers List -->
-                    <div v-if="ticketFollowers.length > 0" class="space-y-2">
-                      <div 
-                        v-for="follower in ticketFollowers" 
-                        :key="follower.id"
-                        class="flex items-center justify-between p-2 rounded-lg border" 
-                        :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
-                      >
-                        <div class="flex items-center space-x-2 min-w-0 flex-1">
-                          <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium text-white flex-shrink-0" 
-                               :class="follower.type === 'user' ? (isDark ? 'bg-blue-600' : 'bg-blue-500') : (isDark ? 'bg-green-600' : 'bg-green-500')">
-                            <span v-if="follower.type === 'user'">👤</span>
-                            <span v-else>📧</span>
+                    <div v-if="ticketFollowers.length > 0" class="space-y-4">
+                      <!-- Seguidores Internos -->
+                      <div v-if="internalFollowers.length > 0">
+                        <div class="flex items-center space-x-2 mb-2">
+                          <div class="w-4 h-4 rounded bg-blue-500 flex items-center justify-center">
+                            <span class="text-white text-xs">👥</span>
                           </div>
-                          <div class="min-w-0 flex-1">
-                            <p class="text-xs font-medium truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
-                              {{ follower.firstname }} {{ follower.lastname }}
-                            </p>
-                            <p class="text-xs truncate" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                              {{ follower.type === 'user' ? 'Usuario' : 'Contacto' }}
-                            </p>
+                          <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                            Seguidores Internos ({{ internalFollowers.length }})
+                          </h4>
+                        </div>
+                        <div class="space-y-2 ml-6">
+                          <div 
+                            v-for="follower in internalFollowers" 
+                            :key="`internal-${follower.contact_id}`"
+                            class="flex items-center justify-between p-2 rounded-lg border" 
+                            :class="isDark ? 'bg-blue-900/20 border-blue-700/30' : 'bg-blue-50 border-blue-200'"
+                          >
+                            <div class="flex items-center space-x-2">
+                              <div class="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-xs font-medium text-white">
+                                {{ getUserInitials(follower.fullname || `${follower.firstname || ''} ${follower.lastname || ''}`.trim()) }}
+                              </div>
+                              <div>
+                                <div class="text-xs font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                  {{ follower.fullname || `${follower.firstname || ''} ${follower.lastname || ''}`.trim() }}
+                                </div>
+                                <div class="text-xs text-blue-600">
+                                  Usuario interno • {{ follower.email || `ID: ${follower.user_id}` }}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <button
+                              @click="removeFollower(follower.contact_id, 'user')"
+                              :disabled="loadingFollowers"
+                              class="p-1 text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              title="Eliminar seguidor"
+                            >
+                              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
                           </div>
                         </div>
-                        
-                        <button
-                          @click="removeFollower(follower.id, follower.type)"
-                          :disabled="loadingFollowers"
-                          class="p-1 text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                          title="Eliminar seguidor"
-                        >
-                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                      </div>
+
+                      <!-- Seguidores Externos -->
+                      <div v-if="externalFollowers.length > 0">
+                        <div class="flex items-center space-x-2 mb-2">
+                          <div class="w-4 h-4 rounded bg-green-500 flex items-center justify-center">
+                            <span class="text-white text-xs">📧</span>
+                          </div>
+                          <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                            Seguidores Externos ({{ externalFollowers.length }})
+                          </h4>
+                        </div>
+                        <div class="space-y-2 ml-6">
+                          <div 
+                            v-for="follower in externalFollowers" 
+                            :key="`external-${follower.contact_id}`"
+                            class="flex items-center justify-between p-2 rounded-lg border" 
+                            :class="isDark ? 'bg-green-900/20 border-green-700/30' : 'bg-green-50 border-green-200'"
+                          >
+                            <div class="flex items-center space-x-2">
+                              <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-xs font-medium text-white">
+                                {{ getUserInitials(follower.fullname || `${follower.firstname || ''} ${follower.lastname || ''}`.trim()) }}
+                              </div>
+                              <div>
+                                <div class="text-xs font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                                  {{ follower.fullname || `${follower.firstname || ''} ${follower.lastname || ''}`.trim() }}
+                                </div>
+                                <div class="text-xs text-green-600">
+                                  {{ follower.company_name }} • {{ follower.email || follower.phone || follower.phone_mobile || 'Sin contacto' }}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <button
+                              @click="removeFollower(follower.contact_id, 'contact')"
+                              :disabled="loadingFollowers"
+                              class="p-1 text-red-500 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              title="Eliminar seguidor"
+                            >
+                              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     
@@ -1619,6 +1686,8 @@ const showInterventions = ref(false) // Control visibility of interventions list
 
 // Followers state (internally intervinientes/contacts)
 const ticketFollowers = ref([])
+const internalFollowers = ref([]) // Usuarios internos de Dolibarr
+const externalFollowers = ref([]) // Contactos externos del cliente
 const availableUsers = ref([])
 const availableContacts = ref([])
 const selectedFollower = ref('')
@@ -2261,17 +2330,74 @@ const selectAssignedUser = (userId, displayText) => {
 // Followers methods (internally fetches intervinientes/contacts)
 const fetchTicketFollowers = async (ticketId) => {
   try {
-    console.log('🔍 Obteniendo intervinientes del ticket con endpoint personalizado:', ticketId)
+    console.log('🔍 Obteniendo seguidores del ticket:', ticketId)
     const response = await http.get(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
-    ticketFollowers.value = response.data || []
-    console.log('✅ Intervinientes obtenidos del endpoint personalizado:', ticketFollowers.value.length)
-    if (ticketFollowers.value.length > 0) {
-      console.log('📋 Primer interviniente:', ticketFollowers.value[0])
+    
+    console.log('📋 Raw API Response:', response)
+    console.log('📋 Response Data:', response.data)
+    console.log('📋 Response Data Type:', typeof response.data)
+    console.log('📋 Response Data Keys:', response.data ? Object.keys(response.data) : 'No data')
+    
+    // Los contactos están en response.data.contacts, no directamente en response.data
+    const allFollowers = response.data?.contacts || []
+    ticketFollowers.value = allFollowers
+    
+    console.log('📋 Contacts Array:', allFollowers)
+    console.log('📋 Contacts Length:', allFollowers.length)
+    
+    // Log each follower to understand structure
+    if (allFollowers.length > 0) {
+      console.log('📋 Analizando estructura de seguidores:')
+      allFollowers.forEach((follower, index) => {
+        console.log(`  Seguidor ${index + 1}:`, follower)
+        console.log(`    - Keys:`, Object.keys(follower))
+        console.log(`    - type:`, follower.type)
+        console.log(`    - source:`, follower.source)
+        console.log(`    - is_internal:`, follower.is_internal)
+        console.log(`    - element_type:`, follower.element_type)
+        console.log(`    - fk_element:`, follower.fk_element)
+      })
     }
+    
+    // Separar internos y externos basado en user_id
+    internalFollowers.value = allFollowers.filter(follower => {
+      // Si tiene user_id (no null), es un usuario interno de Dolibarr
+      const isInternal = follower.user_id !== null && follower.user_id !== undefined
+      
+      console.log(`🔍 Follower ${follower.contact_id} (${follower.fullname}) es interno?`, isInternal, {
+        user_id: follower.user_id,
+        contact_source: follower.contact_source,
+        contact_type_code: follower.contact_type_code
+      })
+      
+      return isInternal
+    })
+    
+    externalFollowers.value = allFollowers.filter(follower => {
+      // Si user_id es null, es un contacto externo del cliente
+      const isExternal = follower.user_id === null || follower.user_id === undefined
+      
+      console.log(`🔍 Follower ${follower.contact_id} (${follower.fullname}) es externo?`, isExternal, {
+        user_id: follower.user_id,
+        contact_source: follower.contact_source,
+        company_name: follower.company_name
+      })
+      
+      return isExternal
+    })
+    
+    console.log('✅ Seguidores clasificados:', {
+      total: allFollowers.length,
+      internos: internalFollowers.value.length,
+      externos: externalFollowers.value.length
+    })
+    
   } catch (error) {
-    console.warn('⚠️ Error obteniendo intervinientes del endpoint personalizado:', error)
+    console.warn('⚠️ Error obteniendo seguidores:', error)
     console.warn('⚠️ Error details:', error.response?.data)
     ticketFollowers.value = []
+    internalFollowers.value = []
+    externalFollowers.value = []
   }
 }
 
@@ -2661,6 +2787,8 @@ const fetchTickets = async () => {
     const ticketsData = response.data || []
     
     // Enrich tickets with tercero names and assigned user names using cached data
+    console.log('🔄 Enriching tickets - Users available:', users.value.length, 'Terceros available:', terceros.value.length)
+    
     tickets.value = ticketsData.map(ticket => {
       // Enrich with tercero name
       if (ticket.fk_soc && terceros.value.length > 0) {
@@ -2675,7 +2803,12 @@ const fetchTickets = async () => {
         const user = users.value.find(u => u.id == ticket.fk_user_assign)
         if (user) {
           ticket.assigned_to = `${user.firstname || ''} ${user.lastname || ''}`.trim() || user.login
+          console.log(`👤 Ticket ${ticket.id} assigned to: ${ticket.assigned_to} (User ID: ${ticket.fk_user_assign})`)
+        } else {
+          console.log(`⚠️ User not found for ticket ${ticket.id} (User ID: ${ticket.fk_user_assign})`)
         }
+      } else if (ticket.fk_user_assign) {
+        console.log(`⚠️ No users loaded for ticket ${ticket.id} (User ID: ${ticket.fk_user_assign})`)
       }
       
       return ticket
@@ -2772,17 +2905,12 @@ const fetchTerceros = async () => {
 
 const fetchUsers = async () => {
   try {
-    console.log('🔍 Fetching ticket details for ID:', ticket.id)
-    const response = await http.get(`/api/doli/tickets/${ticket.id}`)
-    console.log('✅ Ticket details response:', response)
-    ticketDetails.value = response.data
+    console.log('👥 Fetching users...')
+    const response = await http.get('/api/doli/users?limit=1000&status=1')
+    users.value = response.data || []
+    console.log('✅ Users loaded:', users.value.length)
   } catch (error) {
-    console.error('❌ Error fetching ticket details:', error)
-    console.error('Error details:', error.response?.data)
-    console.error('Error status:', error.response?.status)
-    console.error('Error config:', error.config)
-  } finally {
-    loadingDetails.value = false
+    console.error('❌ Error fetching users:', error)
   }
 }
 
@@ -3169,10 +3297,17 @@ const closeModal = async () => {
     loadingDetails.value = false
     
     // Force refresh tickets after closing modal
-    console.log('🔄 Refreshing tickets after modal close...')
+    console.log('🔄 Refreshing data after modal close...')
     await nextTick() // Wait for DOM updates
+    
+    // Reload users and terceros first, then tickets
+    await Promise.all([
+      fetchUsers(),
+      fetchTerceros()
+    ])
     await fetchTickets()
-    console.log('✅ Modal closed and tickets refreshed successfully')
+    
+    console.log('✅ Modal closed and data refreshed successfully')
   } catch (error) {
     console.error('❌ Error closing modal:', error)
   }
@@ -3348,6 +3483,13 @@ const closeDropdowns = (event) => {
 
 onMounted(async () => {
   try {
+    // Load users and terceros first to enrich ticket data
+    await Promise.all([
+      fetchUsers(),
+      fetchTerceros()
+    ])
+    
+    // Then load tickets with enriched data
     await fetchTickets()
   } catch (error) {
     console.error('❌ Error loading tickets:', error)
@@ -3802,6 +3944,48 @@ const downloadDocument = (doc) => {
   }
 }
 
+// Function to get user initials from full name
+const getUserInitials = (fullName) => {
+  if (!fullName || fullName === '-') return '?'
+  
+  const names = fullName.trim().split(' ')
+  if (names.length === 1) {
+    // Single name, take first 2 characters
+    return names[0].substring(0, 2).toUpperCase()
+  } else {
+    // Multiple names, take first letter of first and last name
+    const firstName = names[0]
+    const lastName = names[names.length - 1]
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase()
+  }
+}
+
+// Function to get consistent avatar color based on name
+const getUserAvatarColor = (fullName) => {
+  if (!fullName || fullName === '-') return 'bg-gray-500'
+  
+  const colors = [
+    'bg-blue-500',
+    'bg-green-500', 
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-indigo-500',
+    'bg-red-500',
+    'bg-yellow-500',
+    'bg-teal-500',
+    'bg-orange-500',
+    'bg-cyan-500'
+  ]
+  
+  // Generate consistent color based on name hash
+  let hash = 0
+  for (let i = 0; i < fullName.length; i++) {
+    hash = fullName.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  
+  return colors[Math.abs(hash) % colors.length]
+}
+
 // Watch for ticket details changes to load project and user info
 watch(ticketDetails, async (newDetails) => {
   // Solo ejecutar si hay detalles del ticket (no null)
@@ -3809,6 +3993,9 @@ watch(ticketDetails, async (newDetails) => {
     // Limpiar datos cuando se cierra el modal
     currentProject.value = null
     currentAssignedUser.value = null
+    ticketFollowers.value = []
+    internalFollowers.value = []
+    externalFollowers.value = []
     return
   }
   
