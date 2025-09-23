@@ -20,11 +20,12 @@ class AuthController extends Controller
         $login = $request->input('login');
         $password = $request->input('password');
 
-        // Autenticar con Dolibarr API usando el endpoint de login estándar
+        // Autenticar con Dolibarr API usando GET con query parameters
         try {
             $response = PleskHttpClient::get(config('services.dolibarr.base_url') . '/login', [
                 'login' => $login,
-                'password' => $password
+                'password' => $password,
+                'includepermissions' => 1  // Incluir permisos del usuario
             ]);
 
             if ($response->successful()) {
@@ -34,14 +35,25 @@ class AuthController extends Controller
                 $token = null;
                 $permissions = [];
                 
-                // El endpoint /login devuelve directamente el token como string
-                $token = is_string($data) ? $data : ($data['success']['token'] ?? $data['token'] ?? null);
+                if (is_array($data)) {
+                    // Si la respuesta es un array, buscar token y permisos
+                    $token = $data['success']['token'] ?? $data['token'] ?? null;
+                    $permissions = $data['success']['permissions'] ?? $data['permissions'] ?? [];
+                    
+                    // Si no encontramos token en success, buscar en el nivel superior
+                    if (!$token) {
+                        $token = $data;
+                    }
+                } else {
+                    // Si la respuesta es string, es el token
+                    $token = $data;
+                }
                 
-                Log::info('Login successful, token obtained:', [
+                Log::info('Login response data:', [
                     'has_token' => !empty($token),
-                    'token_length' => strlen($token ?? '')
+                    'has_permissions' => !empty($permissions),
+                    'permissions_count' => count($permissions)
                 ]);
-                
                 
                 // Intentar obtener información del usuario usando diferentes enfoques
                 // Nota: La API login no devuelve ID, necesitamos obtenerlo de otra forma
@@ -156,57 +168,13 @@ class AuthController extends Controller
                 
                 $request->session()->put('dolibarr_user', $userData);
                 
-                // Ahora obtener los permisos usando el endpoint correcto con contraseña
-                if (!empty($token)) {
-                    try {
-                        $permissionsUrl = config('services.dolibarr.base_url') . '/users/login/' . $login . '?includepermissions=1';
-                        Log::info('Getting permissions from: ' . $permissionsUrl);
-                        
-                        // Este endpoint solo requiere la API key
-                        $permissionsResponse = PleskHttpClient::withDolibarrApiKey()->get($permissionsUrl);
-                        
-                        if ($permissionsResponse->successful()) {
-                            $permissionsData = $permissionsResponse->json();
-                            Log::info('Permissions response structure:', [
-                                'response_keys' => array_keys($permissionsData),
-                                'has_success' => isset($permissionsData['success']),
-                                'success_keys' => isset($permissionsData['success']) ? array_keys($permissionsData['success']) : []
-                            ]);
-                            
-                            // Los permisos están en success.rights
-                            $permissions = $permissionsData['success']['rights'] ?? $permissionsData['rights'] ?? [];
-                            
-                            if (!empty($permissions)) {
-                                Log::info('Permissions obtained successfully:', [
-                                    'permissions_count' => count($permissions),
-                                    'sample_permissions' => array_slice(array_keys($permissions), 0, 5)
-                                ]);
-                            } else {
-                                Log::warning('Permissions endpoint returned empty permissions');
-                            }
-                        } else {
-                            Log::warning('Failed to get permissions: HTTP ' . $permissionsResponse->status() . ' - ' . $permissionsResponse->body());
-                        }
-                    } catch (\Exception $e) {
-                        Log::warning('Failed to get permissions: ' . $e->getMessage());
-                    }
-                }
-
                 // Almacenar permisos de forma segura en la sesión del servidor
                 // Los permisos NO se envían al frontend para evitar manipulación
                 $request->session()->put('dolibarr_permissions', $permissions);
                 
-                // Procesar permisos para logging
-                $flatPermissions = $this->flattenPermissions($permissions);
-                $activePermissions = array_keys(array_filter($flatPermissions, function($value) {
-                    return $value === true || $value === 1 || $value === '1';
-                }));
-                
                 Log::info('Permissions stored in server session:', [
-                    'raw_permissions_count' => count($permissions),
-                    'flat_permissions_count' => count($flatPermissions),
-                    'active_permissions_count' => count($activePermissions),
-                    'sample_active_permissions' => array_slice($activePermissions, 0, 10) // Mostrar algunos permisos activos
+                    'permissions_count' => count($permissions),
+                    'sample_permissions' => array_slice(array_keys($permissions), 0, 5) // Solo mostrar algunos nombres
                 ]);
                 
                 Log::info('User data stored in session:', $request->session()->get('dolibarr_user'));
@@ -243,11 +211,8 @@ class AuthController extends Controller
         $permissions = $request->session()->get('dolibarr_permissions', []);
         $requestedPermission = $request->input('permission');
         
-        // Convertir permisos a formato plano
-        $flatPermissions = $this->flattenPermissions($permissions);
-        
         // Verificar si el usuario tiene el permiso solicitado
-        $hasPermission = isset($flatPermissions[$requestedPermission]) && $flatPermissions[$requestedPermission];
+        $hasPermission = isset($permissions[$requestedPermission]) && $permissions[$requestedPermission];
         
         Log::info('Permission check:', [
             'permission' => $requestedPermission,
@@ -265,76 +230,14 @@ class AuthController extends Controller
     {
         $permissions = $request->session()->get('dolibarr_permissions', []);
         
-        // Procesar permisos anidados de Dolibarr y convertirlos a formato plano
-        $flatPermissions = $this->flattenPermissions($permissions);
-        
         // Solo devolver los nombres de los permisos que están activos (true)
-        $activePermissions = array_keys(array_filter($flatPermissions, function($value) {
+        $activePermissions = array_keys(array_filter($permissions, function($value) {
             return $value === true || $value === 1 || $value === '1';
         }));
         
         return response()->json([
             'permissions' => $activePermissions,
             'count' => count($activePermissions)
-        ]);
-    }
-
-    /**
-     * Convierte la estructura anidada de permisos de Dolibarr a formato plano
-     */
-    private function flattenPermissions($permissions, $prefix = '')
-    {
-        $flat = [];
-        
-        foreach ($permissions as $key => $value) {
-            $fullKey = $prefix ? $prefix . '.' . $key : $key;
-            
-            if (is_array($value)) {
-                // Si es un array, procesar recursivamente
-                $flat = array_merge($flat, $this->flattenPermissions($value, $fullKey));
-            } else {
-                // Si es un valor, agregarlo al array plano
-                $flat[$fullKey] = $value;
-            }
-        }
-        
-        return $flat;
-    }
-
-    public function debugPermissions(Request $request)
-    {
-        $rawPermissions = $request->session()->get('dolibarr_permissions', []);
-        $flatPermissions = $this->flattenPermissions($rawPermissions);
-        
-        // También probar la llamada directa a Dolibarr
-        $directTest = null;
-        try {
-            $testUrl = config('services.dolibarr.base_url') . '/users/login/ch_admin?includepermissions=1';
-            $testResponse = PleskHttpClient::withDolibarrApiKey()->get($testUrl);
-            
-            $directTest = [
-                'url' => $testUrl,
-                'status' => $testResponse->status(),
-                'successful' => $testResponse->successful(),
-                'response_keys' => $testResponse->successful() ? array_keys($testResponse->json()) : null,
-                'has_success' => $testResponse->successful() ? isset($testResponse->json()['success']) : false,
-                'response_sample' => $testResponse->successful() ? array_slice($testResponse->json(), 0, 3, true) : $testResponse->body()
-            ];
-        } catch (\Exception $e) {
-            $directTest = ['error' => $e->getMessage()];
-        }
-        
-        return response()->json([
-            'session_permissions' => [
-                'raw_permissions' => $rawPermissions,
-                'raw_count' => count($rawPermissions),
-                'flat_permissions' => $flatPermissions,
-                'flat_count' => count($flatPermissions),
-                'active_permissions' => array_keys(array_filter($flatPermissions, function($value) {
-                    return $value === true || $value === 1 || $value === '1';
-                }))
-            ],
-            'direct_dolibarr_test' => $directTest
         ]);
     }
 
