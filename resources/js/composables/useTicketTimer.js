@@ -47,7 +47,7 @@ const loadTimersFromStorage = () => {
       //  console.log('🔄 Timers restaurados desde localStorage:', timersData)
     }
   } catch (error) {
-    console.error('❌ Error cargando timers desde localStorage:', error)
+    // console.error('❌ Error cargando timers desde localStorage:', error)
   }
 }
 

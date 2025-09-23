@@ -12,9 +12,9 @@ export function useInterventions() {
 
   // Fetch user interventions
   const fetchUserInterventions = async (forceRefresh = false) => {
-     console.log('=== fetchUserInterventions called ===')
-     console.log('Auth store user:', authStore.user)
-     console.log('Force refresh:', forceRefresh)
+     // console.log('=== fetchUserInterventions called ===')
+     // console.log('Auth store user:', authStore.user)
+     // console.log('Force refresh:', forceRefresh)
     
     if (!authStore.user?.id) {
       console.warn('No user ID available for fetching interventions')
@@ -24,16 +24,16 @@ export function useInterventions() {
     // Check if we need to refresh (force or older than 5 minutes)
     const now = Date.now()
     if (!forceRefresh && lastFetch.value && (now - lastFetch.value) < 5 * 60 * 1000) {
-       console.log('Using cached interventions, last fetch was recent')
+       // console.log('Using cached interventions, last fetch was recent')
       return interventions.value
     }
 
     loading.value = true
-     console.log('Starting interventions fetch...')
+     // console.log('Starting interventions fetch...')
     
     try {
       const userId = authStore.user.id
-       console.log('Fetching interventions for user ID:', userId)
+       // console.log('Fetching interventions for user ID:', userId)
       
       const response = await http.get('/api/doli/interventions', {
         params: {
@@ -45,8 +45,8 @@ export function useInterventions() {
         }
       })
 
-       console.log('API Response:', response)
-       console.log('Response data:', response.data)
+       // console.log('API Response:', response)
+       // console.log('Response data:', response.data)
 
       if (response.data && Array.isArray(response.data)) {
         interventions.value = response.data
@@ -59,10 +59,10 @@ export function useInterventions() {
           userId: userId
         }))
         
-         console.log(`✅ Fetched ${interventions.value.length} interventions for user ${userId}`)
-         console.log('Interventions data:', interventions.value)
+         // console.log(`✅ Fetched ${interventions.value.length} interventions for user ${userId}`)
+         // console.log('Interventions data:', interventions.value)
       } else {
-         console.log('No interventions data or invalid format')
+         // console.log('No interventions data or invalid format')
         interventions.value = []
       }
     } catch (error) {
@@ -97,23 +97,23 @@ export function useInterventions() {
 
   // Get interventions for a specific ticket
   const getInterventionsForTicket = (ticketId) => {
-     console.log('=== getInterventionsForTicket called ===')
-     console.log('Ticket ID:', ticketId)
-     console.log('Available interventions:', interventions.value.length)
+     // console.log('=== getInterventionsForTicket called ===')
+     // console.log('Ticket ID:', ticketId)
+     // console.log('Available interventions:', interventions.value.length)
     
     
     const filtered = interventions.value.filter(intervention => {
-       console.log(`Checking intervention ${intervention.ref}:`, intervention.linkedObjectsIds)
+       // console.log(`Checking intervention ${intervention.ref}:`, intervention.linkedObjectsIds)
       
       // Método 1: Verificar vinculación por linkedObjectsIds (base de datos)
       if (intervention.linkedObjectsIds && intervention.linkedObjectsIds.ticket && typeof intervention.linkedObjectsIds.ticket === 'object') {
         // Structure: { "ticket": { "366": "438" } }
         // The values are the actual ticket IDs
         const ticketIds = Object.values(intervention.linkedObjectsIds.ticket)
-         console.log(`  Found ticket IDs for ${intervention.ref}:`, ticketIds)
+         // console.log(`  Found ticket IDs for ${intervention.ref}:`, ticketIds)
         
         const matches = ticketIds.some(id => String(id) === String(ticketId))
-         console.log(`  Matches ticket ${ticketId}:`, matches)
+         // console.log(`  Matches ticket ${ticketId}:`, matches)
         if (matches) return true
       }
       
@@ -121,21 +121,21 @@ export function useInterventions() {
       if (intervention.note_private) {
         const noteMatch = intervention.note_private.includes(`[TICKET_LINK]`) && 
                          intervention.note_private.includes(`(ID: ${ticketId})`)
-         console.log(`  Note-based link for ${intervention.ref}:`, noteMatch)
+         // console.log(`  Note-based link for ${intervention.ref}:`, noteMatch)
         if (noteMatch) return true
       }
       
       // Método 3: Verificar vinculación por descripción (método anterior)
       if (intervention.desc && intervention.desc.includes(`(ID: ${ticketId})`)) {
-         console.log(`  Description-based link for ${intervention.ref}: true`)
+         // console.log(`  Description-based link for ${intervention.ref}: true`)
         return true
       }
       
-       console.log(`  No link found for ${intervention.ref}`)
+       // console.log(`  No link found for ${intervention.ref}`)
       return false
     })
     
-     console.log(`Found ${filtered.length} interventions for ticket ${ticketId}`)
+     // console.log(`Found ${filtered.length} interventions for ticket ${ticketId}`)
     return filtered
   }
 

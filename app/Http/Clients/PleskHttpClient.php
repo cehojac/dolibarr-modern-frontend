@@ -66,4 +66,14 @@ class PleskHttpClient
             'DOLAPIKEY' => $token,
         ]);
     }
+    
+    /**
+     * Cliente con token específico
+     */
+    public static function withToken(string $token): PendingRequest
+    {
+        return self::create()->withHeaders([
+            'DOLAPIKEY' => $token,
+        ]);
+    }
 }

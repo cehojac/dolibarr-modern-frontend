@@ -38,9 +38,9 @@ export const useAuthStore = defineStore('auth', {
         // Cargar permisos del usuario
         try {
           await permissionsStore.fetchPermissions()
-          console.log('Permisos del usuario cargados correctamente')
+          // console.log('Permisos del usuario cargados correctamente')
         } catch (permissionError) {
-          console.warn('Error al cargar permisos del usuario:', permissionError)
+          // console.warn('Error al cargar permisos del usuario:', permissionError)
           // No interrumpir el login por este error
         }
         
@@ -48,9 +48,9 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.user && response.data.user.id) {
           try {
             await interventionsStore.fetchUserInterventions(response.data.user.id)
-            console.log('Intervenciones del usuario cargadas correctamente')
+            // console.log('Intervenciones del usuario cargadas correctamente')
           } catch (interventionError) {
-            console.warn('Error al cargar intervenciones del usuario:', interventionError)
+            // console.warn('Error al cargar intervenciones del usuario:', interventionError)
             // No interrumpir el login por este error
           }
         }
@@ -74,7 +74,7 @@ export const useAuthStore = defineStore('auth', {
         await http.post('/api/auth/logout')
         notificationStore.addNotification('info', 'Sesión cerrada', 'Has cerrado sesión correctamente')
       } catch (error) {
-        console.error('Logout error:', error)
+        // console.error('Logout error:', error)
       } finally {
         this.isAuthenticated = false
         this.user = null
@@ -117,7 +117,7 @@ export const useAuthStore = defineStore('auth', {
             this.checkAuth()
           }
         } catch (error) {
-          console.error('Error parsing stored auth data:', error)
+          // console.error('Error parsing stored auth data:', error)
           localStorage.removeItem('dolibarr-auth')
         }
       }

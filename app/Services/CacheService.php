@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class CacheService
 {
@@ -30,11 +29,9 @@ class CacheService
         
         try {
             return Cache::remember($cacheKey, $ttl, function () use ($callback, $key) {
-                Log::info("Cache miss for key: {$key}");
                 return $callback();
             });
         } catch (\Exception $e) {
-            Log::error("Cache error for key {$key}: " . $e->getMessage());
             // Si falla el caché, ejecutar directamente el callback
             return $callback();
         }
@@ -51,7 +48,6 @@ class CacheService
         try {
             return Cache::put($cacheKey, $value, $ttl);
         } catch (\Exception $e) {
-            Log::error("Failed to cache key {$key}: " . $e->getMessage());
             return false;
         }
     }
@@ -66,7 +62,6 @@ class CacheService
         try {
             return Cache::get($cacheKey, $default);
         } catch (\Exception $e) {
-            Log::error("Failed to get cache key {$key}: " . $e->getMessage());
             return $default;
         }
     }
@@ -81,7 +76,6 @@ class CacheService
         try {
             return Cache::forget($cacheKey);
         } catch (\Exception $e) {
-            Log::error("Failed to forget cache key {$key}: " . $e->getMessage());
             return false;
         }
     }
@@ -108,7 +102,6 @@ class CacheService
                 $deleted = 1;
             }
         } catch (\Exception $e) {
-            Log::error("Failed to forget pattern {$pattern}: " . $e->getMessage());
         }
         
         return $deleted;
@@ -137,10 +130,8 @@ class CacheService
                 $this->forgetByPattern($pattern);
             }
             
-            Log::info("Cleared cache for module: {$module}");
             return true;
         } catch (\Exception $e) {
-            Log::error("Failed to clear module cache {$module}: " . $e->getMessage());
             return false;
         }
     }
@@ -158,10 +149,8 @@ class CacheService
                 $this->forgetModule($module);
             }
             
-            Log::info("Flushed all Dolibarr cache");
             return true;
         } catch (\Exception $e) {
-            Log::error("Failed to flush cache: " . $e->getMessage());
             return false;
         }
     }
@@ -233,7 +222,6 @@ class CacheService
         try {
             return Cache::has($cacheKey);
         } catch (\Exception $e) {
-            Log::error("Failed to check cache key {$key}: " . $e->getMessage());
             return false;
         }
     }

@@ -6,7 +6,7 @@
         <div>
           <h1 class="text-2xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Clientes</h1>
           <div class="flex items-center mt-1">
-            <span class="text-sm text-gray-500">Gestión de clientes activos</span>
+            <span class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Gestión de clientes activos</span>
           </div>
         </div>
       </div>
@@ -15,31 +15,31 @@
     <!-- Métricas Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
       <!-- Total Clients -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalClients }}</div>
-        <div class="text-sm text-gray-500">Total Clientes</div>
+        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Total Clientes</div>
       </div>
       
       <!-- Active Clients -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold text-green-600">{{ activeClients }}</div>
         <div class="text-sm text-green-600">Activos</div>
       </div>
       
       <!-- New This Month -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold text-blue-600">{{ newThisMonth }}</div>
         <div class="text-sm text-blue-600">Nuevos Este Mes</div>
       </div>
       
       <!-- VIP Clients -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold text-purple-600">{{ vipClients }}</div>
         <div class="text-sm text-purple-600">VIP</div>
       </div>
       
       <!-- Revenue This Month -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold text-yellow-600">{{ formatCurrency(monthlyRevenue) }}</div>
         <div class="text-sm text-yellow-600">Facturación Mensual</div>
       </div>
@@ -48,7 +48,8 @@
     <!-- Action Buttons -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center space-x-3">
-        <button class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+        <button class="px-4 py-2 rounded-lg text-sm font-medium flex items-center text-white"
+                :class="isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-900 hover:bg-gray-800'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
@@ -78,9 +79,9 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-blue-600 hover:text-blue-800 text-sm">Export</button>
-        <button class="text-blue-600 hover:text-blue-800 text-sm">Bulk Actions</button>
-        <button class="text-gray-500 hover:text-gray-700" @click="loadClients">
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadClients">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
@@ -103,12 +104,12 @@
     </div>
 
     <!-- Tabla de Clientes -->
-    <div class="bg-white rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+    <div class="rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto">
-        <table class="min-w-full">
-          <thead class="bg-gray-50" :class="isDark ? 'bg-gray-700' : ''">
+        <table class="min-w-full" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+          <thead :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-400' : ''">
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-300' : 'text-gray-500'">
                 <div class="flex items-center">
                   ID
                   <svg class="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -116,17 +117,17 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Empresa</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Contacto Principal</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Teléfono</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Estado</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Categoría</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Fecha Creación</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Acciones</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Empresa</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Contacto Principal</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Email</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Teléfono</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Categoría</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Fecha Creación</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Acciones</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200" :class="isDark ? 'bg-gray-800 divide-gray-700' : ''">
+          <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
               <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center justify-center space-x-2">
@@ -140,7 +141,7 @@
                 <span class="text-sm">No se encontraron clientes</span>
               </td>
             </tr>
-            <tr v-else v-for="client in paginatedClients" :key="client.id" class="hover:bg-gray-50 transition-colors" :class="isDark ? 'hover:bg-gray-700' : ''">
+            <tr v-else v-for="client in paginatedClients" :key="client.id" class="transition-colors" :class="isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'">
               <!-- ID -->
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ client.id }}
@@ -156,7 +157,7 @@
                   </div>
                   <div class="ml-4">
                     <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ client.name }}</div>
-                    <div class="text-sm text-gray-500">{{ client.code_client || 'Sin código' }}</div>
+                    <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ client.code_client || 'Sin código' }}</div>
                   </div>
                 </div>
               </td>
@@ -193,7 +194,8 @@
               
               <!-- Categoría -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full" 
+                      :class="isDark ? 'bg-green-800 text-green-200' : 'bg-green-100 text-green-800'">
                   Cliente
                 </span>
               </td>
@@ -208,7 +210,8 @@
                 <div class="flex items-center justify-end space-x-2">
                   <button 
                     @click="viewClient(client)"
-                    class="text-blue-600 hover:text-blue-800 transition-colors"
+                    class="transition-colors"
+                    :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
                     title="Ver"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -218,7 +221,8 @@
                   </button>
                   <button 
                     @click="editClient(client)"
-                    class="text-yellow-600 hover:text-yellow-800 transition-colors"
+                    class="transition-colors"
+                    :class="isDark ? 'text-yellow-400 hover:text-yellow-300' : 'text-yellow-600 hover:text-yellow-800'"
                     title="Editar"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
