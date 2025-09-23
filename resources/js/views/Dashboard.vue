@@ -62,7 +62,7 @@
       </PermissionGuard>
 
       <!-- Tickets Card -->
-      <PermissionGuard permission="ticket->lire" show-fallback>
+      <PermissionGuard permission="ticket->read" show-fallback>
         <div
           class="border rounded-xl p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
           @click="$router.push('/tickets')"

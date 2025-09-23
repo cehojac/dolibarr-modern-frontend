@@ -165,9 +165,9 @@ export function usePermissions() {
     
     // Permisos de tickets
     tickets: {
-      read: () => hasPermission('ticket->lire'),
-      write: () => hasPermission('ticket->creer'),
-      delete: () => hasPermission('ticket->supprimer')
+      read: () => hasPermission('ticket->read'),
+      write: () => hasPermission('ticket->write'),
+      delete: () => hasPermission('ticket->delete')
     },
     
     // Permisos de intervenciones
