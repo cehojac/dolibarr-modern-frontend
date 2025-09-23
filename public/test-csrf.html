@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test CSRF - Dolibarr Modern Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test CSRF y Proxy Dolibarr</h1>
+    
+    <div class="info">
+        <p>Este test verifica que:</p>
+        <ul>
+            <li>Las rutas <code>/api/doli/*</code> NO requieren CSRF token</li>
+            <li>El proxy hacia Dolibarr funciona correctamente</li>
+            <li>Axios está configurado sin CSRF para APIs</li>
+        </ul>
+    </div>
+    
+    <h2>Tests disponibles:</h2>
+    <button onclick="testApiDoli()">Test /api/doli/users (sin CSRF)</button>
+    <button onclick="testApiAuth()">Test /api/auth/me (sin CSRF)</button>
+    <button onclick="testRegularRoute()">Test ruta regular (con CSRF)</button>
+    
+    <div id="results"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Configurar axios igual que en la app
+        const http = axios.create({
+            baseURL: '/',
+            timeout: 10000,
+            withCredentials: false,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        
+        // Request interceptor - NO CSRF para rutas API
+        http.interceptors.request.use(
+            (config) => {
+                // Solo agregar CSRF token si NO es una ruta API de Dolibarr
+                if (config.url && !config.url.startsWith('/api/doli/')) {
+                    const token = document.head.querySelector('meta[name="csrf-token"]')
+                    if (token && token.content) {
+                        config.headers['X-CSRF-TOKEN'] = token.content
+                    }
+                }
+                return config
+            },
+            (error) => {
+                return Promise.reject(error)
+            }
+        );
+        
+        function logResult(test, success, message, data = null) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = success ? 'success' : 'error';
+            div.innerHTML = `
+                <h3>${success ? '✅' : '❌'} ${test}</h3>
+                <p>${message}</p>
+                ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+            results.appendChild(div);
+        }
+        
+        async function testApiDoli() {
+            try {
+                const response = await http.get('/api/doli/users?limit=5');
+                logResult('API Doli Users', true, 'Llamada exitosa sin CSRF token', {
+                    status: response.status,
+                    dataLength: response.data?.length || 0
+                });
+            } catch (error) {
+                logResult('API Doli Users', false, `Error: ${error.message}`, {
+                    status: error.response?.status,
+                    message: error.response?.data?.message || error.message
+                });
+            }
+        }
+        
+        async function testApiAuth() {
+            try {
+                const response = await http.get('/api/auth/me');
+                logResult('API Auth Me', true, 'Llamada exitosa sin CSRF token', {
+                    status: response.status
+                });
+            } catch (error) {
+                logResult('API Auth Me', false, `Error: ${error.message}`, {
+                    status: error.response?.status,
+                    message: error.response?.data?.message || error.message
+                });
+            }
+        }
+        
+        async function testRegularRoute() {
+            try {
+                const response = await http.get('/');
+                logResult('Ruta Regular', true, 'Ruta regular funciona', {
+                    status: response.status
+                });
+            } catch (error) {
+                logResult('Ruta Regular', false, `Error: ${error.message}`, {
+                    status: error.response?.status
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -24,14 +24,36 @@ class AuthController extends Controller
         try {
             $response = PleskHttpClient::get(config('services.dolibarr.base_url') . '/login', [
                 'login' => $login,
-                'password' => $password
+                'password' => $password,
+                'includepermissions' => 1  // Incluir permisos del usuario
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 
-                // La API de Dolibarr devuelve directamente el token como string
-                $token = is_array($data) ? ($data['success']['token'] ?? $data) : $data;
+                // Extraer token y permisos de la respuesta
+                $token = null;
+                $permissions = [];
+                
+                if (is_array($data)) {
+                    // Si la respuesta es un array, buscar token y permisos
+                    $token = $data['success']['token'] ?? $data['token'] ?? null;
+                    $permissions = $data['success']['permissions'] ?? $data['permissions'] ?? [];
+                    
+                    // Si no encontramos token en success, buscar en el nivel superior
+                    if (!$token) {
+                        $token = $data;
+                    }
+                } else {
+                    // Si la respuesta es string, es el token
+                    $token = $data;
+                }
+                
+                Log::info('Login response data:', [
+                    'has_token' => !empty($token),
+                    'has_permissions' => !empty($permissions),
+                    'permissions_count' => count($permissions)
+                ]);
                 
                 // Intentar obtener información del usuario usando diferentes enfoques
                 // Nota: La API login no devuelve ID, necesitamos obtenerlo de otra forma
@@ -134,13 +156,25 @@ class AuthController extends Controller
                     Log::info('Extracted user ID:', ['user_id' => $userId]);
                 }
                 
-                $request->session()->put('dolibarr_user', [
+                // Almacenar datos del usuario en sesión
+                $userData = [
                     'id' => $userId,
                     'login' => $userInfo['login'] ?? $login,
                     'firstname' => $userInfo['firstname'] ?? $userInfo['name'] ?? '',
                     'lastname' => $userInfo['lastname'] ?? $userInfo['surname'] ?? '',
                     'email' => $userInfo['email'] ?? '',
                     'admin' => $userInfo['admin'] ?? 0,
+                ];
+                
+                $request->session()->put('dolibarr_user', $userData);
+                
+                // Almacenar permisos de forma segura en la sesión del servidor
+                // Los permisos NO se envían al frontend para evitar manipulación
+                $request->session()->put('dolibarr_permissions', $permissions);
+                
+                Log::info('Permissions stored in server session:', [
+                    'permissions_count' => count($permissions),
+                    'sample_permissions' => array_slice(array_keys($permissions), 0, 5) // Solo mostrar algunos nombres
                 ]);
                 
                 Log::info('User data stored in session:', $request->session()->get('dolibarr_user'));
@@ -168,10 +202,50 @@ class AuthController extends Controller
         ]);
     }
 
+    public function checkPermission(Request $request)
+    {
+        $request->validate([
+            'permission' => 'required|string'
+        ]);
+
+        $permissions = $request->session()->get('dolibarr_permissions', []);
+        $requestedPermission = $request->input('permission');
+        
+        // Verificar si el usuario tiene el permiso solicitado
+        $hasPermission = isset($permissions[$requestedPermission]) && $permissions[$requestedPermission];
+        
+        Log::info('Permission check:', [
+            'permission' => $requestedPermission,
+            'has_permission' => $hasPermission,
+            'user_id' => $request->session()->get('dolibarr_user.id')
+        ]);
+        
+        return response()->json([
+            'permission' => $requestedPermission,
+            'granted' => $hasPermission
+        ]);
+    }
+
+    public function getPermissions(Request $request)
+    {
+        $permissions = $request->session()->get('dolibarr_permissions', []);
+        
+        // Solo devolver los nombres de los permisos que están activos (true)
+        $activePermissions = array_keys(array_filter($permissions, function($value) {
+            return $value === true || $value === 1 || $value === '1';
+        }));
+        
+        return response()->json([
+            'permissions' => $activePermissions,
+            'count' => count($activePermissions)
+        ]);
+    }
+
     public function logout(Request $request)
     {
         $request->session()->forget('dolibarr_token');
         $request->session()->forget('dolibarr_user');
+        $request->session()->forget('dolibarr_permissions');
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return response()->json(['ok' => true]);
