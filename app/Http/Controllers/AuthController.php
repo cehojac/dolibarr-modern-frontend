@@ -154,11 +154,21 @@ class AuthController extends Controller
                             $permissionsData = $permissionsResponse->json();
                             
                             // Buscar permisos en diferentes ubicaciones de la respuesta
-                            $permissions = $permissionsData['rights'] ?? 
-                                          $permissionsData['permissions'] ?? 
-                                          $permissionsData['success']['rights'] ?? 
-                                          $permissionsData['success']['permissions'] ?? 
-                                          [];
+                            $rawPermissions = $permissionsData['rights'] ?? 
+                                            $permissionsData['permissions'] ?? 
+                                            $permissionsData['success']['rights'] ?? 
+                                            $permissionsData['success']['permissions'] ?? 
+                                            [];
+                            
+                            // Debug: mostrar estructura original
+                            error_log('Raw permissions from Dolibarr API: ' . json_encode($rawPermissions));
+                            
+                            // Procesar estructura anidada de permisos de Dolibarr
+                            $permissions = $this->flattenPermissions($rawPermissions);
+                            
+                            // Debug: mostrar permisos procesados
+                            error_log('Flattened permissions: ' . json_encode($permissions));
+                            error_log('Total permissions count: ' . count($permissions));
                             
                         } else {
                         }
@@ -252,5 +262,32 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Convierte la estructura anidada de permisos de Dolibarr a formato plano
+     * Ejemplo: ["user" => ["user" => ["lire" => 1]]] → ["user.user.lire" => 1]
+     */
+    private function flattenPermissions($permissions, $prefix = '')
+    {
+        $flattened = [];
+        
+        if (!is_array($permissions)) {
+            return $flattened;
+        }
+        
+        foreach ($permissions as $key => $value) {
+            $newKey = $prefix ? $prefix . '.' . $key : $key;
+            
+            if (is_array($value)) {
+                // Si es un array, recursivamente aplanar
+                $flattened = array_merge($flattened, $this->flattenPermissions($value, $newKey));
+            } else {
+                // Si es un valor, agregarlo al array plano
+                $flattened[$newKey] = $value;
+            }
+        }
+        
+        return $flattened;
     }
 }
