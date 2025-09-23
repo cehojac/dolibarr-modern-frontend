@@ -6,8 +6,8 @@ import router from '../router'
 // Create axios instance
 const http = axios.create({
   baseURL: '/',
-  timeout: 30000,
-  withCredentials: true, // Importante para cookies de sesión
+  timeout: 10000,
+  withCredentials: false, // Importante para cookies de sesión
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -15,15 +15,24 @@ const http = axios.create({
 })
 
 // Configurar token CSRF automáticamente
+/*
 const token = document.head.querySelector('meta[name="csrf-token"]')
 if (token) {
   http.defaults.headers.common['X-CSRF-TOKEN'] = token.content
 }
+  */
 
-// Request interceptor
+// Request interceptor - NO CSRF para rutas API
 http.interceptors.request.use(
   (config) => {
-    // Add any global request modifications here
+    // Solo agregar CSRF token si NO es una ruta API de Dolibarr
+    if (config.url && !config.url.startsWith('/api/doli/')) {
+      const token = document.head.querySelector('meta[name="csrf-token"]')
+      if (token && token.content) {
+        config.headers['X-CSRF-TOKEN'] = token.content
+      }
+    }
+    
     return config
   },
   (error) => {
