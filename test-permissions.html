@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Permissions</title>
+</head>
+<body>
+    <h1>Test de Permisos</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testPermissions()">Test Permissions</button>
+    <button onclick="testDebug()">Test Debug</button>
+    <button onclick="testDirectAPI()">Test Direct API</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testLogin() {
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
+                    body: JSON.stringify({
+                        login: 'ch_admin',
+                        password: 'Dolibarr2024!'
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testPermissions() {
+            try {
+                const response = await fetch('/api/auth/permissions');
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testDebug() {
+            try {
+                const response = await fetch('/api/auth/debug-permissions');
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<h3>Debug Permissions:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = 'Error: ' + error.message;
+            }
+        }
+
+        async function testDirectAPI() {
+            try {
+                // Primero hacer login para obtener token
+                const loginResponse = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        login: 'ch_admin',
+                        password: 'Dolibarr2024!'
+                    })
+                });
+                
+                if (loginResponse.ok) {
+                    // Ahora probar la API directa de Dolibarr
+                    const testUrl = 'https://gestion.carlos-herrera.consulting/api/index.php/users/ch_admin?includepermissions=1';
+                    document.getElementById('results').innerHTML = '<h3>Probando URL directa:</h3><p>' + testUrl + '</p><p>Revisa esta URL en tu navegador con tu token de API</p>';
+                } else {
+                    document.getElementById('results').innerHTML = 'Error en login: ' + await loginResponse.text();
+                }
+            } catch (error) {
+                document.getElementById('results').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
