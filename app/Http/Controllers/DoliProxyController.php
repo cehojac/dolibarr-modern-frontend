@@ -25,11 +25,6 @@ class DoliProxyController extends Controller
             return response()->json(['message' => 'No autenticado'], 401);
         }
 
-        // Debug: verificar qué contiene baseUrl
-        \Log::info('PROXY DEBUG baseUrl', [
-            'baseUrl' => $baseUrl,
-            'path' => $path
-        ]);
 
         // Construir URL específica para módulos personalizados
         if (str_contains($path, 'dolibarmodernfrontendapi')) {
@@ -37,13 +32,6 @@ class DoliProxyController extends Controller
             $token = config('services.dolibarr.api_key');
             // baseUrl ya incluye /api/index.php, solo agregar el path
             $url = $baseUrl . '/' . ltrim($path, '/');
-            \Log::info('PROXY: Módulo personalizado detectado', [
-                'path_original' => $path,
-                'baseUrl' => $baseUrl,
-                'url_construida' => $url,
-                'token_usado' => $token,
-                'token_length' => strlen($token ?? '')
-            ]);
         } else {
             $url = $baseUrl . '/' . ltrim($path, '/');
         }
@@ -103,20 +91,6 @@ class DoliProxyController extends Controller
             $requestData = $request->all();
         }
 
-        // Log para debug
-        if (str_contains($path, 'dolibarmodernfrontendapi') || str_contains($path, 'tickets')) {
-            \Log::info('PROXY DEBUG', [
-                'method' => $method,
-                'path_original' => $path,
-                'url_final' => $url,
-                'request_data' => $requestData,
-                'full_token' => substr($token, 0, 10) . '...',
-                'headers_sent' => [
-                    'DOLAPIKEY' => substr($token, 0, 10) . '...',
-                    'Accept' => 'application/json'
-                ]
-            ]);
-        }
 
         // Realizar la solicitud
         try {
@@ -143,29 +117,12 @@ class DoliProxyController extends Controller
             return response()->json(['error' => 'Error de conexión con Dolibarr: ' . $e->getMessage()], 500);
         }
 
-        // Log respuesta para módulo personalizado y tickets
-        if (str_contains($path, 'dolibarmodernfrontendapi') || str_contains($path, 'tickets')) {
-            \Log::info('PROXY RESPONSE', [
-                'path' => $path,
-                'status' => $response->status(),
-                'successful' => $response->successful(),
-                'body' => $response->body()
-            ]);
-        }
 
         // Procesar respuesta
         if ($response->successful()) {
             try {
                 $responseData = $response->json();
                 
-                // Log adicional para tickets
-                if (str_contains($path, 'tickets')) {
-                    \Log::info('PROXY SUCCESS PROCESSING', [
-                        'path' => $path,
-                        'response_data_type' => gettype($responseData),
-                        'response_keys' => is_array($responseData) ? array_keys($responseData) : 'not_array'
-                    ]);
-                }
                 
                 // Cachear solo respuestas exitosas GET
                 if ($shouldCache && $method === 'GET') {
@@ -174,11 +131,6 @@ class DoliProxyController extends Controller
                 
                 return response()->json($responseData);
             } catch (\Exception $e) {
-                \Log::error('PROXY JSON DECODE ERROR', [
-                    'path' => $path,
-                    'error' => $e->getMessage(),
-                    'response_body' => $response->body()
-                ]);
                 
                 return response()->json([
                     'error' => 'Error procesando respuesta JSON',
@@ -186,11 +138,6 @@ class DoliProxyController extends Controller
                 ], 500);
             }
         } else {
-            \Log::error('PROXY API ERROR', [
-                'path' => $path,
-                'status' => $response->status(),
-                'body' => $response->body()
-            ]);
             
             return response()->json([
                 'error' => 'Error en la API de Dolibarr',

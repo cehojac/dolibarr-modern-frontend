@@ -14,6 +14,7 @@ Route::prefix('api')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/check-permission', [AuthController::class, 'checkPermission']);
     Route::get('/auth/permissions', [AuthController::class, 'getPermissions']);
+    Route::get('/auth/debug-session', [AuthController::class, 'debugSession']);
 
     // Cache management routes
     Route::prefix('cache')->group(function () {

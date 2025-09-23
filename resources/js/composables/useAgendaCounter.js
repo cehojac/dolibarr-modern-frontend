@@ -10,14 +10,14 @@ export function useAgendaCounter() {
 
   const fetchTodayEventsCount = async () => {
     if (!authStore.isAuthenticated) {
-       console.log('🚫 No authenticated user for agenda counter')
+       // console.log('🚫 No authenticated user for agenda counter')
       return
     }
 
     isLoading.value = true
     
     try {
-     //  console.log('📅 Fetching today upcoming events count (from now until end of day)...')
+       // console.log('📅 Fetching today upcoming events count (from now until end of day)...')
       
       // Obtener fecha y hora actual en formato string para filtros SQL
       const now = new Date()
@@ -49,7 +49,7 @@ export function useAgendaCounter() {
       }
 
       const data = await response.json()
-     //  console.log('📅 Today events response:', data)
+       // console.log('📅 Today events response:', data)
       
       // Contar eventos del día actual, excluyendo eventos systemauto
       let count = 0
@@ -103,13 +103,13 @@ export function useAgendaCounter() {
       todayEventsCount.value = count
       lastFetch.value = new Date()
       
-       console.log('📅 Today upcoming events count updated:', count)
+       // console.log('📅 Today upcoming events count updated:', count)
       if (systemAutoFiltered > 0) {
-         console.log('🚫 Filtered out', systemAutoFiltered, 'systemauto events')
+         // console.log('🚫 Filtered out', systemAutoFiltered, 'systemauto events')
       }
       
     } catch (error) {
-      console.error('❌ Error fetching today events count:', error)
+      // console.error('❌ Error fetching today events count:', error)
       todayEventsCount.value = 0
     } finally {
       isLoading.value = false
@@ -117,17 +117,17 @@ export function useAgendaCounter() {
   }
 
   const startAutoRefresh = () => {
-     console.log('🔄 Starting agenda counter auto-refresh...')
+     // console.log('🔄 Starting agenda counter auto-refresh...')
     
     // Refrescar cada 5 minutos
     const interval = setInterval(() => {
-       console.log('🔄 Auto-refreshing today events count...')
+       // console.log('🔄 Auto-refreshing today events count...')
       fetchTodayEventsCount()
     }, 5 * 60 * 1000) // 5 minutos
 
     // Función para detener el auto-refresh
     return () => {
-       console.log('⏹️ Stopping agenda counter auto-refresh')
+       // console.log('⏹️ Stopping agenda counter auto-refresh')
       clearInterval(interval)
     }
   }
@@ -144,9 +144,9 @@ export function useAgendaCounter() {
     // Solo incrementar si el evento es futuro (superior a la hora actual)
     if (eventTimestamp >= now) {
       todayEventsCount.value = (todayEventsCount.value || 0) + 1
-       console.log('📅 Today upcoming events count incremented to:', todayEventsCount.value)
+       // console.log('📅 Today upcoming events count incremented to:', todayEventsCount.value)
     } else {
-       console.log('📅 Event is in the past, not incrementing counter')
+       // console.log('📅 Event is in the past, not incrementing counter')
     }
   }
 

@@ -45,7 +45,7 @@ export const usePermissionsStore = defineStore('permissions', {
         this.permissions = response.data.permissions || []
         this.lastFetch = new Date().toISOString()
         
-        console.log(`Cargados ${this.permissions.length} permisos del usuario`)
+        // console.log(`Cargados ${this.permissions.length} permisos del usuario`)
         
         return this.permissions
       } catch (error) {

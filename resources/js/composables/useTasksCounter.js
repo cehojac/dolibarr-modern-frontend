@@ -68,7 +68,7 @@ export function useTasksCounter() {
       // Force reactivity update
        // console.log('📊 Tasks Counter - Value set to:', assignedTasksCount.value)
     } catch (error) {
-      console.error('❌ Tasks Counter - Error:', error)
+      // console.error('❌ Tasks Counter - Error:', error)
       assignedTasksCount.value = 0
     } finally {
       loading.value = false
@@ -91,10 +91,10 @@ export function useTasksCounter() {
   // Watch for user changes and refresh counter
   watch(() => authStore.user, (newUser, oldUser) => {
     if (newUser && (!oldUser || newUser.id !== oldUser.id || newUser.login !== oldUser.login)) {
-       console.log('🔄 User changed, refreshing tasks counter:', {
-        oldUser: oldUser ? { id: oldUser.id, login: oldUser.login } : null,
-        newUser: { id: newUser.id, login: newUser.login }
-      })
+       // console.log('🔄 User changed, refreshing tasks counter:', {
+        // oldUser: oldUser ? { id: oldUser.id, login: oldUser.login } : null,
+        // newUser: { id: newUser.id, login: newUser.login }
+      // })
       fetchAssignedTasksCount()
     }
   }, { immediate: false })
