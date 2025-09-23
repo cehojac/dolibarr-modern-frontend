@@ -4,12 +4,88 @@
     <div class="mb-8 xl:mb-10 2xl:mb-12">
       <h1 class="text-3xl xl:text-4xl 2xl:text-5xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Panel Principal</h1>
       <p class="mt-2 xl:mt-3 2xl:mt-4 text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Resumen de tu gestión empresarial</p>
+      
+      <!-- Información de permisos (solo para desarrollo/debug) -->
+      <PermissionGuard permission="user->user->configurer" show-fallback>
+        <div class="mt-4 p-3 rounded-lg border" :class="isDark ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'">
+          <div class="flex items-center space-x-2">
+            <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm font-medium" :class="isDark ? 'text-blue-300' : 'text-blue-700'">
+              Modo Administrador - Permisos cargados: {{ permissions.length }}
+            </span>
+          </div>
+        </div>
+      </PermissionGuard>
     </div>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 gap-6 xl:gap-8 2xl:gap-10 sm:grid-cols-2 lg:grid-cols-4 mb-8 xl:mb-10 2xl:mb-12">
+      <!-- Terceros Card -->
+      <PermissionGuard permission="societe->lire" show-fallback>
+        <div
+          class="border rounded-xl p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+          @click="$router.push('/terceros')"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4 xl:ml-6 2xl:ml-8">
+              <p class="text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Terceros</p>
+              <p class="text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">-</p>
+            </div>
+          </div>
+        </div>
+        <template #fallback>
+          <div class="border rounded-xl p-6 xl:p-8 2xl:p-10 opacity-50" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-gray-400 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-4 xl:ml-6 2xl:ml-8">
+                <p class="text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Terceros</p>
+                <p class="text-xs" :class="isDark ? 'text-gray-600' : 'text-gray-500'">Sin permisos</p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </PermissionGuard>
+
+      <!-- Tickets Card -->
+      <PermissionGuard permission="ticket->lire" show-fallback>
+        <div
+          class="border rounded-xl p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+          @click="$router.push('/tickets')"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4 xl:ml-6 2xl:ml-8">
+              <p class="text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tickets Asignados</p>
+              <p class="text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketsCountComposable || '-' }}</p>
+            </div>
+          </div>
+        </div>
+      </PermissionGuard>
+
+      <!-- Resto de módulos sin restricciones específicas -->
       <div
-        v-for="module in modules"
+        v-for="module in otherModules"
         :key="module.name"
         class="border rounded-xl p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
         @click="$router.push(module.href)"
@@ -249,23 +325,23 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import http from '../utils/http'
+import { useTheme } from '../composables/useTheme'
 import { useAuthStore } from '../stores/auth'
 import { useTicketsCounter } from '../composables/useTicketsCounter'
 import { useTasksCounter } from '../composables/useTasksCounter'
-import { useTheme } from '../composables/useTheme'
+import { usePermissions } from '../composables/usePermissions'
+import PermissionGuard from '../components/PermissionGuard.vue'
+import http from '../utils/http'
+
 const { isDark } = useTheme()
 const authStore = useAuthStore()
 const { assignedTicketsCount: ticketsCountComposable, fetchAssignedTicketsCount } = useTicketsCounter()
 const { assignedTasksCount: tasksCountComposable, fetchAssignedTasksCount } = useTasksCounter()
+const { canAccess, hasPermission, permissions } = usePermissions()
 
-// Reactive data
-const modules = computed(() => [
-  { name: 'Terceros', href: '/terceros', iconPath: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z' },
+// Reactive data - módulos que no requieren permisos específicos
+const otherModules = computed(() => [
   { name: 'Productos', href: '/productos', iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-  { name: 'Servicios', href: '/servicios', iconPath: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
-  { name: 'Proyectos', href: '/proyectos', iconPath: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
-  { name: 'Tickets Asignados', href: '/tickets', iconPath: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z', count: ticketsCountComposable.value },
   { name: 'Tareas Asignadas', href: '/tareas', iconPath: 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', count: tasksCountComposable.value }
 ])
 

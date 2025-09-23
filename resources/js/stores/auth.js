@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import http from '../utils/http'
 import { useNotificationStore } from './notifications'
-import { useInterventions } from '../composables/useInterventions'
+import { useUserInterventionsStore } from '../composables/useUserInterventions'
+import { usePermissionsStore } from '../composables/usePermissions'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -27,20 +27,30 @@ export const useAuthStore = defineStore('auth', {
     async login(login, password) {
       this.loading = true
       const notificationStore = useNotificationStore()
-      const { initInterventions } = useInterventions()
+      const interventionsStore = useUserInterventionsStore()
+      const permissionsStore = usePermissionsStore()
       
       try {
         const response = await http.post('/api/auth/login', { login, password })
         this.isAuthenticated = true
         this.user = response.data.user
         
+        // Cargar permisos del usuario
+        try {
+          await permissionsStore.fetchPermissions()
+          console.log('Permisos del usuario cargados correctamente')
+        } catch (permissionError) {
+          console.warn('Error al cargar permisos del usuario:', permissionError)
+          // No interrumpir el login por este error
+        }
+        
         // Cargar intervenciones del usuario en segundo plano
         if (response.data.user && response.data.user.id) {
           try {
-            await initInterventions()
-             // console.log('Intervenciones del usuario cargadas correctamente')
+            await interventionsStore.fetchUserInterventions(response.data.user.id)
+            console.log('Intervenciones del usuario cargadas correctamente')
           } catch (interventionError) {
-            // console.warn('Error al cargar intervenciones del usuario:', interventionError)
+            console.warn('Error al cargar intervenciones del usuario:', interventionError)
             // No interrumpir el login por este error
           }
         }
@@ -57,7 +67,8 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       const notificationStore = useNotificationStore()
-      const { clearInterventions } = useInterventions()
+      const interventionsStore = useUserInterventionsStore()
+      const permissionsStore = usePermissionsStore()
       
       try {
         await http.post('/api/auth/logout')
@@ -67,9 +78,10 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.isAuthenticated = false
         this.user = null
-        // Limpiar localStorage y intervenciones
+        // Limpiar localStorage, intervenciones y permisos
         localStorage.removeItem('dolibarr-auth')
-        clearInterventions()
+        interventionsStore.clearInterventions()
+        permissionsStore.clearPermissions()
       }
     },
 
