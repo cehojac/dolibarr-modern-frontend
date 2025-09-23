@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use App\Http\Clients\PleskHttpClient;
 
 class AuthController extends Controller
@@ -68,27 +69,42 @@ class AuthController extends Controller
                         
                         if ($userInfoResponse->successful()) {
                             $userInfo = $userInfoResponse->json();
+                            Log::info("Got user info from {$endpoint}:", $userInfo);
                             break;
                         } else {
+                            Log::info("Failed to get user info from {$endpoint}", [
+                                'status' => $userInfoResponse->status(),
+                                'response' => $userInfoResponse->body()
+                            ]);
                         }
                     }
                     
                     if (empty($userInfo)) {
+                        Log::info('Failed to get user info, trying alternative approach', [
+                            'status' => $userInfoResponse->status(),
+                            'response' => $userInfoResponse->body()
+                        ]);
                         
                         // Enfoque 2: Intentar con /users (lista completa) si tiene permisos
                         $usersResponse = PleskHttpClient::withDolibarrToken($token)->get(config('services.dolibarr.base_url') . '/users');
                         
                         if ($usersResponse->successful()) {
                             $users = $usersResponse->json();
+                            Log::info('Searching user in users list, total:', count($users));
                             
                             // Buscar por login exacto
                             foreach ($users as $user) {
                                 if (isset($user['login']) && $user['login'] === $login) {
                                     $userInfo = $user;
+                                    Log::info('Found user by login:', ['login' => $user['login'], 'id' => $user['id'] ?? $user['rowid'] ?? 'NO_ID']);
                                     break;
                                 }
                             }
                         } else {
+                            Log::warning('Cannot access users API, using fallback approach', [
+                                'status' => $usersResponse->status(),
+                                'error' => $usersResponse->body()
+                            ]);
                             
                             // Enfoque 3: Fallback - usar una ID basada en el login como hash
                             // Esto es temporal hasta encontrar una mejor solución
@@ -101,9 +117,11 @@ class AuthController extends Controller
                                 'email' => filter_var($login, FILTER_VALIDATE_EMAIL) ? $login : '',
                                 'admin' => 0
                             ];
+                            Log::info('Using fallback ID for user:', ['login' => $login, 'fallback_id' => $fallbackId]);
                         }
                     }
                 } catch (\Exception $e) {
+                    Log::error('Error getting user info: ' . $e->getMessage());
                     // Fallback final
                     $fallbackId = crc32($login);
                     $userInfo = [
@@ -128,6 +146,8 @@ class AuthController extends Controller
                              $userInfo['fk_user'] ?? 
                              null;
                     
+                    Log::info('Available user fields:', array_keys($userInfo));
+                    Log::info('Extracted user ID:', ['user_id' => $userId]);
                 }
                 
                 // Almacenar datos del usuario en sesión
@@ -142,13 +162,13 @@ class AuthController extends Controller
                 
                 $request->session()->put('dolibarr_user', $userData);
                 
-                // Obtener permisos usando el endpoint específico con el token obtenido
+                // Obtener permisos usando el endpoint específico con API key
                 if (!empty($token)) {
                     try {
-                        // Usar el ID del usuario para la consulta de permisos (no el username)
-                        $permissionsUrl = config('services.dolibarr.base_url') . '/users/' . $userId . '?includepermissions=1';
+                        // Usar el login del usuario y API key para la consulta de permisos
+                        $permissionsUrl = config('services.dolibarr.base_url') . '/users/login/' . $login . '?includepermissions=1';
                         
-                        $permissionsResponse = PleskHttpClient::withToken($token)->get($permissionsUrl);
+                        $permissionsResponse = PleskHttpClient::withDolibarrApiKey()->get($permissionsUrl);
                         
                         if ($permissionsResponse->successful()) {
                             $permissionsData = $permissionsResponse->json();
@@ -161,18 +181,20 @@ class AuthController extends Controller
                                             [];
                             
                             // Debug: mostrar estructura original
-                            error_log('Raw permissions from Dolibarr API: ' . json_encode($rawPermissions));
+                            Log::info('Raw permissions from Dolibarr API: ' . json_encode($rawPermissions));
                             
                             // Procesar estructura anidada de permisos de Dolibarr
                             $permissions = $this->flattenPermissions($rawPermissions);
                             
                             // Debug: mostrar permisos procesados
-                            error_log('Flattened permissions: ' . json_encode($permissions));
-                            error_log('Total permissions count: ' . count($permissions));
+                            Log::info('Flattened permissions: ' . json_encode($permissions));
+                            Log::info('Total permissions count: ' . count($permissions));
                             
                         } else {
+                            Log::warning('Error obteniendo permisos: HTTP ' . $permissionsResponse->status());
                         }
                     } catch (\Exception $e) {
+                        Log::warning('Excepción obteniendo permisos: ' . $e->getMessage());
                     }
                 }
                 
@@ -181,6 +203,7 @@ class AuthController extends Controller
                 $request->session()->put('dolibarr_permissions', $permissions);
                 
                 
+                Log::info('User data stored in session:', $request->session()->get('dolibarr_user'));
                 
                 return response()->json([
                     'message' => 'Autenticado correctamente',
@@ -217,6 +240,11 @@ class AuthController extends Controller
         // Verificar si el usuario tiene el permiso solicitado
         $hasPermission = isset($permissions[$requestedPermission]) && $permissions[$requestedPermission];
         
+        Log::info('Permission check:', [
+            'permission' => $requestedPermission,
+            'has_permission' => $hasPermission,
+            'user_id' => $request->session()->get('dolibarr_user.id')
+        ]);
         
         return response()->json([
             'permission' => $requestedPermission,
@@ -266,7 +294,7 @@ class AuthController extends Controller
 
     /**
      * Convierte la estructura anidada de permisos de Dolibarr a formato plano
-     * Ejemplo: ["user" => ["user" => ["lire" => 1]]] → ["user.user.lire" => 1]
+     * Ejemplo: ["user" => ["user" => ["lire" => 1]]] → ["user->user->lire" => 1]
      */
     private function flattenPermissions($permissions, $prefix = '')
     {
@@ -277,7 +305,7 @@ class AuthController extends Controller
         }
         
         foreach ($permissions as $key => $value) {
-            $newKey = $prefix ? $prefix . '.' . $key : $key;
+            $newKey = $prefix ? $prefix . '->' . $key : $key;
             
             if (is_array($value)) {
                 // Si es un array, recursivamente aplanar

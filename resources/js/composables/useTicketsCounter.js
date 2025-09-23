@@ -50,7 +50,7 @@ export function useTicketsCounter() {
        // console.log('Assigned active tickets:', assignedTickets.length)
       assignedTicketsCount.value = assignedTickets.length
     } catch (error) {
-      // console.error('Error fetching assigned tickets count:', error)
+      console.error('Error fetching assigned tickets count:', error)
       assignedTicketsCount.value = 0
     } finally {
       loading.value = false
@@ -73,10 +73,10 @@ export function useTicketsCounter() {
   // Watch for user changes and refresh counter
   watch(() => authStore.user, (newUser, oldUser) => {
     if (newUser && (!oldUser || newUser.id !== oldUser.id || newUser.login !== oldUser.login)) {
-       // console.log('🔄 User changed, refreshing tickets counter:', {
-        // oldUser: oldUser ? { id: oldUser.id, login: oldUser.login } : null,
-        // newUser: { id: newUser.id, login: newUser.login }
-      // })
+       console.log('🔄 User changed, refreshing tickets counter:', {
+        oldUser: oldUser ? { id: oldUser.id, login: oldUser.login } : null,
+        newUser: { id: newUser.id, login: newUser.login }
+      })
       fetchAssignedTicketsCount()
     }
   }, { immediate: false })
