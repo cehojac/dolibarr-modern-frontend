@@ -42,10 +42,13 @@ export const usePermissionsStore = defineStore('permissions', {
       try {
         const response = await http.get('/api/auth/permissions')
         
-        this.permissions = response.data.permissions || []
+        console.log('Respuesta completa de la API de permisos:', response.data)
+        
+        // Los permisos pueden venir en diferentes campos según la implementación
+        this.permissions = response.data.permissions || response.data.rights || []
         this.lastFetch = new Date().toISOString()
         
-        // console.log(`Cargados ${this.permissions.length} permisos del usuario`)
+        console.log(`Cargados ${this.permissions.length} permisos del usuario:`, this.permissions)
         
         return this.permissions
       } catch (error) {
