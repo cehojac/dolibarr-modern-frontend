@@ -170,6 +170,7 @@ import { useTheme } from '../composables/useTheme'
 import { useTicketsCounter } from '../composables/useTicketsCounter'
 import { useTasksCounter } from '../composables/useTasksCounter'
 import { useAgendaCounter } from '../composables/useAgendaCounter'
+import { usePermissions, usePermissionsStore } from '../composables/usePermissions'
 import Breadcrumbs from '../components/Breadcrumbs.vue'
 
 const router = useRouter()
@@ -179,6 +180,7 @@ const { isDark, toggleTheme, initTheme } = useTheme()
 const { assignedTicketsCount, fetchAssignedTicketsCount, startAutoRefresh: startTicketsAutoRefresh } = useTicketsCounter()
 const { assignedTasksCount, fetchAssignedTasksCount, startAutoRefresh: startTasksAutoRefresh } = useTasksCounter()
 const { todayEventsCount, fetchTodayEventsCount, startAutoRefresh: startAgendaAutoRefresh } = useAgendaCounter()
+const { hasPermission, hasAnyPermission, permissions } = usePermissions()
 
 // Submenu state - Load from localStorage
 const openSubmenus = ref(JSON.parse(localStorage.getItem('openSubmenus') || '[]'))
@@ -220,9 +222,28 @@ const userInitials = computed(() => {
   return 'U'
 })
 
+// Configuración de permisos requeridos para cada elemento del menú
+const menuPermissions = {
+  'Dashboard': null, // Siempre visible
+  'Terceros': ['societe.lire'],
+  'Comercial': ['propal.lire', 'commande.lire', 'contrat.lire'],
+  'Financiera': ['facture.lire', 'fournisseur.facture.lire'],
+  'Productos / Servicios': ['produit.lire', 'service.lire'],
+  'Proyectos': ['projet.lire'],
+  'Documentos': ['ecm.read'],
+  'Agenda': ['agenda.myactions.read'],
+  'Tickets': ['ticket.read'],
+  'Tareas': ['projet.lire']
+}
+
+// Función para verificar si un elemento del menú debe mostrarse
+const shouldShowMenuItem = (itemName, requiredPermissions) => {
+  if (!requiredPermissions) return true // Sin restricciones
+  return hasAnyPermission(requiredPermissions)
+}
+
 const navigation = computed(() => {
-   // console.log('🔄 Navigation computed - Tasks count:', assignedTasksCount.value, 'Tickets count:', assignedTicketsCount.value, 'Today events count:', todayEventsCount.value)
-  return [
+  const allMenuItems = [
     { name: 'Dashboard', href: '/', iconPath: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z' },
     { 
       name: 'Terceros', 
@@ -264,6 +285,12 @@ const navigation = computed(() => {
     { name: 'Tickets', href: '/tickets', iconPath: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z', count: assignedTicketsCount.value },
     { name: 'Tareas', href: '/tareas', iconPath: 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', count: assignedTasksCount.value }
   ]
+
+  // Filtrar elementos del menú según permisos
+  return allMenuItems.filter(item => {
+    const requiredPermissions = menuPermissions[item.name]
+    return shouldShowMenuItem(item.name, requiredPermissions)
+  })
 })
 
 // Navigation computed is working correctly
@@ -304,6 +331,17 @@ const handleLogout = async () => {
 
 onMounted(async () => {
   initTheme()
+  
+  // Cargar permisos si el usuario está autenticado
+  if (authStore.isAuthenticated) {
+    try {
+      const permissionsStore = usePermissionsStore()
+      await permissionsStore.fetchPermissions()
+    } catch (error) {
+      console.error('Error cargando permisos en AppLayout:', error)
+    }
+  }
+  
   await fetchAssignedTicketsCount()
   await fetchAssignedTasksCount()
   await fetchTodayEventsCount()

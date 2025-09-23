@@ -66,4 +66,14 @@ class PleskHttpClient
             'DOLAPIKEY' => $token,
         ]);
     }
+    
+    /**
+     * Cliente con API Key de Dolibarr desde configuración
+     */
+    public static function withDolibarrApiKey(): PendingRequest
+    {
+        return self::create()->withHeaders([
+            'DOLAPIKEY' => config('services.dolibarr.api_key'),
+        ]);
+    }
 }

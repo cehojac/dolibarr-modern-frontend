@@ -153,11 +153,18 @@
               <div
                 v-for="event in getEventsForDay(day.date)"
                 :key="event.id"
-                class="text-xs p-1 rounded truncate"
+                class="text-xs p-1 rounded"
                 :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800'"
-                :title="event.label"
+                :title="`${formatEventTime(event)} - ${event.label}${event.thirdparty_name ? ' - ' + event.thirdparty_name : ''}`"
               >
-                {{ event.label }}
+                <div class="font-medium">{{ formatEventTime(event) }}</div>
+                <div class="truncate">{{ event.label }}</div>
+                <div v-if="event.thirdparty_name" class="mt-1">
+                  <span class="inline-block px-1 py-0.5 text-xs rounded text-white bg-opacity-80" 
+                        :class="isDark ? 'bg-green-700' : 'bg-green-600'">
+                    {{ event.thirdparty_name }}
+                  </span>
+                </div>
               </div>
               
               <!-- Indicador para crear evento si no hay eventos -->
@@ -234,11 +241,14 @@
                 <div
                   v-for="event in getEventsForHour(day - 1, hour)"
                   :key="event.id"
-                  class="absolute inset-1 text-xs p-1 rounded truncate"
+                  class="absolute inset-1 text-xs p-1 rounded"
                   :class="isDark ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800'"
-                  :title="event.label"
+                  :title="`${event.label}${event.thirdparty_name ? ' - ' + event.thirdparty_name : ''}`"
                 >
-                  {{ event.label }}
+                  <div class="truncate font-medium">{{ event.label }}</div>
+                  <div v-if="event.thirdparty_name" class="truncate text-xs opacity-90">
+                    {{ event.thirdparty_name }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -283,6 +293,12 @@
                   :class="isDark ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-800'"
                 >
                   <div class="font-medium">{{ event.label }}</div>
+                  <div v-if="event.thirdparty_name" class="mt-1">
+                    <span class="inline-block px-2 py-1 text-xs rounded text-white bg-opacity-80" 
+                          :class="isDark ? 'bg-green-700' : 'bg-green-600'">
+                      👤 {{ event.thirdparty_name }}
+                    </span>
+                  </div>
                   <div v-if="event.note" class="text-sm mt-1 opacity-90">{{ event.note }}</div>
                 </div>
               </div>
@@ -294,7 +310,7 @@
 
     <!-- Modal de Creación de Evento -->
     <div v-if="showCreateEventModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <div class="rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" :class="isDark ? 'bg-gray-800' : 'bg-white'">
         <!-- Header del Modal -->
         <div class="flex items-center justify-between p-6 border-b" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
           <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
@@ -303,7 +319,7 @@
             </svg>
             Crear un Evento
           </h2>
-          <button @click="closeCreateEventModal" class="text-gray-400 hover:text-gray-600">
+          <button @click="closeCreateEventModal" :class="isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -390,7 +406,7 @@
           <div class="grid grid-cols-4 gap-4 items-center">
             <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Evento asignado a</label>
             <div class="col-span-3 flex items-center space-x-2">
-              <div class="flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+              <div class="flex items-center space-x-2 px-3 py-1 rounded-full text-sm" :class="isDark ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800'">
                 <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                   <span class="text-xs font-medium text-white">{{ userInitials }}</span>
                 </div>
@@ -718,6 +734,54 @@ const getWeekDayNumber = (dayName) => {
   return targetDate.getDate()
 }
 
+// Cargar nombres de terceros para los eventos
+const loadThirdPartyNames = async () => {
+  try {
+    console.log('🏢 Cargando nombres de terceros...')
+    
+    // Obtener IDs únicos de terceros de los eventos
+    const socIds = [...new Set(eventos.value
+      .map(event => event.socid)
+      .filter(socid => socid && socid > 0)
+    )]
+    
+    if (socIds.length === 0) {
+      console.log('🏢 No hay terceros para cargar')
+      return
+    }
+    
+    console.log('🏢 IDs de terceros a cargar:', socIds)
+    
+    // Cargar información de terceros en lotes para mejor rendimiento
+    const thirdParties = new Map()
+    
+    for (const socid of socIds) {
+      try {
+        const response = await http.get(`/api/doli/thirdparties/${socid}`)
+        if (response.data && response.data.name) {
+          thirdParties.set(socid, response.data.name)
+          console.log(`🏢 Tercero ${socid}: ${response.data.name}`)
+        }
+      } catch (error) {
+        console.warn(`⚠️ No se pudo cargar tercero ${socid}:`, error.message)
+      }
+    }
+    
+    // Actualizar eventos con nombres de terceros
+    eventos.value = eventos.value.map(event => ({
+      ...event,
+      thirdparty_name: event.socid && thirdParties.has(event.socid) 
+        ? thirdParties.get(event.socid) 
+        : null
+    }))
+    
+    console.log(`🏢 Nombres de terceros cargados: ${thirdParties.size}/${socIds.length}`)
+    
+  } catch (error) {
+    console.error('❌ Error cargando nombres de terceros:', error)
+  }
+}
+
 // Cargar eventos
 const loadEventos = async () => {
   try {
@@ -740,10 +804,16 @@ const loadEventos = async () => {
       // Convertir datep si viene como timestamp
       datep: event.datep || event.datehour || event.date_creation,
       // Asegurar que tenemos una duración
-      duration: event.duration || event.duree || '1h'
+      duration: event.duration || event.duree || '1h',
+      // Información del tercero - inicialmente null, se cargará después
+      thirdparty_name: null,
+      socid: event.socid
     }))
     
-     console.log('📅 Eventos procesados:', eventos.value.slice(0, 3)) // Mostrar primeros 3 para debug
+    // Cargar nombres de terceros para eventos que tienen socid
+    await loadThirdPartyNames()
+    
+     console.log('📅 Eventos procesados con terceros:', eventos.value.slice(0, 3)) // Mostrar primeros 3 para debug
     
     // Contar eventos systemauto para información
     const systemautoCount = eventos.value.filter(event => {
@@ -766,14 +836,16 @@ const loadEventos = async () => {
           label: 'Reunión con cliente',
           note: 'Revisión del proyecto - Ejemplo',
           datep: Math.floor(new Date().getTime() / 1000) + 3600, // En 1 hora
-          duration: '1h'
+          duration: '1h',
+          thirdparty_name: 'Empresa ABC S.L.'
         },
         {
           id: 'example-2',
           label: 'Llamada de seguimiento',
           note: 'Seguimiento del ticket #123 - Ejemplo',
           datep: Math.floor(new Date(Date.now() + 86400000).getTime() / 1000) + 7200, // Mañana en 2 horas
-          duration: '30min'
+          duration: '30min',
+          thirdparty_name: 'Tech Solutions'
         },
         {
           id: 'example-3',
@@ -781,6 +853,7 @@ const loadEventos = async () => {
           note: 'Presentar avances al equipo - Ejemplo',
           datep: Math.floor(new Date(Date.now() + 172800000).getTime() / 1000) + 10800, // Pasado mañana en 3 horas
           duration: '2h'
+          // Sin tercero para mostrar variedad
         }
       ]
     }
@@ -795,7 +868,8 @@ const loadEventos = async () => {
         label: 'Error cargando eventos',
         note: 'No se pudieron cargar los eventos reales. Mostrando ejemplo.',
         datep: Math.floor(new Date().getTime() / 1000) + 3600,
-        duration: '1h'
+        duration: '1h',
+        thirdparty_name: 'Cliente de Prueba'
       }
     ]
   } finally {
@@ -978,6 +1052,17 @@ const createEvent = async () => {
   } finally {
     creating.value = false
   }
+}
+
+// Formatear hora del evento
+const formatEventTime = (event) => {
+  if (!event.datep) return '00:00'
+  
+  const eventDate = new Date(event.datep * 1000)
+  const hours = eventDate.getHours().toString().padStart(2, '0')
+  const minutes = eventDate.getMinutes().toString().padStart(2, '0')
+  
+  return `${hours}:${minutes}`
 }
 
 onMounted(() => {

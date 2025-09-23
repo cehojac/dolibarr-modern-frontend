@@ -1355,6 +1355,17 @@
                           </span>
                           <button 
                             v-if="doc.download_url || doc.url"
+                            @click="previewDocumentModal(doc)"
+                            class="text-green-500 hover:text-green-600 transition-colors"
+                            title="Vista previa"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                          <button 
+                            v-if="doc.download_url || doc.url"
                             @click="downloadDocument(doc)"
                             class="text-blue-500 hover:text-blue-600 transition-colors"
                             title="Descargar"
@@ -1566,16 +1577,28 @@
       <div class="flex justify-end space-x-3 mt-6">
         <button
           @click="closeManualInterventionModal"
+          :disabled="savingManualIntervention"
           class="px-4 py-2 text-sm font-medium border rounded-md transition-colors"
-          :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700' : 'text-gray-700 border-gray-300 hover:bg-gray-50'"
+          :class="[
+            savingManualIntervention ? 'opacity-50 cursor-not-allowed' : '',
+            isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700' : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+          ]"
         >
           Cancel
         </button>
         <button
           @click="saveManualIntervention"
-          class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+          :disabled="savingManualIntervention"
+          class="px-4 py-2 text-sm font-medium text-white rounded-md transition-colors flex items-center space-x-2"
+          :class="savingManualIntervention 
+            ? 'bg-gray-400 cursor-not-allowed' 
+            : 'bg-green-600 hover:bg-green-700'"
         >
-          Save
+          <svg v-if="savingManualIntervention" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ savingManualIntervention ? 'Saving...' : 'Save' }}</span>
         </button>
       </div>
     </div>
@@ -2184,6 +2207,90 @@
     </div>
   </div>
 
+  <!-- Modal para preview de archivos -->
+  <div v-if="showPreviewModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+    <div class="rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <!-- Header del Modal -->
+      <div class="flex items-center justify-between p-4 border-b" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+          Vista previa: {{ previewDocument?.name || 'Archivo' }}
+        </h3>
+        <div class="flex items-center space-x-2">
+          <button 
+            @click="downloadDocument(previewDocument)"
+            class="text-blue-500 hover:text-blue-600 transition-colors p-2"
+            title="Descargar"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+          <button 
+            @click="closePreviewModal"
+            :class="isDark ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'"
+          >
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido del Preview -->
+      <div class="p-4 overflow-auto max-h-[calc(90vh-120px)]">
+        <!-- Preview para imágenes -->
+        <div v-if="isImageFile(previewDocument)" class="flex justify-center">
+          <img 
+            :src="getPreviewUrl(previewDocument)" 
+            :alt="previewDocument?.name"
+            class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg"
+            @error="handlePreviewError"
+          />
+        </div>
+
+        <!-- Preview para PDFs -->
+        <div v-else-if="isPdfFile(previewDocument)" class="w-full h-[70vh]">
+          <iframe 
+            :src="getPreviewUrl(previewDocument)" 
+            class="w-full h-full border-0 rounded-lg"
+            @error="handlePreviewError"
+          ></iframe>
+        </div>
+
+        <!-- Preview para archivos de texto -->
+        <div v-else-if="isTextFile(previewDocument)" class="w-full">
+          <pre 
+            v-if="textContent" 
+            class="whitespace-pre-wrap text-sm p-4 rounded-lg overflow-auto max-h-[60vh]"
+            :class="isDark ? 'bg-gray-900 text-gray-300' : 'bg-gray-100 text-gray-900'"
+          >{{ textContent }}</pre>
+          <div v-else class="flex items-center justify-center h-32">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
+
+        <!-- Mensaje para archivos no soportados -->
+        <div v-else class="text-center py-12">
+          <svg class="w-16 h-16 mx-auto mb-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h4 class="text-lg font-medium mb-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+            Vista previa no disponible
+          </h4>
+          <p class="text-sm mb-4" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+            Este tipo de archivo no se puede previsualizar en el navegador.
+          </p>
+          <button 
+            @click="downloadDocument(previewDocument)"
+            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Descargar archivo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   </div>
 </template>
 
@@ -2218,6 +2325,7 @@ const showFullDescription = ref(false)
 
 // Manual intervention state
 const showManualInterventionModal = ref(false)
+const savingManualIntervention = ref(false)
 const manualIntervention = ref({
   startTime: '',
   endTime: '',
@@ -2248,6 +2356,11 @@ const followersSearchTerm = ref('')
 // Reminders state
 const ticketReminders = ref([])
 const showReminderModal = ref(false)
+
+// File preview state
+const showPreviewModal = ref(false)
+const previewDocument = ref(null)
+const textContent = ref('')
 
 // Complete ticket state
 const showCompleteModal = ref(false)
@@ -2616,6 +2729,12 @@ const toggleDurationMode = () => {
 }
 
 const saveManualIntervention = async () => {
+  // Evitar múltiples ejecuciones
+  if (savingManualIntervention.value) {
+    return
+  }
+  
+  savingManualIntervention.value = true
   let interventionId = null
   
   try {
@@ -2869,6 +2988,8 @@ const saveManualIntervention = async () => {
     console.error('❌ Error status:', error.response?.status)
     
     alert('Error al crear la intervención manual: ' + (error.response?.data?.message || error.message))
+  } finally {
+    savingManualIntervention.value = false
   }
 }
 
@@ -3872,6 +3993,7 @@ const fetchTickets = async () => {
     // Calculate metrics after loading tickets
     calculateTicketMetrics()
      console.log('✅ Tickets and metrics updated successfully')
+     console.log('📊 Current metrics:', ticketMetrics.value)
   } catch (error) {
     console.error('❌ Error fetching tickets:', error)
     console.error('❌ Error details:', error.response?.data)
@@ -3883,6 +4005,8 @@ const fetchTickets = async () => {
 // Function to calculate ticket metrics
 const calculateTicketMetrics = () => {
   const currentUserId = authStore.user?.id
+  console.log('📊 Calculating metrics for user:', currentUserId)
+  console.log('📊 Total tickets to process:', tickets.value.length)
   
   // Reset metrics
   ticketMetrics.value = {
@@ -3947,6 +4071,8 @@ const calculateTicketMetrics = () => {
         }
     }
   })
+  
+  console.log('📊 Final metrics calculated:', ticketMetrics.value)
 }
 
 const fetchTerceros = async () => {
@@ -5052,6 +5178,57 @@ const downloadDocument = (doc) => {
   } else {
     console.warn('No download URL available for document:', doc)
   }
+}
+
+// File preview functions
+const previewDocumentModal = async (doc) => {
+  previewDocument.value = doc
+  textContent.value = ''
+  showPreviewModal.value = true
+  
+  // Load text content for text files
+  if (isTextFile(doc)) {
+    try {
+      const response = await fetch(getPreviewUrl(doc))
+      textContent.value = await response.text()
+    } catch (error) {
+      console.error('Error loading text content:', error)
+      textContent.value = 'Error al cargar el contenido del archivo.'
+    }
+  }
+}
+
+const closePreviewModal = () => {
+  showPreviewModal.value = false
+  previewDocument.value = null
+  textContent.value = ''
+}
+
+const getPreviewUrl = (doc) => {
+  return doc.download_url || doc.url
+}
+
+const isImageFile = (doc) => {
+  if (!doc?.name) return false
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+  const extension = doc.name.toLowerCase().substring(doc.name.lastIndexOf('.'))
+  return imageExtensions.includes(extension)
+}
+
+const isPdfFile = (doc) => {
+  if (!doc?.name) return false
+  return doc.name.toLowerCase().endsWith('.pdf')
+}
+
+const isTextFile = (doc) => {
+  if (!doc?.name) return false
+  const textExtensions = ['.txt', '.md', '.json', '.xml', '.csv', '.log', '.js', '.css', '.html', '.htm']
+  const extension = doc.name.toLowerCase().substring(doc.name.lastIndexOf('.'))
+  return textExtensions.includes(extension)
+}
+
+const handlePreviewError = () => {
+  console.warn('Error loading preview for document:', previewDocument.value)
 }
 
 // Function to get user initials from full name
