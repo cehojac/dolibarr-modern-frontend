@@ -153,11 +153,25 @@
               <div
                 v-for="event in getEventsForDay(day.date)"
                 :key="event.id"
-                class="text-xs p-1 rounded truncate"
+                class="text-xs p-1 rounded cursor-pointer hover:opacity-80 transition-opacity"
                 :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800'"
-                :title="event.label"
+                @click="showEventDetail(event)"
               >
-                {{ event.label }}
+                <!-- Hora del evento -->
+                <div class="font-semibold text-xs mb-1">
+                  {{ formatEventTime(event) }}
+                </div>
+                <!-- Título del evento -->
+                <div class="truncate" :title="event.label">
+                  {{ event.label }}
+                </div>
+                <!-- Badge del tercero si existe -->
+                <div v-if="event.thirdparty_name" class="mt-1">
+                  <span class="inline-block px-1 py-0.5 text-xs rounded" 
+                        :class="isDark ? 'bg-blue-800 text-blue-100' : 'bg-blue-200 text-blue-900'">
+                    {{ event.thirdparty_name }}
+                  </span>
+                </div>
               </div>
               
               <!-- Indicador para crear evento si no hay eventos -->
@@ -234,11 +248,16 @@
                 <div
                   v-for="event in getEventsForHour(day - 1, hour)"
                   :key="event.id"
-                  class="absolute inset-1 text-xs p-1 rounded truncate"
+                  class="absolute inset-1 text-xs p-1 rounded cursor-pointer hover:opacity-80 transition-opacity"
                   :class="isDark ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800'"
-                  :title="event.label"
+                  @click="showEventDetail(event)"
                 >
-                  {{ event.label }}
+                  <div class="truncate font-semibold" :title="event.label">
+                    {{ event.label }}
+                  </div>
+                  <div v-if="event.thirdparty_name" class="truncate text-xs opacity-90">
+                    {{ event.thirdparty_name }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -279,11 +298,19 @@
                 <div
                   v-for="event in getEventsForSelectedDayHour(hour)"
                   :key="event.id"
-                  class="p-3 rounded-lg mb-2"
+                  class="p-3 rounded-lg mb-2 cursor-pointer hover:opacity-80 transition-opacity"
                   :class="isDark ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-800'"
+                  @click="showEventDetail(event)"
                 >
                   <div class="font-medium">{{ event.label }}</div>
                   <div v-if="event.note" class="text-sm mt-1 opacity-90">{{ event.note }}</div>
+                  <!-- Badge del tercero si existe -->
+                  <div v-if="event.thirdparty_name" class="mt-2">
+                    <span class="inline-block px-2 py-1 text-xs rounded-full" 
+                          :class="isDark ? 'bg-purple-800 text-purple-100' : 'bg-purple-200 text-purple-900'">
+                      👤 {{ event.thirdparty_name }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -472,6 +499,150 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal de Detalle de Evento -->
+    <div v-if="showEventDetailModal && selectedEvent" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto rounded-lg" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+          <div>
+            <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+              Detalle del Evento
+            </h3>
+            <p class="text-sm mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              {{ formatEventTime(selectedEvent) }} - {{ new Date(selectedEvent.datep * 1000).toLocaleDateString('es-ES') }}
+            </p>
+          </div>
+          <button 
+            @click="closeEventDetail"
+            class="p-2 rounded-lg transition-colors"
+            :class="isDark ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-100'"
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Contenido -->
+        <div class="p-6 space-y-6">
+          <!-- Título -->
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Título
+            </label>
+            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+              {{ selectedEvent.label || 'Sin título' }}
+            </div>
+          </div>
+
+          <!-- Fecha y Hora -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Fecha
+              </label>
+              <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+                {{ new Date(selectedEvent.datep * 1000).toLocaleDateString('es-ES', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                }) }}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Hora
+              </label>
+              <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+                {{ formatEventTime(selectedEvent) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Tercero relacionado -->
+          <div v-if="selectedEvent.thirdparty_name">
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Tercero Relacionado
+            </label>
+            <div class="p-3 rounded-lg flex items-center space-x-2" :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
+              <span class="inline-block px-3 py-1 text-sm rounded-full" 
+                    :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800'">
+                👤 {{ selectedEvent.thirdparty_name }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Tipo de evento -->
+          <div v-if="selectedEvent.type">
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Tipo
+            </label>
+            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+              {{ selectedEvent.type }}
+            </div>
+          </div>
+
+          <!-- Descripción/Notas -->
+          <div v-if="selectedEvent.note">
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Descripción
+            </label>
+            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+              {{ selectedEvent.note }}
+            </div>
+          </div>
+
+          <!-- Ubicación -->
+          <div v-if="selectedEvent.location">
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Ubicación
+            </label>
+            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+              📍 {{ selectedEvent.location }}
+            </div>
+          </div>
+
+          <!-- Duración -->
+          <div v-if="selectedEvent.duration">
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Duración
+            </label>
+            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+              ⏱️ {{ selectedEvent.duration }}
+            </div>
+          </div>
+
+          <!-- Estado -->
+          <div v-if="selectedEvent.status !== undefined">
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Estado
+            </label>
+            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
+              <span class="inline-block px-3 py-1 text-sm rounded-full" 
+                    :class="selectedEvent.status === '1' 
+                      ? (isDark ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800')
+                      : (isDark ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-800')
+                    ">
+                {{ selectedEvent.status === '1' ? '✅ Completado' : '⏳ Pendiente' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex justify-end p-6 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+          <button 
+            @click="closeEventDetail"
+            class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+            :class="isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -497,6 +668,10 @@ const showSystemAuto = ref(false)
 // Modal de creación de eventos
 const showCreateEventModal = ref(false)
 const creating = ref(false)
+
+// Modal de detalle de evento
+const showEventDetailModal = ref(false)
+const selectedEvent = ref(null)
 const newEvent = ref({
   type: 'AC_RDV',
   label: '',
@@ -718,6 +893,29 @@ const getWeekDayNumber = (dayName) => {
   return targetDate.getDate()
 }
 
+// Formatear hora del evento
+const formatEventTime = (event) => {
+  if (!event.datep) return ''
+  const eventDate = new Date(event.datep * 1000)
+  return eventDate.toLocaleTimeString('es-ES', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false 
+  })
+}
+
+// Mostrar detalle del evento
+const showEventDetail = (event) => {
+  selectedEvent.value = event
+  showEventDetailModal.value = true
+}
+
+// Cerrar modal de detalle
+const closeEventDetail = () => {
+  showEventDetailModal.value = false
+  selectedEvent.value = null
+}
+
 // Cargar eventos
 const loadEventos = async () => {
   try {
@@ -732,16 +930,53 @@ const loadEventos = async () => {
     eventos.value = response.data || []
      console.log('✅ Eventos cargados:', eventos.value.length)
     
+    // Obtener IDs únicos de terceros para consultar sus nombres
+    const thirdpartyIds = [...new Set(
+      eventos.value
+        .map(event => event.fk_soc || event.id_soc || event.socid)
+        .filter(id => id && id > 0)
+    )]
+    
+    console.log('🏢 IDs de terceros encontrados:', thirdpartyIds)
+    
+    // Consultar nombres de terceros si hay IDs
+    const thirdpartyNames = {}
+    if (thirdpartyIds.length > 0) {
+      try {
+        for (const id of thirdpartyIds) {
+          const thirdpartyResponse = await http.get(`/api/doli/thirdparties/${id}`)
+          if (thirdpartyResponse.data && thirdpartyResponse.data.name) {
+            thirdpartyNames[id] = thirdpartyResponse.data.name
+          }
+        }
+        console.log('🏢 Nombres de terceros obtenidos:', thirdpartyNames)
+      } catch (error) {
+        console.warn('⚠️ Error obteniendo nombres de terceros:', error)
+      }
+    }
+
     // Procesar eventos para asegurar formato correcto
-    eventos.value = eventos.value.map(event => ({
-      ...event,
-      // Asegurar que tenemos un label
-      label: event.label || event.title || event.note || 'Evento sin título',
-      // Convertir datep si viene como timestamp
-      datep: event.datep || event.datehour || event.date_creation,
-      // Asegurar que tenemos una duración
-      duration: event.duration || event.duree || '1h'
-    }))
+    eventos.value = eventos.value.map(event => {
+      const thirdpartyId = event.fk_soc || event.id_soc || event.socid
+      return {
+        ...event,
+        // Asegurar que tenemos un label
+        label: event.label || event.title || event.note || 'Evento sin título',
+        // Convertir datep si viene como timestamp
+        datep: event.datep || event.datehour || event.date_creation,
+        // Asegurar que tenemos una duración
+        duration: event.duration || event.duree || '1h',
+        // Información del tercero relacionado
+        thirdparty_name: thirdpartyNames[thirdpartyId] || event.thirdparty_name || event.societe_nom || event.contact_name || null,
+        thirdparty_id: thirdpartyId || null,
+        // Ubicación del evento
+        location: event.location || event.lieu || null,
+        // Tipo de evento
+        type: event.type || event.type_code || 'Evento',
+        // Estado del evento
+        status: event.status || event.statut || '0'
+      }
+    })
     
      console.log('📅 Eventos procesados:', eventos.value.slice(0, 3)) // Mostrar primeros 3 para debug
     
