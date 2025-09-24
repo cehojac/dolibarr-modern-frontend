@@ -78,26 +78,27 @@ export const useAuthStore = defineStore('auth', {
       const interventionsStore = useUserInterventionsStore()
       const permissionsStore = usePermissionsStore()
       
-      try {
-        await http.post('/api/auth/logout')
-        notificationStore.addNotification('info', 'Sesión cerrada', 'Has cerrado sesión correctamente')
-      } catch (error) {
-        console.error('Logout error:', error)
-      } finally {
-        this.isAuthenticated = false
-        this.user = null
-        this.isLoggingOut = false
-        // Limpiar localStorage, intervenciones y permisos
-        localStorage.removeItem('dolibarr-auth')
-        interventionsStore.clearInterventions()
-        permissionsStore.clearPermissions()
-      }
+      console.log('🚪 Cerrando sesión local...')
+      
+      // Limpiar estado local inmediatamente
+      this.isAuthenticated = false
+      this.user = null
+      this.isLoggingOut = false
+      
+      // Limpiar localStorage y stores relacionados
+      localStorage.removeItem('dolibarr-auth')
+      interventionsStore.clearInterventions()
+      permissionsStore.clearPermissions()
+      
+      // Mostrar notificación
+      notificationStore.addNotification('info', 'Sesión cerrada', 'Has cerrado sesión correctamente')
+      
+      console.log('✅ Sesión cerrada localmente')
     },
 
     async checkAuth() {
       try {
         const response = await http.get('/api/auth/me')
-        this.isAuthenticated = response.data.authenticated
         this.user = response.data.user
         
         // Si no está autenticado en el servidor, limpiar localStorage y permisos
