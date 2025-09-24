@@ -192,7 +192,7 @@ const menuPermissions = {
   'Proyectos': ['projet->lire'],
   'Documentos': ['ecm->read'],
   'Agenda': ['agenda->myactions->read'],
-  'Tickets': ['ticket->lire'],
+  'Tickets': ['ticket->lire', 'ticket->read', 'tickets->lire', 'tickets->read'],
   'Tareas': ['projet->lire']
 }
 
