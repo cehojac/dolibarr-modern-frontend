@@ -231,7 +231,7 @@ const loadProductos = async () => {
   
   try {
      console.log('🔄 Cargando productos...')
-    const response = await http.get('/doli/products')
+    const response = await http.get('/api/doli/products')
     productos.value = response.data || []
      console.log('✅ Productos cargados:', productos.value.length)
     
@@ -251,7 +251,7 @@ const loadServicios = async () => {
   
   try {
      console.log('🔄 Cargando servicios...')
-    const response = await http.get('/doli/services')
+    const response = await http.get('/api/doli/services')
     servicios.value = response.data || []
      console.log('✅ Servicios cargados:', servicios.value.length)
     

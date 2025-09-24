@@ -7,8 +7,8 @@ use App\Http\Controllers\DoliProxyController;
 // SPA entry
 Route::view('/', 'app')->name('home');
 
-// API routes with session (web middleware)
-Route::prefix('api')->group(function () {
+// API routes with session (web middleware) and forced JSON response
+Route::prefix('api')->middleware(['web', 'force.json'])->group(function () {
     Route::match(['GET', 'POST'], '/auth/login', [AuthController::class, 'login']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::get('/auth/me', [AuthController::class, 'me']);

@@ -484,7 +484,7 @@ const loadTasks = async () => {
           
           if (task.id && currentUser.value?.id) {
             try {
-              const roleResponse = await http.get(`/tasks/${task.id}/roles?userid=${currentUser.value.id}`)
+              const roleResponse = await http.get(`/api/doli/tasks/${task.id}/roles?userid=${currentUser.value.id}`)
               if (roleResponse.data && roleResponse.data.length > 0) {
                 isUserAssigned = true
                 assignedUser = currentUser.value
