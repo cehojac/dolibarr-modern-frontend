@@ -348,7 +348,9 @@ watch(route, (newRoute) => {
 }, { immediate: true })
 
 const handleLogout = async () => {
+  console.log('🔄 Iniciando proceso de logout...')
   await authStore.logout()
+  console.log('🔄 Redirigiendo al login...')
   router.push('/login')
 }
 
