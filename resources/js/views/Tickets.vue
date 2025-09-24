@@ -1573,9 +1573,17 @@
         </button>
         <button
           @click="saveManualIntervention"
-          class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-md transition-colors"
+          :disabled="isSavingIntervention"
+          class="px-4 py-2 text-sm font-medium text-white rounded-md transition-colors flex items-center space-x-2"
+          :class="isSavingIntervention 
+            ? 'bg-gray-400 cursor-not-allowed' 
+            : 'bg-green-600 hover:bg-green-700'"
         >
-          Save
+          <svg v-if="isSavingIntervention" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ isSavingIntervention ? 'Saving...' : 'Save' }}</span>
         </button>
       </div>
     </div>
@@ -2218,6 +2226,7 @@ const showFullDescription = ref(false)
 
 // Manual intervention state
 const showManualInterventionModal = ref(false)
+const isSavingIntervention = ref(false)
 const manualIntervention = ref({
   startTime: '',
   endTime: '',
@@ -2616,6 +2625,12 @@ const toggleDurationMode = () => {
 }
 
 const saveManualIntervention = async () => {
+  // Prevenir múltiples clics
+  if (isSavingIntervention.value) {
+    return
+  }
+  
+  isSavingIntervention.value = true
   let interventionId = null
   
   try {
@@ -2869,6 +2884,9 @@ const saveManualIntervention = async () => {
     console.error('❌ Error status:', error.response?.status)
     
     alert('Error al crear la intervención manual: ' + (error.response?.data?.message || error.message))
+  } finally {
+    // Siempre desactivar el loading, sin importar si hubo éxito o error
+    isSavingIntervention.value = false
   }
 }
 
