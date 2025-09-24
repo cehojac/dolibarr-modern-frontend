@@ -36,6 +36,9 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = true
         this.user = response.data.user
         
+        // Pequeña pausa para asegurar que la sesión esté completamente establecida
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
         // Cargar permisos del usuario
         try {
           await permissionsStore.fetchPermissions()
