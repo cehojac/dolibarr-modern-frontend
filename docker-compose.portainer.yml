@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  dolibarr-frontend:
+    build:
+      context: https://github.com/cehojac/dolibarr-modern-frontend.git
+      dockerfile: Dockerfile
+    container_name: dolibarr-modern-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      # Configuración básica de Laravel
+      - APP_NAME=Dolibarr Modern Frontend
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_URL=http://localhost:8080
+      - APP_KEY=base64:$(openssl rand -base64 32)
+      
+      # Configuración de Dolibarr (CONFIGURAR ESTOS VALORES)
+      - DOLIBARR_BASE_URL=https://tu-dolibarr.com/api/index.php
+      - DOLIBARR_API_KEY=tu_api_key_aqui
+      
+      # Configuración de sesiones y cache
+      - SESSION_DRIVER=file
+      - SESSION_LIFETIME=120
+      - CACHE_DRIVER=file
+      - QUEUE_CONNECTION=sync
+      
+      # CORS (agregar tu dominio si es necesario)
+      - CORS_ALLOWED_ORIGINS=http://localhost:8080
+      - CORS_SUPPORTS_CREDENTIALS=true
+      
+      # Base de datos (no necesaria para este proyecto)
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=/var/www/html/database/database.sqlite
+      
+    volumes:
+      # Persistir storage y logs
+      - dolibarr_storage:/var/www/html/storage
+      - dolibarr_cache:/var/www/html/bootstrap/cache
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  dolibarr_storage:
+    driver: local
+  dolibarr_cache:
+    driver: local
+
+networks:
+  default:
+    name: dolibarr-network
