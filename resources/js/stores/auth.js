@@ -8,7 +8,8 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     isAuthenticated: false,
     user: null,
-    loading: false
+    loading: false,
+    isLoggingOut: false
   }),
 
   persist: {
@@ -66,6 +67,13 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async logout() {
+      // Evitar múltiples logouts simultáneos
+      if (this.isLoggingOut) {
+        console.log('Logout ya en progreso, ignorando...')
+        return
+      }
+      
+      this.isLoggingOut = true
       const notificationStore = useNotificationStore()
       const interventionsStore = useUserInterventionsStore()
       const permissionsStore = usePermissionsStore()
@@ -78,6 +86,7 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.isAuthenticated = false
         this.user = null
+        this.isLoggingOut = false
         // Limpiar localStorage, intervenciones y permisos
         localStorage.removeItem('dolibarr-auth')
         interventionsStore.clearInterventions()

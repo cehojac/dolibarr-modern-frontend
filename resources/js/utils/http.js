@@ -3,6 +3,9 @@ import { useNotificationStore } from '../stores/notifications'
 import { useAuthStore } from '../stores/auth'
 import router from '../router'
 
+// Variable para evitar múltiples redirecciones simultáneas
+let isRedirecting = false
+
 // Create axios instance
 const http = axios.create({
   baseURL: '/',
@@ -49,11 +52,21 @@ http.interceptors.response.use(
       console.log('URL solicitada:', response.config.url)
       console.log('Respuesta HTML:', response.data.substring(0, 200) + '...')
       
-      const notificationStore = useNotificationStore()
-      const authStore = useAuthStore()
-      
-      notificationStore.error('Error de sesión. Redirigiendo al login...')
-      authStore.logout()
+      // Evitar múltiples redirecciones simultáneas
+      if (!isRedirecting) {
+        isRedirecting = true
+        
+        const notificationStore = useNotificationStore()
+        const authStore = useAuthStore()
+        
+        notificationStore.error('Error de sesión. Redirigiendo al login...')
+        authStore.logout()
+        
+        // Resetear la variable después de un tiempo
+        setTimeout(() => {
+          isRedirecting = false
+        }, 2000)
+      }
       
       // Crear un error personalizado
       const error = new Error('Respuesta HTML recibida en lugar de JSON')
@@ -72,9 +85,18 @@ http.interceptors.response.use(
       
       switch (status) {
         case 401:
-          notificationStore.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
-          authStore.logout()
-          router.push('/login')
+          // Evitar múltiples redirecciones simultáneas
+          if (!isRedirecting) {
+            isRedirecting = true
+            notificationStore.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
+            authStore.logout()
+            router.push('/login')
+            
+            // Resetear la variable después de un tiempo
+            setTimeout(() => {
+              isRedirecting = false
+            }, 2000)
+          }
           break
           
         case 403:
@@ -82,11 +104,15 @@ http.interceptors.response.use(
           break
           
         case 419:
-          notificationStore.error('Sesión expirada. Recargando página...')
-          // Recargar la página para obtener un nuevo token CSRF
-          setTimeout(() => {
-            window.location.reload()
-          }, 1500)
+          // Evitar múltiples recargas simultáneas
+          if (!isRedirecting) {
+            isRedirecting = true
+            notificationStore.error('Sesión expirada. Recargando página...')
+            // Recargar la página para obtener un nuevo token CSRF
+            setTimeout(() => {
+              window.location.reload()
+            }, 1500)
+          }
           break
           
         case 404:
