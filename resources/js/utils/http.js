@@ -25,11 +25,16 @@ if (token) {
 }
   */
 
-// Request interceptor - NO CSRF para rutas API
+// Request interceptor - CSRF solo para rutas Laravel internas
 http.interceptors.request.use(
   (config) => {
-    // Solo agregar CSRF token si NO es una ruta API de Dolibarr
-    if (config.url && !config.url.startsWith('/api/doli/')) {
+    // Solo agregar CSRF token para rutas Laravel internas (no para proxies a Dolibarr)
+    const isDolibarrProxy = config.url && config.url.startsWith('/api/doli/')
+    const isAuthRoute = config.url && config.url.startsWith('/api/auth/')
+    const isCacheRoute = config.url && config.url.startsWith('/api/cache/')
+    
+    // CSRF solo necesario para rutas Laravel que modifican estado
+    if (!isDolibarrProxy && (isAuthRoute || isCacheRoute)) {
       const token = document.head.querySelector('meta[name="csrf-token"]')
       if (token && token.content) {
         config.headers['X-CSRF-TOKEN'] = token.content

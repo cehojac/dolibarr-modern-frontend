@@ -12,13 +12,12 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
+        // Todas las rutas API están excluidas de CSRF
         'api/*',
         '/api/*',
+        
+        // Específicamente las rutas de proxy a Dolibarr (redundante pero explícito)
         'api/doli/*',
         '/api/doli/*',
-        'api/auth/*',
-        '/api/auth/*',
-        'api/cache/*',
-        '/api/cache/*',
     ];
 }
