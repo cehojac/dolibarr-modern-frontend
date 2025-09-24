@@ -6,7 +6,7 @@
         <div>
           <h1 class="text-2xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Contactos</h1>
           <div class="flex items-center mt-1">
-            <span class="text-sm text-gray-500">Gestión de contactos y personas de contacto</span>
+            <span class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Gestión de contactos y personas de contacto</span>
           </div>
         </div>
       </div>
@@ -15,31 +15,31 @@
     <!-- Métricas Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
       <!-- Total Contacts -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalContacts }}</div>
-        <div class="text-sm text-gray-500">Total Contactos</div>
+        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Total Contactos</div>
       </div>
       
       <!-- Active Contacts -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold text-green-600">{{ activeContacts }}</div>
         <div class="text-sm text-green-600">Activos</div>
       </div>
       
       <!-- Primary Contacts -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold text-blue-600">{{ primaryContacts }}</div>
         <div class="text-sm text-blue-600">Principales</div>
       </div>
       
       <!-- New This Month -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold text-purple-600">{{ newThisMonth }}</div>
         <div class="text-sm text-purple-600">Nuevos Este Mes</div>
       </div>
       
       <!-- With Email -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold text-yellow-600">{{ contactsWithEmail }}</div>
         <div class="text-sm text-yellow-600">Con Email</div>
       </div>
@@ -48,13 +48,13 @@
     <!-- Action Buttons -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center space-x-3">
-        <button class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+        <button class="px-4 py-2 rounded-lg text-sm font-medium flex items-center text-white transition-colors" :class="isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-900 hover:bg-gray-800'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           Nuevo Contacto
         </button>
-        <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center" :class="isDark ? 'border-gray-600 text-gray-300' : ''">
+        <button class="border px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
@@ -62,7 +62,7 @@
         </button>
       </div>
       
-      <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center" :class="isDark ? 'border-gray-600 text-gray-300' : ''">
+      <button class="border px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
         <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
@@ -78,9 +78,9 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-blue-600 hover:text-blue-800 text-sm">Export</button>
-        <button class="text-blue-600 hover:text-blue-800 text-sm">Bulk Actions</button>
-        <button class="text-gray-500 hover:text-gray-700" @click="loadContacts">
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadContacts">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
@@ -103,7 +103,7 @@
     </div>
 
     <!-- Tabla de Contactos -->
-    <div class="bg-white rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+    <div class="rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto">
         <table class="min-w-full">
           <thead class="bg-gray-50" :class="isDark ? 'bg-gray-700' : ''">
@@ -126,7 +126,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Acciones</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200" :class="isDark ? 'bg-gray-800 divide-gray-700' : ''">
+          <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
               <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center justify-center space-x-2">
@@ -158,7 +158,7 @@
                     <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
                       {{ getFullName(contact) }}
                     </div>
-                    <div class="text-sm text-gray-500">{{ contact.civility_code || '' }}</div>
+                    <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ contact.civility_code || '' }}</div>
                   </div>
                 </div>
               </td>
@@ -175,7 +175,7 @@
               
               <!-- Email -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                <a v-if="contact.email" :href="`mailto:${contact.email}`" class="text-blue-600 hover:text-blue-800">
+                <a v-if="contact.email" :href="`mailto:${contact.email}`" class="transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">
                   {{ contact.email }}
                 </a>
                 <span v-else>-</span>
