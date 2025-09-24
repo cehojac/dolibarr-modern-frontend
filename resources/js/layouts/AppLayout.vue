@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex" :class="isDark ? 'bg-black' : 'bg-gray-100'">
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 z-50 w-64 xl:w-80 2xl:w-96 shadow-xl flex flex-col" :class="isDark ? 'bg-gradient-to-b from-blue-600 to-blue-800' : 'bg-gradient-to-b from-blue-400 to-blue-500'">
+    <div class="fixed inset-y-0 left-0 z-50 w-64 xl:w-80 2xl:w-96 shadow-xl flex flex-col" :class="isDark ? 'bg-gradient-to-b from-blue-600 to-blue-800' : 'bg-gradient-to-b from-blue-500 to-blue-600'">
       <!-- Logo -->
       <div class="flex items-center h-16 xl:h-20 2xl:h-24 px-4 xl:px-6 2xl:px-8 border-b border-opacity-30 flex-shrink-0" :class="isDark ? 'border-blue-500' : 'border-blue-300'">
         <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 bg-white rounded-lg flex items-center justify-center mr-3 shadow-sm">
@@ -24,8 +24,8 @@
                 @click="toggleSubmenu(item.name)"
                 class="group flex items-center w-full px-4 xl:px-5 2xl:px-6 py-3 xl:py-4 2xl:py-5 text-sm xl:text-base 2xl:text-lg font-medium rounded-xl transition-all duration-200"
                 :class="isSubmenuActive(item) 
-                  ? 'bg-white bg-opacity-20 text-blue-600 shadow-lg backdrop-blur-sm' 
-                  : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-blue-600 focus:bg-white focus:bg-opacity-10 focus:text-blue-600'"
+                  ? 'bg-white text-blue-700 shadow-lg font-semibold' 
+                  : 'text-blue-100 hover:bg-white hover:bg-opacity-25 hover:text-blue-700 focus:bg-white focus:bg-opacity-25 focus:text-blue-700'"
               >
                 <svg class="mr-3 xl:mr-4 2xl:mr-5 h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
@@ -56,8 +56,8 @@
                     :to="subitem.href"
                     class="group flex items-center px-4 xl:px-5 2xl:px-6 py-2 xl:py-3 2xl:py-4 text-sm xl:text-base 2xl:text-lg font-medium rounded-lg transition-all duration-200"
                     :class="route.path === subitem.href 
-                      ? 'bg-white bg-opacity-30 text-blue-900 shadow-md backdrop-blur-sm border-l-4 border-blue-900 font-semibold' 
-                      : 'text-blue-200 hover:bg-white hover:bg-opacity-15 hover:text-blue-900 focus:bg-white focus:bg-opacity-15 focus:text-blue-900 hover:border-l-4 hover:border-blue-200'"
+                      ? 'bg-white text-blue-800 shadow-md border-l-4 border-blue-800 font-semibold' 
+                      : 'text-blue-200 hover:bg-white hover:bg-opacity-30 hover:text-blue-800 focus:bg-white focus:bg-opacity-30 focus:text-blue-800 hover:border-l-2 hover:border-blue-300'"
                   >
                     <svg class="mr-3 xl:mr-4 2xl:mr-5 h-4 w-4 xl:h-5 xl:w-5 2xl:h-6 2xl:w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="subitem.iconPath" />
@@ -74,8 +74,8 @@
               :to="item.href"
               class="group flex items-center px-4 xl:px-5 2xl:px-6 py-3 xl:py-4 2xl:py-5 text-sm xl:text-base 2xl:text-lg font-medium rounded-xl transition-all duration-200"
               :class="route.path === item.href 
-                ? 'bg-white bg-opacity-20 text-blue-600 shadow-lg backdrop-blur-sm' 
-                : 'text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-blue-600 focus:bg-white focus:bg-opacity-10 focus:text-blue-600'"
+                ? 'bg-white text-blue-700 shadow-lg font-semibold' 
+                : 'text-blue-100 hover:bg-white hover:bg-opacity-25 hover:text-blue-700 focus:bg-white focus:bg-opacity-25 focus:text-blue-700'"
             >
               <svg class="mr-3 xl:mr-4 2xl:mr-5 h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
@@ -192,7 +192,7 @@ const menuPermissions = {
   'Proyectos': ['projet->lire'],
   'Documentos': ['ecm->read'],
   'Agenda': ['agenda->myactions->read'],
-  'Tickets': ['ticket->read'],
+  'Tickets': ['ticket->lire'],
   'Tareas': ['projet->lire']
 }
 
@@ -206,7 +206,25 @@ const shouldShowMenuItem = (itemName) => {
   }
   
   // Verificar si tiene al menos uno de los permisos requeridos
-  return hasAnyPermission(requiredPermissions)
+  const hasPermission = hasAnyPermission(requiredPermissions)
+  
+  // Debug detallado para ver qué está pasando
+  if (itemName !== 'Dashboard') {
+    const allPermissions = usePermissions().permissions.value
+    console.log(`🔐 Verificando menú "${itemName}":`, {
+      requiredPermissions,
+      hasPermission,
+      totalPermissions: allPermissions.length,
+      samplePermissions: allPermissions.slice(0, 10),
+      // Buscar permisos específicos
+      hasSpecificPermissions: requiredPermissions.map(perm => ({
+        permission: perm,
+        found: allPermissions.includes(perm)
+      }))
+    })
+  }
+  
+  return hasPermission
 }
 
 // Submenu state - Load from localStorage

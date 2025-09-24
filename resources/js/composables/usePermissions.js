@@ -10,6 +10,18 @@ export const usePermissionsStore = defineStore('permissions', {
     lastFetch: null
   }),
 
+  persist: {
+    key: 'dolibarr-permissions',
+    storage: localStorage,
+    paths: ['permissions', 'lastFetch'],
+    beforeRestore: (context) => {
+      // console.log('Restaurando permisos desde localStorage')
+    },
+    afterRestore: (context) => {
+      // console.log('Permisos restaurados:', context.store.permissions.length)
+    }
+  },
+
   getters: {
     // Verificar si el usuario tiene un permiso específico
     hasPermission: (state) => (permission) => {
@@ -49,7 +61,14 @@ export const usePermissionsStore = defineStore('permissions', {
         this.permissions = response.data.permissions || response.data.rights || []
         this.lastFetch = new Date().toISOString()
         
-        console.log(`✅ Cargados ${this.permissions.length} permisos del usuario:`, this.permissions)
+        console.log(`✅ Cargados ${this.permissions.length} permisos del usuario:`)
+        console.log('📋 Primeros 20 permisos:', this.permissions.slice(0, 20))
+        console.log('🔍 Buscando permisos específicos:')
+        const testPermissions = ['societe->lire', 'ticket->lire', 'projet->lire', 'facture->lire']
+        testPermissions.forEach(perm => {
+          const found = this.permissions.includes(perm)
+          console.log(`  - ${perm}: ${found ? '✅ ENCONTRADO' : '❌ NO ENCONTRADO'}`)
+        })
         
         return this.permissions
       } catch (error) {
@@ -90,6 +109,8 @@ export const usePermissionsStore = defineStore('permissions', {
     clearPermissions() {
       this.permissions = []
       this.lastFetch = null
+      // Limpiar también del localStorage
+      localStorage.removeItem('dolibarr-permissions')
     },
 
     // Verificar si necesita actualizar los permisos (cada 15 minutos)
@@ -178,9 +199,9 @@ export function usePermissions() {
     
     // Permisos de tickets
     tickets: {
-      read: () => hasPermission('ticket->read'),
-      write: () => hasPermission('ticket->write'),
-      delete: () => hasPermission('ticket->delete')
+      read: () => hasPermission('ticket->lire'),
+      write: () => hasPermission('ticket->creer'),
+      delete: () => hasPermission('ticket->supprimer')
     },
     
     // Permisos de intervenciones

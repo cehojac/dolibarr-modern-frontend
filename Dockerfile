@@ -11,9 +11,10 @@ WORKDIR /app
 COPY package*.json ./
 COPY vite.config.js ./
 COPY tailwind.config.js ./
+COPY postcss.config.js ./
 
 # Instalar dependencias de Node.js
-RUN npm ci --only=production --silent
+RUN npm ci --silent
 
 # Copiar código fuente para compilar
 COPY resources/ ./resources/

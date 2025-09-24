@@ -100,21 +100,29 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = response.data.authenticated
         this.user = response.data.user
         
-        // Si no está autenticado en el servidor, limpiar localStorage
+        // Si no está autenticado en el servidor, limpiar localStorage y permisos
         if (!response.data.authenticated) {
           this.isAuthenticated = false
           this.user = null
           localStorage.removeItem('dolibarr-auth')
+          
+          // Limpiar permisos también
+          const permissionsStore = usePermissionsStore()
+          permissionsStore.clearPermissions()
         }
       } catch (error) {
         this.isAuthenticated = false
         this.user = null
         localStorage.removeItem('dolibarr-auth')
+        
+        // Limpiar permisos también
+        const permissionsStore = usePermissionsStore()
+        permissionsStore.clearPermissions()
       }
     },
 
     // Método para inicializar la sesión desde localStorage
-    initializeFromStorage() {
+    async initializeFromStorage() {
       const stored = localStorage.getItem('dolibarr-auth')
       if (stored) {
         try {
@@ -122,8 +130,26 @@ export const useAuthStore = defineStore('auth', {
           if (data.isAuthenticated && data.user) {
             this.isAuthenticated = data.isAuthenticated
             this.user = data.user
+            
             // Verificar con el servidor si la sesión sigue válida
-            this.checkAuth()
+            await this.checkAuth()
+            
+            // Si sigue autenticado, cargar permisos si no están en localStorage
+            if (this.isAuthenticated) {
+              const permissionsStore = usePermissionsStore()
+              
+              // Si no hay permisos en localStorage o son muy antiguos, cargarlos
+              if (!permissionsStore.hasPermissions || permissionsStore.shouldRefresh()) {
+                try {
+                  await permissionsStore.fetchPermissions()
+                  console.log('Permisos recargados al inicializar sesión')
+                } catch (error) {
+                  console.warn('Error al cargar permisos al inicializar:', error)
+                }
+              } else {
+                console.log('Permisos restaurados desde localStorage')
+              }
+            }
           }
         } catch (error) {
           console.error('Error parsing stored auth data:', error)
