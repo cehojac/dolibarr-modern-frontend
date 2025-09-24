@@ -1,6 +1,8 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import http from '../utils/http'
+import { useAuthStore } from '../stores/auth'
+import { useNotificationStore } from '../stores/notifications'
 
 // Store para manejar los permisos del usuario
 export const usePermissionsStore = defineStore('permissions', {
