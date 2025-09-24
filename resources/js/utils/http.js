@@ -53,7 +53,7 @@ http.interceptors.response.use(
   (response) => {
     // Detectar si recibimos HTML en lugar de JSON (indica redirección)
     if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
-      console.error('❌ Respuesta HTML recibida - posible problema de sesión o configuración')
+      console.error('ERROR: Respuesta HTML recibida - posible problema de sesión o configuración')
       console.log('URL solicitada:', response.config.url)
       console.log('Respuesta HTML:', response.data.substring(0, 200) + '...')
       
