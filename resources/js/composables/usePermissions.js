@@ -40,19 +40,32 @@ export const usePermissionsStore = defineStore('permissions', {
       this.loading = true
       
       try {
+        console.log('🔐 Solicitando permisos del usuario...')
         const response = await http.get('/api/auth/permissions')
         
-        console.log('Respuesta completa de la API de permisos:', response.data)
+        console.log('✅ Respuesta completa de la API de permisos:', response.data)
         
         // Los permisos pueden venir en diferentes campos según la implementación
         this.permissions = response.data.permissions || response.data.rights || []
         this.lastFetch = new Date().toISOString()
         
-        console.log(`Cargados ${this.permissions.length} permisos del usuario:`, this.permissions)
+        console.log(`✅ Cargados ${this.permissions.length} permisos del usuario:`, this.permissions)
         
         return this.permissions
       } catch (error) {
-        console.error('Error al cargar permisos del usuario:', error)
+        console.error('❌ Error al cargar permisos del usuario:', error)
+        
+        // Información adicional de debugging
+        if (error.response) {
+          console.error('❌ Status:', error.response.status)
+          console.error('❌ Headers:', error.response.headers)
+          console.error('❌ Data:', error.response.data)
+        } else if (error.request) {
+          console.error('❌ Request:', error.request)
+        } else if (error.isHTMLResponse) {
+          console.error('❌ Recibida respuesta HTML en lugar de JSON - problema de configuración del servidor')
+        }
+        
         this.permissions = []
         throw error
       } finally {

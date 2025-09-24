@@ -38,7 +38,7 @@ export function useTasksCounter() {
         // First check if user has a role in this task
         if (task.id && userId) {
           try {
-            const roleResponse = await http.get(`/tasks/${task.id}/roles?userid=${userId}`)
+            const roleResponse = await http.get(`/api/doli/tasks/${task.id}/roles?userid=${userId}`)
             if (roleResponse.data && roleResponse.data.length > 0) {
               isAssigned = true
                // console.log(`✅ User ${userId} has role in task ${task.ref}`)

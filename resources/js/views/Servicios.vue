@@ -69,7 +69,7 @@ const loadServicios = async () => {
   const notificationStore = useNotificationStore()
   
   try {
-    const response = await http.get('/doli/services')
+    const response = await http.get('/api/doli/services')
     servicios.value = response.data
     if (servicios.value.length === 0) {
       notificationStore.info('No se encontraron servicios registrados')

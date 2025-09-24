@@ -254,12 +254,38 @@ class AuthController extends Controller
 
     public function getPermissions(Request $request)
     {
+        // Verificar si hay sesión activa
+        $token = $request->session()->get('dolibarr_token');
+        $user = $request->session()->get('dolibarr_user');
+        
+        if (!$token || !$user) {
+            Log::warning('getPermissions: No hay sesión activa', [
+                'session_id' => $request->session()->getId(),
+                'has_token' => (bool) $token,
+                'has_user' => (bool) $user,
+                'user_agent' => $request->userAgent(),
+                'ip' => $request->ip()
+            ]);
+            
+            return response()->json([
+                'error' => 'No hay sesión activa',
+                'permissions' => [],
+                'count' => 0
+            ], 401);
+        }
+        
         $permissions = $request->session()->get('dolibarr_permissions', []);
         
         // Solo devolver los nombres de los permisos que están activos (true)
         $activePermissions = array_keys(array_filter($permissions, function($value) {
             return $value === true || $value === 1 || $value === '1';
         }));
+        
+        Log::info('getPermissions: Permisos devueltos', [
+            'user_id' => $user['id'] ?? 'unknown',
+            'permissions_count' => count($activePermissions),
+            'session_id' => $request->session()->getId()
+        ]);
         
         return response()->json([
             'permissions' => $activePermissions,
