@@ -9,7 +9,9 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
     user: null,
     loading: false,
-    isLoggingOut: false
+    isLoggingOut: false,
+    loginStep: null, // 'authenticating', 'loading_permissions', 'loading_data', 'complete'
+    loginProgress: 0 // 0-100
   }),
 
   persist: {
@@ -21,72 +23,116 @@ export const useAuthStore = defineStore('auth', {
     },
     afterRestore: (context) => {
        // console.log('Sesión restaurada:', context.store.isAuthenticated)
-    }
   },
 
   actions: {
     async login(login, password) {
       this.loading = true
+      this.loginStep = null
+      this.loginProgress = 0
+      
       const notificationStore = useNotificationStore()
       const interventionsStore = useUserInterventionsStore()
       const permissionsStore = usePermissionsStore()
       
       try {
+        // PASO 1: Autenticación
+        this.loginStep = 'authenticating'
+        this.loginProgress = 10
+        console.log('🔐 PASO 1: Autenticando usuario...')
+        
         const response = await http.post('/api/auth/login', { login, password })
+        
+        if (!response.data.user) {
+          throw new Error('No se recibieron datos del usuario')
+        }
+        
         this.isAuthenticated = true
         this.user = response.data.user
+        this.loginProgress = 25
+        console.log('✅ PASO 1 COMPLETADO: Usuario autenticado')
         
-        // Pequeña pausa para asegurar que la sesión esté completamente establecida
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        // PASO 2: Cargar Permisos
+        this.loginStep = 'loading_permissions'
+        this.loginProgress = 30
+        console.log('🔑 PASO 2: Cargando permisos del usuario...')
         
-        // Cargar permisos del usuario
-        try {
-          await permissionsStore.fetchPermissions()
-          console.log('Permisos del usuario cargados correctamente')
-        } catch (permissionError) {
-          console.warn('Error al cargar permisos del usuario:', permissionError)
-          // No interrumpir el login por este error
-        }
+        // Pausa para asegurar que la sesión esté establecida
+        await new Promise(resolve => setTimeout(resolve, 1000))
         
-        // Cargar intervenciones del usuario en segundo plano
+        await permissionsStore.fetchPermissions()
+        this.loginProgress = 60
+        console.log('✅ PASO 2 COMPLETADO: Permisos cargados correctamente')
+        
+        // PASO 3: Cargar Datos Adicionales
+        this.loginStep = 'loading_data'
+        this.loginProgress = 70
+        console.log('📊 PASO 3: Cargando datos adicionales...')
+        
         if (response.data.user && response.data.user.id) {
-          try {
-            await interventionsStore.fetchUserInterventions(response.data.user.id)
-            console.log('Intervenciones del usuario cargadas correctamente')
-          } catch (interventionError) {
-            console.warn('Error al cargar intervenciones del usuario:', interventionError)
-            // No interrumpir el login por este error
-          }
+          await interventionsStore.fetchUserInterventions()
+          console.log('✅ PASO 3 COMPLETADO: Intervenciones cargadas')
         }
         
-        notificationStore.addNotification('success', 'Sesión iniciada', `Bienvenido ${response.data.user.firstname || response.data.user.login}`)
+        // PASO 4: Finalización
+        this.loginStep = 'complete'
+        this.loginProgress = 100
+        console.log('🎉 LOGIN COMPLETADO: Todos los pasos exitosos')
+        
+        notificationStore.addNotification('success', 'Login exitoso', `Bienvenido, ${response.data.user.firstname || login}!`)
+        
+        // Limpiar estado de progreso después de un momento
+        setTimeout(() => {
+          this.loginStep = null
+          this.loginProgress = 0
+        }, 2000)
+        
       } catch (error) {
+        console.error(`❌ ERROR EN PASO ${this.loginStep}:`, error)
+        
+        // Limpiar estado en caso de error
         this.isAuthenticated = false
         this.user = null
+        this.loginStep = null
+        this.loginProgress = 0
+        
+        // Manejo específico de errores por paso
+        if (this.loginStep === 'authenticating') {
+          if (error.response && error.response.status === 401) {
+            notificationStore.addNotification('error', 'Error de autenticación', 'Credenciales incorrectas')
+          } else {
+            notificationStore.addNotification('error', 'Error de conexión', 'No se pudo conectar con el servidor')
+          }
+        } else if (this.loginStep === 'loading_permissions') {
+          notificationStore.addNotification('error', 'Error de permisos', 'No se pudieron cargar los permisos. Intenta nuevamente.')
+        } else if (this.loginStep === 'loading_data') {
+          notificationStore.addNotification('warning', 'Datos parciales', 'Login exitoso pero algunos datos no se cargaron completamente.')
+          // En este caso, no hacer throw para no interrumpir el login
+          return
+        } else {
+          notificationStore.addNotification('error', 'Error inesperado', 'Ocurrió un error durante el login')
+        }
+        
         throw error
       } finally {
         this.loading = false
       }
     },
 
-    async logout() {
-      // Evitar múltiples logouts simultáneos
-      if (this.isLoggingOut) {
-        console.log('Logout ya en progreso, ignorando...')
-        return
-      }
-      
-      this.isLoggingOut = true
+    logout() {
       const notificationStore = useNotificationStore()
       const interventionsStore = useUserInterventionsStore()
       const permissionsStore = usePermissionsStore()
       
+      this.isLoggingOut = true
+      
       console.log('🚪 Cerrando sesión local...')
       
-      // Limpiar estado local inmediatamente
       this.isAuthenticated = false
       this.user = null
       this.isLoggingOut = false
+      this.loginStep = null
+      this.loginProgress = 0
       
       // Limpiar localStorage y stores relacionados
       localStorage.removeItem('dolibarr-auth')

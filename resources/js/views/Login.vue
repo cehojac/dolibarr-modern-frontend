@@ -105,6 +105,9 @@
       <!-- Subtle gradient overlay -->
       <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black opacity-20"></div>
     </div>
+
+    <!-- Componente de progreso de login -->
+    <LoginProgress />
   </div>
 </template>
 
@@ -115,6 +118,7 @@ import { useAuthStore } from '../stores/auth'
 import { useValidation } from '../composables/useValidation'
 import { useTheme } from '../composables/useTheme'
 import FormInput from '../components/FormInput.vue'
+import LoginProgress from '../components/LoginProgress.vue'
 import DolibarrLogo from '../assets/Dolibarr_logo.png'
 // import OfficeImage from '../assets/2db07771-ae62-4d3d-8c3d-10a087a9a5ef.png'
 
