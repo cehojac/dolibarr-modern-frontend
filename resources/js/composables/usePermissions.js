@@ -70,6 +70,15 @@ export const usePermissionsStore = defineStore('permissions', {
           console.log(`  - ${perm}: ${found ? '✅ ENCONTRADO' : '❌ NO ENCONTRADO'}`)
         })
         
+        // Buscar todos los permisos relacionados con tickets
+        console.log('🎫 Permisos relacionados con tickets:')
+        const ticketPermissions = this.permissions.filter(perm => perm.includes('ticket'))
+        if (ticketPermissions.length > 0) {
+          ticketPermissions.forEach(perm => console.log(`  - ${perm}`))
+        } else {
+          console.log('  - ❌ No se encontraron permisos de tickets')
+        }
+        
         return this.permissions
       } catch (error) {
         console.error('❌ Error al cargar permisos del usuario:', error)
@@ -83,6 +92,25 @@ export const usePermissionsStore = defineStore('permissions', {
           console.error('❌ Request:', error.request)
         } else if (error.isHTMLResponse) {
           console.error('❌ Recibida respuesta HTML en lugar de JSON - problema de configuración del servidor')
+          console.error('🔄 Limpiando estado y requiriendo nuevo login...')
+          
+          // Limpiar localStorage también
+          localStorage.removeItem('dolibarr-permissions')
+          
+          // Limpiar auth store y redirigir
+          const authStore = useAuthStore()
+          authStore.isAuthenticated = false
+          authStore.user = null
+          localStorage.removeItem('dolibarr-auth')
+          
+          // Mostrar mensaje específico para problema de producción
+          const notificationStore = useNotificationStore()
+          notificationStore.addNotification('error', 'Error de Sesión', 'Problema de configuración en producción. Por favor, inicia sesión nuevamente.')
+          
+          // Redirigir al login
+          if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+            window.location.href = '/login'
+          }
         }
         
         this.permissions = []
