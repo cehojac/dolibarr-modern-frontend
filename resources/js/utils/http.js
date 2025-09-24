@@ -7,7 +7,7 @@ import router from '../router'
 const http = axios.create({
   baseURL: '/',
   timeout: 10000,
-  withCredentials: false, // Importante para cookies de sesión
+  withCredentials: true, // Importante para cookies de sesión en producción
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -43,6 +43,24 @@ http.interceptors.request.use(
 // Response interceptor for global error handling
 http.interceptors.response.use(
   (response) => {
+    // Detectar si recibimos HTML en lugar de JSON (indica redirección)
+    if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
+      console.error('❌ Respuesta HTML recibida - posible problema de sesión o configuración')
+      console.log('URL solicitada:', response.config.url)
+      console.log('Respuesta HTML:', response.data.substring(0, 200) + '...')
+      
+      const notificationStore = useNotificationStore()
+      const authStore = useAuthStore()
+      
+      notificationStore.error('Error de sesión. Redirigiendo al login...')
+      authStore.logout()
+      
+      // Crear un error personalizado
+      const error = new Error('Respuesta HTML recibida en lugar de JSON')
+      error.isHTMLResponse = true
+      return Promise.reject(error)
+    }
+    
     return response
   },
   (error) => {

@@ -20,6 +20,7 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
+        'https://new-YOUR_DOMAIN',
         'https://new.gestion.carlos-herrera-consulting',
         'https://gestion.carlos-herrera-consulting',
         'http://localhost:8000',
