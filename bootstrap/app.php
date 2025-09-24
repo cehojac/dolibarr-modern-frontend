@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registrar middleware personalizado para forzar respuestas JSON en rutas API
         $middleware->alias([
             'force.json' => \App\Http\Middleware\ForceJsonResponse::class,
+            'api.custom' => \App\Http\Middleware\ApiMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -11,6 +11,11 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        // Inicializar sesión manualmente si no existe
+        if (!$request->hasSession()) {
+            $request->setLaravelSession(app('session.store'));
+        }
+        
         $request->validate([
             'login' => 'required|string',
             'password' => 'required|string'
@@ -254,6 +259,11 @@ class AuthController extends Controller
 
     public function getPermissions(Request $request)
     {
+        // Inicializar sesión manualmente si no existe
+        if (!$request->hasSession()) {
+            $request->setLaravelSession(app('session.store'));
+        }
+        
         // Debug específico para producción
         Log::info('getPermissions: Iniciando', [
             'url' => $request->fullUrl(),
@@ -262,7 +272,8 @@ class AuthController extends Controller
             'user_agent' => $request->userAgent(),
             'ip' => $request->ip(),
             'headers' => $request->headers->all(),
-            'is_api_route' => $request->is('api/*')
+            'is_api_route' => $request->is('api/*'),
+            'has_session' => $request->hasSession()
         ]);
         
         // Verificar si hay sesión activa
