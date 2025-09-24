@@ -254,6 +254,17 @@ class AuthController extends Controller
 
     public function getPermissions(Request $request)
     {
+        // Debug específico para producción
+        Log::info('getPermissions: Iniciando', [
+            'url' => $request->fullUrl(),
+            'method' => $request->method(),
+            'session_id' => $request->session()->getId(),
+            'user_agent' => $request->userAgent(),
+            'ip' => $request->ip(),
+            'headers' => $request->headers->all(),
+            'is_api_route' => $request->is('api/*')
+        ]);
+        
         // Verificar si hay sesión activa
         $token = $request->session()->get('dolibarr_token');
         $user = $request->session()->get('dolibarr_user');
