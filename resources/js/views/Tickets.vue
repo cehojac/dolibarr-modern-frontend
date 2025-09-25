@@ -572,7 +572,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125 1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
                       </svg>
                       <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-                        Mis Intervenciones ({{ userInterventionsForTicket?.length || 0 }})
+                        Todas las Intervenciones ({{ allTicketInterventions?.length || 0 }})
                       </h3>
                       <svg 
                         class="w-4 h-4 transition-transform duration-200" 
@@ -589,19 +589,27 @@
                     </button>
                   </div>
                   
-                  <!-- Intervenciones del usuario para este ticket -->
-                  <div v-if="userInterventionsForTicket && userInterventionsForTicket.length > 0" v-show="showInterventions" class="space-y-3">
+                  <!-- Loading state -->
+                  <div v-if="loadingAllInterventions" v-show="showInterventions" class="text-center py-6">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                    <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Cargando intervenciones...</p>
+                  </div>
+
+                  <!-- Todas las intervenciones del ticket -->
+                  <div v-else-if="allTicketInterventions && allTicketInterventions.length > 0" v-show="showInterventions" class="space-y-3">
                     <div 
-                      v-for="(intervention, index) in userInterventionsForTicket" 
+                      v-for="(intervention, index) in allTicketInterventions" 
                       :key="intervention.id"
                       class="flex items-start space-x-3 p-4 rounded-lg border" 
                       :class="isDark ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'"
                     >
+                      <!-- Círculo con iniciales del usuario -->
                       <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-white mt-0.5" 
-                           :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+                           :class="intervention.fk_user_author == authStore.user?.id 
+                             ? (isDark ? 'bg-blue-600' : 'bg-blue-500')
+                             : (isDark ? 'bg-gray-600' : 'bg-gray-500')
+                           ">
+                        {{ getUserInitials(intervention.user_author || intervention) }}
                       </div>
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between mb-2">
@@ -612,6 +620,14 @@
                             <span class="inline-flex px-2 py-0.5 text-xs font-medium rounded-lg" 
                                   :class="getInterventionStatusClass(intervention.status)">
                               {{ getInterventionStatusText(intervention.status) }}
+                            </span>
+                            <!-- Autor de la intervención -->
+                            <span class="text-xs px-2 py-1 rounded-full" 
+                                  :class="intervention.fk_user_author == authStore.user?.id 
+                                    ? (isDark ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800')
+                                    : (isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700')
+                                  ">
+                              {{ getUserDisplayName(intervention) }}
                             </span>
                           </div>
                           <div class="text-right">
@@ -641,14 +657,14 @@
                     </div>
                   </div>
                   
-                  <!-- Estado cuando no hay intervenciones del usuario -->
+                  <!-- Estado cuando no hay intervenciones -->
                   <div v-else v-show="showInterventions" class="text-center py-6">
                     <div class="rounded-lg p-4" :class="isDark ? 'bg-gray-800/50' : 'bg-gray-100'">
                       <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0.621 0 1.125-.504 1.125-1.125V9.375c0-.621.504-1.125 1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
                       </svg>
                       <p class="text-sm font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">0 intervenciones</p>
-                      <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">No tienes intervenciones registradas para este ticket</p>
+                      <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">No hay intervenciones registradas para este ticket</p>
                     </div>
                   </div>
                 </div>
@@ -842,7 +858,7 @@
               </div>
 
               <!-- Right Sidebar - Ticket Info -->
-              <div class="w-72 max-w-sm border-l p-4 overflow-y-auto flex-shrink-0" :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'">
+              <div class="w-80 max-w-sm border-l p-4 overflow-y-auto flex-shrink-0" :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'">
                 <!-- Ticket Info Section -->
                 <div class="mb-6">
                   <div class="flex items-center space-x-2 mb-4">
@@ -863,9 +879,99 @@
                     <!-- Empresa del ticket -->
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Empresa:</label>
-                      <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                        {{ currentCompany?.name || (ticketDetails.fk_soc ? 'Cargando empresa...' : 'Sin empresa asignada') }}
-                      </p>
+                      <div v-if="editingCompany" class="space-y-2">
+                        <div class="relative">
+                          <input
+                            v-model="companySearchTerm"
+                            @input="filterCompanies"
+                            @focus="showCompanyDropdown = true"
+                            @blur="setTimeout(() => showCompanyDropdown = false, 200)"
+                            type="text"
+                            placeholder="Buscar empresa..."
+                            class="w-full px-3 py-2 pr-10 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                          >
+                          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </div>
+                          
+                          <!-- Dropdown de empresas -->
+                          <div v-if="showCompanyDropdown" class="absolute z-10 w-full mt-1 rounded-lg shadow-lg border max-h-60 overflow-y-auto" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'">
+                            <!-- Opción "Sin empresa" -->
+                            <div 
+                              @click="selectCompany('', 'Sin empresa')"
+                              class="px-3 py-2 text-sm cursor-pointer hover:bg-opacity-80 transition-colors"
+                              :class="isDark ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-700'"
+                            >
+                              <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Sin empresa
+                              </div>
+                            </div>
+                            
+                            <!-- Búsqueda sin resultados -->
+                            <div v-if="filteredCompanies.length === 0 && companySearchTerm.length > 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                              No se encontraron empresas para "{{ companySearchTerm }}"
+                            </div>
+                            
+                            <!-- Instrucción de búsqueda -->
+                            <div v-if="filteredCompanies.length === 0 && companySearchTerm.length === 0 && availableCompanies.length > 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                              Escribe para buscar entre {{ availableCompanies.length }} empresa(s)...
+                            </div>
+                            
+                            <!-- Lista de empresas filtradas -->
+                            <div 
+                              v-for="company in filteredCompanies" 
+                              :key="company.id"
+                              @click="selectCompany(company.id, company.name)"
+                              class="px-3 py-2 text-sm cursor-pointer hover:bg-opacity-80 transition-colors"
+                              :class="isDark ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-700'"
+                            >
+                              <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h2M7 7h10M7 11h10M7 15h10" />
+                                </svg>
+                                <div>
+                                  <div class="font-medium">{{ company.name }}</div>
+                                  <div v-if="company.code_client" class="text-xs opacity-75">{{ company.code_client }}</div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="flex space-x-2">
+                          <button 
+                            @click="saveCompany" 
+                            class="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                          >
+                            Guardar
+                          </button>
+                          <button 
+                            @click="cancelEditCompany" 
+                            class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                      <div v-else class="flex items-center justify-between">
+                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          {{ currentCompany?.name || (ticketDetails.fk_soc ? 'Cargando empresa...' : 'Sin empresa asignada') }}
+                        </p>
+                        <button 
+                          @click="startEditCompany" 
+                          class="ml-2 p-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                          title="Cambiar empresa"
+                        >
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     
                     <!-- Proyecto del ticket -->
@@ -981,7 +1087,7 @@
                               </svg> -->
                             </div>
                             <div class="flex-1 min-w-0">
-                              <p class="text-sm font-medium truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+                              <p class="text-sm font-medium break-words" :class="isDark ? 'text-white' : 'text-gray-900'">
                                 {{ reminder.title }}
                               </p>
                               <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
@@ -990,7 +1096,7 @@
                               <p class="text-xs mt-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                                 👤 {{ reminder.assignedTo }}
                               </p>
-                              <p v-if="reminder.description" class="text-xs mt-1 truncate" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                              <p v-if="reminder.description" class="text-xs mt-1 break-words" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
                                 {{ reminder.description }}
                               </p>
                             </div>
@@ -3806,7 +3912,13 @@ const availableProjects = ref([])
 const currentProject = ref(null)
 
 // Company management
+const editingCompany = ref(false)
+const selectedCompanyId = ref('')
+const availableCompanies = ref([])
 const currentCompany = ref(null)
+const showCompanyDropdown = ref(false)
+const companySearchTerm = ref('')
+const filteredCompanies = ref([])
 
 // User assignment management
 const editingAssignment = ref(false)
@@ -3878,6 +3990,219 @@ const userInterventionsForTicket = computed(() => {
   const interventions = getInterventionsForTicket(selectedTicket.value.id)
   return interventions
 })
+
+// Estado para todas las intervenciones del ticket
+const allTicketInterventions = ref([])
+const loadingAllInterventions = ref(false)
+
+// Función para obtener todas las intervenciones de un ticket específico
+const fetchAllTicketInterventions = async (ticketId) => {
+  if (!ticketId) return
+  
+  loadingAllInterventions.value = true
+  try {
+    console.log('🔍 Obteniendo todas las intervenciones para ticket:', ticketId)
+    
+    // Usar el mismo endpoint que funciona, pero obtener todas las intervenciones
+    const response = await http.get('/api/doli/interventions', {
+      params: {
+        sortfield: 't.rowid',
+        sortorder: 'DESC',
+        limit: 1000,
+        properties: 'id,linkedObjectsIds,ref,status,duration,datee,datem,desc,lines,fk_user_author,fk_user_create,user_creation_id'
+      }
+    })
+
+    console.log('📦 Respuesta de intervenciones:', response.data?.length || 0, 'intervenciones totales')
+    
+    // Debug: Ver estructura de una intervención
+    if (response.data && response.data.length > 0) {
+      console.log('🔍 Estructura de intervención ejemplo:', response.data[0])
+    }
+
+    if (response.data && Array.isArray(response.data)) {
+      // Filtrar intervenciones que están vinculadas a este ticket
+      const filteredInterventions = response.data.filter(intervention => {
+        // Método 1: Verificar vinculación por linkedObjectsIds
+        if (intervention.linkedObjectsIds && intervention.linkedObjectsIds.ticket && typeof intervention.linkedObjectsIds.ticket === 'object') {
+          const ticketIds = Object.values(intervention.linkedObjectsIds.ticket)
+          const matches = ticketIds.some(id => String(id) === String(ticketId))
+          if (matches) return true
+        }
+        
+        // Método 2: Verificar vinculación por nota privada
+        if (intervention.note_private) {
+          const noteMatch = intervention.note_private.includes(`[TICKET_LINK]`) && 
+                           intervention.note_private.includes(`(ID: ${ticketId})`)
+          if (noteMatch) return true
+        }
+        
+        // Método 3: Verificar vinculación por descripción
+        if (intervention.desc && intervention.desc.includes(`(ID: ${ticketId})`)) {
+          return true
+        }
+        
+        return false
+      })
+      
+      // Enriquecer intervenciones con información de usuarios
+      const enrichedInterventions = await enrichInterventionsWithUserInfo(filteredInterventions)
+      allTicketInterventions.value = enrichedInterventions
+      console.log('✅ Intervenciones filtradas para ticket', ticketId, ':', allTicketInterventions.value.length)
+    } else {
+      allTicketInterventions.value = []
+      console.log('❌ No se recibieron datos de intervenciones')
+    }
+  } catch (error) {
+    console.error('❌ Error al obtener intervenciones del ticket:', error)
+    allTicketInterventions.value = []
+  } finally {
+    loadingAllInterventions.value = false
+  }
+}
+
+// Función para enriquecer intervenciones con información de usuarios
+const enrichInterventionsWithUserInfo = async (interventions) => {
+  if (!interventions || interventions.length === 0) return interventions
+  
+  // Debug: Ver qué intervenciones tenemos
+  console.log('🔍 Intervenciones a enriquecer:', interventions.map(i => ({
+    id: i.id,
+    ref: i.ref,
+    fk_user_author: i.fk_user_author
+  })))
+  
+  // Obtener IDs únicos de usuarios (probar diferentes campos)
+  const userIds = [...new Set(interventions.map(i => 
+    i.fk_user_author || i.fk_user_create || i.user_creation_id
+  ).filter(Boolean))]
+  
+  if (userIds.length === 0) {
+    console.log('⚠️ No se encontraron IDs de usuarios en las intervenciones')
+    return interventions
+  }
+  
+  console.log('🔍 Obteniendo información de usuarios:', userIds)
+  
+  try {
+    // Obtener información de todos los usuarios
+    const userPromises = userIds.map(userId => 
+      http.get(`/api/doli/users/${userId}`).catch(error => {
+        console.warn(`Error obteniendo usuario ${userId}:`, error)
+        return null
+      })
+    )
+    
+    const userResponses = await Promise.all(userPromises)
+    
+    // Crear mapa de usuarios
+    const usersMap = {}
+    userResponses.forEach((response, index) => {
+      if (response && response.data) {
+        usersMap[userIds[index]] = response.data
+      }
+    })
+    
+    console.log('✅ Usuarios obtenidos:', Object.keys(usersMap).length)
+    
+    // Enriquecer intervenciones con información de usuarios
+    return interventions.map(intervention => {
+      const userId = intervention.fk_user_author || intervention.fk_user_create || intervention.user_creation_id
+      return {
+        ...intervention,
+        user_author: usersMap[userId] || null,
+        // Asegurar que tenemos el ID del usuario en fk_user_author
+        fk_user_author: userId
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ Error enriqueciendo intervenciones con usuarios:', error)
+    return interventions
+  }
+}
+
+// Función para obtener las iniciales de un usuario (maneja objetos y strings)
+const getUserInitials = (userOrName) => {
+  if (!userOrName) return '?'
+  
+  // Si es un string (nombre completo)
+  if (typeof userOrName === 'string') {
+    if (userOrName === '-' || userOrName === 'undefined') return '?'
+    const names = userOrName.trim().split(' ')
+    if (names.length === 1) {
+      return names[0].substring(0, 2).toUpperCase()
+    } else {
+      const firstName = names[0]
+      const lastName = names[names.length - 1]
+      return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase()
+    }
+  }
+  
+  // Si es un objeto usuario o intervención
+  const user = userOrName
+  if (user && typeof user === 'object') {
+    // Si es una intervención, usar user_author
+    if (user.user_author) {
+      const author = user.user_author
+      if (author.firstname && author.lastname) {
+        return `${author.firstname.charAt(0)}${author.lastname.charAt(0)}`.toUpperCase()
+      } else if (author.login) {
+        return author.login.substring(0, 2).toUpperCase()
+      } else if (author.name) {
+        const parts = author.name.split(' ')
+        if (parts.length >= 2) {
+          return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase()
+        }
+        return author.name.substring(0, 2).toUpperCase()
+      }
+    }
+    
+    // Si es un usuario directo
+    if (user.firstname && user.lastname) {
+      return `${user.firstname.charAt(0)}${user.lastname.charAt(0)}`.toUpperCase()
+    } else if (user.login) {
+      return user.login.substring(0, 2).toUpperCase()
+    } else if (user.name) {
+      const parts = user.name.split(' ')
+      if (parts.length >= 2) {
+        return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase()
+      }
+      return user.name.substring(0, 2).toUpperCase()
+    }
+    
+    // Si solo tenemos fk_user_author, usar las primeras letras del ID
+    if (user.fk_user_author) {
+      return String(user.fk_user_author).substring(0, 2).toUpperCase()
+    }
+  }
+  
+  return '?'
+}
+
+// Función para obtener el nombre a mostrar del usuario
+const getUserDisplayName = (intervention) => {
+  if (!intervention) return 'Usuario desconocido'
+  
+  // Si tenemos información completa del usuario
+  if (intervention.user_author) {
+    const user = intervention.user_author
+    if (user.firstname && user.lastname) {
+      return `${user.firstname} ${user.lastname}`
+    } else if (user.login) {
+      return user.login
+    } else if (user.name) {
+      return user.name
+    }
+  }
+  
+  // Si solo tenemos el ID del usuario
+  if (intervention.fk_user_author) {
+    return `Usuario ID: ${intervention.fk_user_author}`
+  }
+  
+  return 'Usuario desconocido'
+}
 
 const loadingDetails = ref(false)
 
@@ -4326,6 +4651,9 @@ const viewTicketDetails = async (ticket) => {
      console.log('✅ Ticket details response:', response)
     ticketDetails.value = response.data
     
+    // Cargar todas las intervenciones del ticket
+    await fetchAllTicketInterventions(ticket.id)
+    
     // Load followers, users/contacts, reminders, and company info
     await Promise.all([
       fetchTicketFollowers(ticket.id),
@@ -4452,6 +4780,7 @@ const closeModal = async () => {
     selectedTicket.value = null
     ticketDetails.value = null
     loadingDetails.value = false
+    allTicketInterventions.value = [] // Limpiar intervenciones
     
     // Force refresh tickets after closing modal
      console.log('🔄 Refreshing data after modal close...')
@@ -4824,6 +5153,117 @@ const saveProject = async () => {
   }
 }
 
+// Company management functions
+const startEditCompany = async () => {
+  editingCompany.value = true
+  selectedCompanyId.value = ticketDetails.value?.fk_soc || ''
+  
+  // Inicializar el término de búsqueda con el nombre de la empresa actual
+  if (currentCompany.value?.name) {
+    companySearchTerm.value = currentCompany.value.name
+  } else {
+    companySearchTerm.value = ''
+  }
+  
+  console.log('🔍 Starting company edit for ticket:', {
+    ticketId: ticketDetails.value?.id,
+    currentCompany: ticketDetails.value?.fk_soc
+  })
+  
+  try {
+    console.log('🔍 Fetching available companies...')
+    const response = await http.get('/api/doli/thirdparties?limit=100&sortfield=t.nom&sortorder=ASC')
+    
+    if (response.data && Array.isArray(response.data)) {
+      availableCompanies.value = response.data
+      filteredCompanies.value = response.data // Inicialmente mostrar todas
+      console.log('✅ Companies loaded:', availableCompanies.value.length)
+    } else {
+      console.warn('⚠️ No companies data received')
+      availableCompanies.value = []
+      filteredCompanies.value = []
+    }
+  } catch (error) {
+    console.error('❌ Error fetching companies:', error)
+    availableCompanies.value = []
+    filteredCompanies.value = []
+  }
+}
+
+const filterCompanies = () => {
+  const searchTerm = companySearchTerm.value.toLowerCase().trim()
+  
+  if (searchTerm === '') {
+    filteredCompanies.value = availableCompanies.value
+  } else {
+    filteredCompanies.value = availableCompanies.value.filter(company => 
+      company.name.toLowerCase().includes(searchTerm) ||
+      (company.code_client && company.code_client.toLowerCase().includes(searchTerm))
+    )
+  }
+}
+
+const selectCompany = (companyId, companyName) => {
+  selectedCompanyId.value = companyId
+  companySearchTerm.value = companyName
+  showCompanyDropdown.value = false
+}
+
+const cancelEditCompany = () => {
+  editingCompany.value = false
+  selectedCompanyId.value = ''
+  companySearchTerm.value = ''
+  showCompanyDropdown.value = false
+  filteredCompanies.value = []
+}
+
+const saveCompany = async () => {
+  try {
+    console.log('💾 Saving company for ticket:', {
+      ticketId: ticketDetails.value?.id,
+      newCompanyId: selectedCompanyId.value
+    })
+
+    const updateData = {
+      fk_soc: selectedCompanyId.value || null
+    }
+
+    const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
+    console.log('✅ Company update response:', response)
+
+    // Update ticket details
+    if (ticketDetails.value) {
+      ticketDetails.value.fk_soc = selectedCompanyId.value
+    }
+
+    // Update current company info
+    if (selectedCompanyId.value) {
+      try {
+        const companyResponse = await http.get(`/api/doli/thirdparties/${selectedCompanyId.value}`)
+        currentCompany.value = companyResponse.data
+        console.log('✅ Updated company info:', currentCompany.value?.name)
+      } catch (error) {
+        console.warn('Error fetching updated company details:', error)
+      }
+    } else {
+      currentCompany.value = null
+    }
+    
+    editingCompany.value = false
+    companySearchTerm.value = ''
+    showCompanyDropdown.value = false
+    filteredCompanies.value = []
+    console.log('✅ Empresa actualizada correctamente')
+    
+  } catch (error) {
+    console.error('❌ Error updating company:', error)
+    console.error('❌ Error response:', error.response?.data)
+    
+    // Show error message to user
+    alert('Error al actualizar la empresa: ' + (error.response?.data?.message || error.message))
+  }
+}
+
 // User assignment management functions
 const startEditAssignment = async () => {
   editingAssignment.value = true
@@ -5101,21 +5541,6 @@ const downloadDocument = (doc) => {
   }
 }
 
-// Function to get user initials from full name
-const getUserInitials = (fullName) => {
-  if (!fullName || fullName === '-') return '?'
-  
-  const names = fullName.trim().split(' ')
-  if (names.length === 1) {
-    // Single name, take first 2 characters
-    return names[0].substring(0, 2).toUpperCase()
-  } else {
-    // Multiple names, take first letter of first and last name
-    const firstName = names[0]
-    const lastName = names[names.length - 1]
-    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase()
-  }
-}
 
 // Function to get consistent avatar color based on name
 const getUserAvatarColor = (fullName) => {
