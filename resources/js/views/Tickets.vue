@@ -22,13 +22,17 @@
       </div>
       
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <!-- Open Tickets -->
-        <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <!-- Sin Asignar Tickets -->
+        <div 
+          @click="filterByUnassigned"
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.open }}</p>
-              <p class="text-sm font-medium text-red-500">Open</p>
-              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">My Tickets: {{ ticketMetrics.myOpen }}</p>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.unassigned }}</p>
+              <p class="text-sm font-medium text-orange-500">Sin Asignar</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ ticketMetrics.unassigned }}</p>
             </div>
           </div>
         </div>
@@ -1464,9 +1468,15 @@
         </button>
         <button
           @click="saveTimeEntry"
-          class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+          :disabled="isSavingTimeEntry"
+          class="px-4 py-2 text-sm font-medium text-white rounded-md transition-colors flex items-center"
+          :class="isSavingTimeEntry ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'"
         >
-          Guardar
+          <svg v-if="isSavingTimeEntry" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ isSavingTimeEntry ? 'Guardando...' : 'Guardar' }}
         </button>
       </div>
     </div>
@@ -2222,6 +2232,7 @@ const { startTimer, stopTimer, isTimerRunning, formatElapsedTime } = useTicketTi
 const showTimeEntryModal = ref(false)
 const timeEntryNote = ref('')
 const recordedTime = ref(0)
+const isSavingTimeEntry = ref(false)
 const showFullDescription = ref(false)
 
 // Manual intervention state
@@ -2372,6 +2383,9 @@ const handleTimerClick = (ticket) => {
 }
 
 const saveTimeEntry = async () => {
+  if (isSavingTimeEntry.value) return // Prevenir doble click
+  
+  isSavingTimeEntry.value = true
   let interventionId = null
   
   try {
@@ -2587,6 +2601,8 @@ const saveTimeEntry = async () => {
     console.error('='.repeat(60))
     
     alert('Error al guardar la intervención: ' + (error.response?.data?.message || error.message))
+  } finally {
+    isSavingTimeEntry.value = false
   }
 }
 
@@ -2594,6 +2610,20 @@ const cancelTimeEntry = () => {
   showTimeEntryModal.value = false
   timeEntryNote.value = ''
   recordedTime.value = 0
+}
+
+// Filter by unassigned tickets
+const filterByUnassigned = () => {
+  // Limpiar otros filtros
+  selectedTercero.value = null
+  selectedUser.value = null
+  searchQuery.value = ''
+  
+  // Aplicar filtro personalizado para tickets sin asignar
+  filteredTickets.value = tickets.value.filter(ticket => {
+    const hasAssignedUser = ticket.fk_user_assign && ticket.fk_user_assign != '0'
+    return !hasAssignedUser
+  })
 }
 
 // Manual intervention methods
@@ -3737,7 +3767,7 @@ const loading = ref(false)
 
 // Ticket metrics
 const ticketMetrics = ref({
-  open: 0,
+  unassigned: 0,
   inProgress: 0,
   pending: 0,
   awaiting: 0,
@@ -3904,7 +3934,7 @@ const calculateTicketMetrics = () => {
   
   // Reset metrics
   ticketMetrics.value = {
-    open: 0,
+    unassigned: 0,
     inProgress: 0,
     pending: 0,
     awaiting: 0,
@@ -3930,8 +3960,8 @@ const calculateTicketMetrics = () => {
           ticketMetrics.value.inProgress++
           if (isMyTicket) ticketMetrics.value.myInProgress++
         } else {
-          ticketMetrics.value.open++
-          if (isMyTicket) ticketMetrics.value.myOpen++
+          // Sin asignar: fk_user_assign es null, 0 o vacío
+          ticketMetrics.value.unassigned++
         }
         break
       case 2: // Assigned
@@ -3955,13 +3985,12 @@ const calculateTicketMetrics = () => {
         if (isMyTicket) ticketMetrics.value.myClosed++
         break
       default:
-        // Estado desconocido: si tiene usuario asignado → "Asignado", sino → "Open"
+        // Estado desconocido: si tiene usuario asignado → "Asignado", sino → "Sin Asignar"
         if (hasAssignedUser) {
           ticketMetrics.value.inProgress++
           if (isMyTicket) ticketMetrics.value.myInProgress++
         } else {
-          ticketMetrics.value.open++
-          if (isMyTicket) ticketMetrics.value.myOpen++
+          ticketMetrics.value.unassigned++
         }
     }
   })
