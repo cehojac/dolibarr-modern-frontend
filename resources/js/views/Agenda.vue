@@ -80,7 +80,7 @@
             <input
               type="checkbox"
               v-model="showSystemAuto"
-              class="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out rounded"
+              class="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out rounded bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-600"
             >
             <span :class="isDark ? 'text-gray-300' : 'text-gray-700'">
               Mostrar systemauto
@@ -341,12 +341,11 @@
         <form @submit.prevent="createEvent" class="p-6 space-y-6">
           <!-- Tipo -->
           <div class="grid grid-cols-4 gap-4 items-center">
-            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Tipo</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
             <div class="col-span-3">
               <select 
                 v-model="newEvent.type" 
-                class="w-full border rounded-lg px-3 py-2 text-sm" 
-                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
                 <option value="AC_RDV">Cita</option>
                 <option value="AC_TEL">Llamada telefónica</option>
@@ -362,14 +361,13 @@
 
           <!-- Título -->
           <div class="grid grid-cols-4 gap-4 items-center">
-            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Título</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Título</label>
             <div class="col-span-3">
               <input 
                 v-model="newEvent.label" 
                 type="text" 
                 required
-                class="w-full border rounded-lg px-3 py-2 text-sm" 
-                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Título del evento"
               >
             </div>
@@ -377,11 +375,11 @@
 
           <!-- Fecha y Hora -->
           <div class="grid grid-cols-4 gap-4 items-start">
-            <label class="text-sm font-medium pt-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Fecha</label>
+            <label class="text-sm font-medium pt-2 text-gray-700 dark:text-gray-300">Fecha</label>
             <div class="col-span-3 space-y-3">
               <div class="flex items-center space-x-2">
-                <input type="checkbox" v-model="newEvent.allDay" class="form-checkbox h-4 w-4 text-blue-600">
-                <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Evento para todo el día</span>
+                <input type="checkbox" v-model="newEvent.allDay" class="form-checkbox h-4 w-4 text-blue-600 rounded bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                <span class="text-sm text-gray-700 dark:text-gray-300">Evento para todo el día</span>
               </div>
               
               <div class="flex items-center space-x-4">
@@ -390,24 +388,21 @@
                   type="date" 
                   required
                   :min="new Date().toISOString().split('T')[0]"
-                  class="border rounded-lg px-3 py-2 text-sm" 
-                  :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+                  class="border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
                 <input 
                   v-if="!newEvent.allDay"
                   v-model="newEvent.startTime" 
                   type="time" 
                   required
-                  class="border rounded-lg px-3 py-2 text-sm" 
-                  :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+                  class="border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
-                <span v-if="!newEvent.allDay" class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">a</span>
+                <span v-if="!newEvent.allDay" class="text-sm text-gray-700 dark:text-gray-300">a</span>
                 <input 
                   v-if="!newEvent.allDay"
                   v-model="newEvent.endTime" 
                   type="time" 
-                  class="border rounded-lg px-3 py-2 text-sm" 
-                  :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+                  class="border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
               </div>
             </div>
@@ -415,14 +410,14 @@
 
           <!-- Evento asignado a -->
           <div class="grid grid-cols-4 gap-4 items-center">
-            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Evento asignado a</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Evento asignado a</label>
             <div class="col-span-3 flex items-center space-x-2">
-              <div class="flex items-center space-x-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+              <div class="flex items-center space-x-2 px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                 <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                   <span class="text-xs font-medium text-white">{{ userInitials }}</span>
                 </div>
                 <span>{{ authStore.user?.firstname || authStore.user?.login }} (Propietario)</span>
-                <input type="checkbox" checked disabled class="form-checkbox h-4 w-4 text-blue-600">
+                <input type="checkbox" checked disabled class="form-checkbox h-4 w-4 text-blue-600 rounded bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-600">
                 <span class="text-xs">Ocupado</span>
               </div>
             </div>
@@ -430,13 +425,12 @@
 
           <!-- Localización -->
           <div class="grid grid-cols-4 gap-4 items-center">
-            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Localización</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Localización</label>
             <div class="col-span-3">
               <input 
                 v-model="newEvent.location" 
                 type="text" 
-                class="w-full border rounded-lg px-3 py-2 text-sm" 
-                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Ubicación del evento"
               >
             </div>
@@ -444,9 +438,9 @@
 
           <!-- Estado/Progreso -->
           <div class="grid grid-cols-4 gap-4 items-center">
-            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Estado / Progreso</label>
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Estado / Progreso</label>
             <div class="col-span-3 flex items-center space-x-2">
-              <select v-model="newEvent.status" class="border rounded-lg px-3 py-2 text-sm" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'">
+              <select v-model="newEvent.status" class="border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 <option value="0">A realizar</option>
                 <option value="50">En progreso</option>
                 <option value="100">Realizado</option>
@@ -456,22 +450,20 @@
                 type="number" 
                 min="0" 
                 max="100" 
-                class="w-20 border rounded-lg px-3 py-2 text-sm" 
-                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+                class="w-20 border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
-              <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">%</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300">%</span>
             </div>
           </div>
 
           <!-- Descripción -->
           <div class="grid grid-cols-4 gap-4 items-start">
-            <label class="text-sm font-medium pt-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Descripción</label>
+            <label class="text-sm font-medium pt-2 text-gray-700 dark:text-gray-300">Descripción</label>
             <div class="col-span-3">
               <textarea 
                 v-model="newEvent.note" 
                 rows="4" 
-                class="w-full border rounded-lg px-3 py-2 text-sm" 
-                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'"
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Descripción del evento"
               ></textarea>
             </div>
@@ -1219,3 +1211,31 @@ onMounted(() => {
   loadEventos()
 })
 </script>
+
+<style scoped>
+/* Estilos personalizados para checkboxes en tema oscuro */
+.dark input[type="checkbox"]:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.dark input[type="checkbox"]:focus {
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  box-shadow: 0 0 0 3px var(--tw-ring-color);
+}
+
+/* Mejorar contraste de placeholders en tema oscuro */
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* Mejorar apariencia de selects en tema oscuro */
+.dark select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+</style>
