@@ -95,6 +95,110 @@
       </div>
     </div>
 
+    <!-- Agenda Overview -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Agenda Overview</h2>
+        <a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-medium">Ver todos →</a>
+      </div>
+      
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <!-- Eventos de Hoy -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ todayEvents.length }}</p>
+              <p class="text-sm font-medium text-blue-500">Hoy</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Eventos programados</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Eventos de Esta Semana -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ thisWeekEvents.length }}</p>
+              <p class="text-sm font-medium text-green-500">Esta Semana</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total programados</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Eventos Próximos -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ upcomingEvents.length }}</p>
+              <p class="text-sm font-medium text-purple-500">Próximos</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Siguientes 7 días</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Eventos Vencidos -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-all duration-200" 
+          :class="overdueEvents.length > 0 
+            ? (isDark ? 'bg-red-900/20 border-red-700 hover:bg-red-900/30' : 'bg-red-50 border-red-200 hover:bg-red-100')
+            : (isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50')
+          "
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" 
+                 :class="overdueEvents.length > 0 
+                   ? (isDark ? 'text-red-300' : 'text-red-700')
+                   : (isDark ? 'text-white' : 'text-gray-900')
+                 ">
+                {{ overdueEvents.length }}
+              </p>
+              <p class="text-sm font-medium" 
+                 :class="overdueEvents.length > 0 ? 'text-red-500' : 'text-orange-500'">
+                Vencidos
+              </p>
+              <p class="text-xs" 
+                 :class="overdueEvents.length > 0 
+                   ? (isDark ? 'text-red-400' : 'text-red-600')
+                   : (isDark ? 'text-gray-400' : 'text-gray-600')
+                 ">
+                Eventos pasados
+              </p>
+            </div>
+            <!-- Icono de alerta cuando hay eventos vencidos -->
+            <div v-if="overdueEvents.length > 0" class="ml-2">
+              <svg class="w-6 h-6" :class="isDark ? 'text-red-400' : 'text-red-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total de Eventos -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ filteredEventos.length }}</p>
+              <p class="text-sm font-medium text-gray-500">Total</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Todos los eventos</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading indicator -->
     <div v-if="loading" class="flex-1 rounded-lg border flex items-center justify-center" :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-white'">
       <div class="text-center">
@@ -774,6 +878,53 @@ const userInitials = computed(() => {
     return user.login[0].toUpperCase()
   }
   return 'U'
+})
+
+// Métricas de eventos
+const todayEvents = computed(() => {
+  const today = new Date()
+  const todayStr = today.toISOString().split('T')[0]
+  
+  return filteredEventos.value.filter(event => {
+    const eventDate = new Date(event.datep || event.date_start_real)
+    const eventDateStr = eventDate.toISOString().split('T')[0]
+    return eventDateStr === todayStr
+  })
+})
+
+const thisWeekEvents = computed(() => {
+  const today = new Date()
+  const weekStart = new Date(today)
+  weekStart.setDate(today.getDate() - today.getDay() + 1) // Lunes
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekStart.getDate() + 6) // Domingo
+  
+  return filteredEventos.value.filter(event => {
+    const eventDate = new Date(event.datep || event.date_start_real)
+    return eventDate >= weekStart && eventDate <= weekEnd
+  })
+})
+
+const upcomingEvents = computed(() => {
+  const today = new Date()
+  const nextWeek = new Date(today)
+  nextWeek.setDate(today.getDate() + 7)
+  
+  return filteredEventos.value.filter(event => {
+    const eventDate = new Date(event.datep || event.date_start_real)
+    return eventDate > today && eventDate <= nextWeek
+  })
+})
+
+const overdueEvents = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  return filteredEventos.value.filter(event => {
+    const eventDate = new Date(event.datep || event.date_start_real)
+    eventDate.setHours(0, 0, 0, 0)
+    return eventDate < today
+  })
 })
 
 // Verificar si una fecha está en el pasado
