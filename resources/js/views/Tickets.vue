@@ -25,25 +25,53 @@
         <!-- Sin Asignar Tickets -->
         <div 
           @click="filterByUnassigned"
-          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
-          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-all duration-200" 
+          :class="ticketMetrics.unassigned > 0 
+            ? (isDark ? 'bg-red-900/20 border-red-700 hover:bg-red-900/30' : 'bg-red-50 border-red-200 hover:bg-red-100')
+            : (isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50')
+          "
         >
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.unassigned }}</p>
-              <p class="text-sm font-medium text-orange-500">Sin Asignar</p>
-              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ ticketMetrics.unassigned }}</p>
+              <p class="text-2xl font-bold" 
+                 :class="ticketMetrics.unassigned > 0 
+                   ? (isDark ? 'text-red-300' : 'text-red-700')
+                   : (isDark ? 'text-white' : 'text-gray-900')
+                 ">
+                {{ ticketMetrics.unassigned }}
+              </p>
+              <p class="text-sm font-medium" 
+                 :class="ticketMetrics.unassigned > 0 ? 'text-red-500' : 'text-orange-500'">
+                Sin Asignar
+              </p>
+              <p class="text-xs" 
+                 :class="ticketMetrics.unassigned > 0 
+                   ? (isDark ? 'text-red-400' : 'text-red-600')
+                   : (isDark ? 'text-gray-400' : 'text-gray-600')
+                 ">
+                Total: {{ ticketMetrics.unassigned }}
+              </p>
+            </div>
+            <!-- Icono de alerta cuando hay tickets sin asignar -->
+            <div v-if="ticketMetrics.unassigned > 0" class="ml-2">
+              <svg class="w-6 h-6" :class="isDark ? 'text-red-400' : 'text-red-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
             </div>
           </div>
         </div>
 
         <!-- In Progress / Assigned -->
-        <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div 
+          @click="filterByAssigned"
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
           <div class="flex items-center justify-between">
             <div>
               <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketMetrics.inProgress }}</p>
               <p class="text-sm font-medium text-blue-500">Assigned</p>
-              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">My Tickets: {{ ticketMetrics.myInProgress }}</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ ticketMetrics.inProgress }}</p>
             </div>
           </div>
         </div>
@@ -2732,6 +2760,21 @@ const filterByUnassigned = () => {
   })
 }
 
+// Filter by assigned tickets
+const filterByAssigned = () => {
+  // Limpiar otros filtros
+  selectedTercero.value = null
+  selectedUser.value = null
+  selectedProject.value = null
+  searchQuery.value = ''
+  
+  // Aplicar filtro personalizado para tickets asignados
+  filteredTickets.value = tickets.value.filter(ticket => {
+    const hasAssignedUser = ticket.fk_user_assign && ticket.fk_user_assign != '0'
+    return hasAssignedUser
+  })
+}
+
 // Manual intervention methods
 const openManualInterventionModal = () => {
   // Reset form
@@ -4276,24 +4319,21 @@ const calculateTicketMetrics = () => {
     const isMyTicket = ticket.fk_user_assign == currentUserId
     const hasAssignedUser = ticket.fk_user_assign && ticket.fk_user_assign != '0'
     
-    // Map Dolibarr ticket statuses to our categories
-    switch (status) {
-      case 0: // Not read
-      case 1: // Read
-        // Si tiene usuario asignado, considerarlo "In Progress" (Asignado)
-        if (hasAssignedUser) {
-          ticketMetrics.value.inProgress++
-          if (isMyTicket) ticketMetrics.value.myInProgress++
-        } else {
-          // Sin asignar: fk_user_assign es null, 0 o vacío
-          ticketMetrics.value.unassigned++
-        }
-        break
-      case 2: // Assigned
-      case 3: // In progress
+    // Determinar si el ticket está activo (no cerrado)
+    const isActive = ![7, 8, 9].includes(status) // 7=Solved, 8=Closed, 9=Cancelled
+    
+    // Solo contar tickets ACTIVOS para asignados/sin asignar
+    if (isActive) {
+      if (hasAssignedUser) {
         ticketMetrics.value.inProgress++
         if (isMyTicket) ticketMetrics.value.myInProgress++
-        break
+      } else {
+        ticketMetrics.value.unassigned++
+      }
+    }
+    
+    // Luego, categorizar por estado para otras métricas
+    switch (status) {
       case 4: // Need more info
       case 5: // Need more info (customer)
         ticketMetrics.value.pending++
@@ -4310,14 +4350,23 @@ const calculateTicketMetrics = () => {
         if (isMyTicket) ticketMetrics.value.myClosed++
         break
       default:
-        // Estado desconocido: si tiene usuario asignado → "Asignado", sino → "Sin Asignar"
-        if (hasAssignedUser) {
-          ticketMetrics.value.inProgress++
-          if (isMyTicket) ticketMetrics.value.myInProgress++
-        } else {
-          ticketMetrics.value.unassigned++
-        }
+        // Estados desconocidos no afectan otras métricas específicas
+        // La asignación ya se manejó arriba
     }
+  })
+  
+  const totalActive = ticketMetrics.value.inProgress + ticketMetrics.value.unassigned
+  
+  console.log('📊 Métricas calculadas:', {
+    totalTickets: tickets.value.length,
+    ticketsActivos: totalActive,
+    ticketsCerrados: ticketMetrics.value.closed,
+    '---': '---',
+    activosAsignados: ticketMetrics.value.inProgress,
+    activosSinAsignar: ticketMetrics.value.unassigned,
+    '---2': '---',
+    pending: ticketMetrics.value.pending,
+    awaiting: ticketMetrics.value.awaiting
   })
 }
 
