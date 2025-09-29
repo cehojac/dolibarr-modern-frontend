@@ -78,7 +78,7 @@ export function useAgendaCounter() {
       
       // console.log('⏰ Future events after time filter:', futureEvents.length)
       
-      // Luego filtrar eventos systemauto (eventos automáticos del sistema)
+      // Luego filtrar eventos systemauto y eventos completados
       const filteredEvents = futureEvents.filter(event => {
         const label = (event.label || '').toLowerCase()
         const note = (event.note || event.note_private || '').toLowerCase()
@@ -92,20 +92,49 @@ export function useAgendaCounter() {
                             typeCode.includes('auto') ||
                             event.type === 'systemauto'
         
-        return !isSystemAuto
+        // Excluir eventos completados (status === '1')
+        const isCompleted = event.status === '1'
+        
+        return !isSystemAuto && !isCompleted
       })
       
+      // Calcular estadísticas de filtrado
       count = filteredEvents.length
       const totalEvents = events.length
       const futureEventsCount = futureEvents.length
-      const systemAutoFiltered = futureEventsCount - count
+      
+      // Contar eventos completados para estadísticas
+      const completedEvents = futureEvents.filter(event => event.status === '1').length
+      const systemAutoEvents = futureEvents.filter(event => {
+        const label = (event.label || '').toLowerCase()
+        const note = (event.note || event.note_private || '').toLowerCase()
+        const type = (event.type || '').toLowerCase()
+        const typeCode = (event.type_code || '').toLowerCase()
+        
+        return label.includes('systemauto') || 
+               note.includes('systemauto') || 
+               type.includes('systemauto') ||
+               typeCode.includes('auto') ||
+               event.type === 'systemauto'
+      }).length
       
       todayEventsCount.value = count
       lastFetch.value = new Date()
       
-       console.log('📅 Today upcoming events count updated:', count)
-      if (systemAutoFiltered > 0) {
-         console.log('🚫 Filtered out', systemAutoFiltered, 'systemauto events')
+      console.log('📅 Today pending events count updated:', count)
+      console.log('📊 Events breakdown:', {
+        total: totalEvents,
+        future: futureEventsCount,
+        completed: completedEvents,
+        systemAuto: systemAutoEvents,
+        pending: count
+      })
+      
+      if (completedEvents > 0) {
+        console.log('✅ Filtered out', completedEvents, 'completed events')
+      }
+      if (systemAutoEvents > 0) {
+        console.log('🚫 Filtered out', systemAutoEvents, 'systemauto events')
       }
       
     } catch (error) {
@@ -144,10 +173,24 @@ export function useAgendaCounter() {
     // Solo incrementar si el evento es futuro (superior a la hora actual)
     if (eventTimestamp >= now) {
       todayEventsCount.value = (todayEventsCount.value || 0) + 1
-       console.log('📅 Today upcoming events count incremented to:', todayEventsCount.value)
+      console.log('📅 Today pending events count incremented to:', todayEventsCount.value)
     } else {
-       console.log('📅 Event is in the past, not incrementing counter')
+      console.log('📅 Event is in the past, not incrementing counter')
     }
+  }
+
+  // Función para decrementar el contador cuando un evento se marca como completado
+  const decrementTodayCount = () => {
+    if (todayEventsCount.value > 0) {
+      todayEventsCount.value = todayEventsCount.value - 1
+      console.log('✅ Today pending events count decremented to:', todayEventsCount.value)
+    }
+  }
+
+  // Función para incrementar el contador cuando un evento completado se marca como pendiente
+  const incrementFromCompleted = () => {
+    todayEventsCount.value = (todayEventsCount.value || 0) + 1
+    console.log('⏳ Today pending events count incremented from completed to:', todayEventsCount.value)
   }
 
   return {
@@ -156,6 +199,8 @@ export function useAgendaCounter() {
     lastFetch,
     fetchTodayEventsCount,
     startAutoRefresh,
-    incrementTodayCount
+    incrementTodayCount,
+    decrementTodayCount,
+    incrementFromCompleted
   }
 }
