@@ -716,10 +716,158 @@
                       </div>
                     </div>
                     
-                    <!-- Comment Textarea -->
+                    <!-- Comment Editor -->
+                    <div v-if="commentType === 'email'">
+                      <!-- Editor WYSIWYG para Email -->
+                      <div class="border rounded-lg" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
+                        <!-- Barra de herramientas del editor -->
+                        <div class="flex items-center space-x-2 p-2 border-b" :class="isDark ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-50'">
+                          <button
+                            type="button"
+                            @click="formatCommentText('bold')"
+                            class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                            title="Negrita"
+                          >
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M6 4v12h4.5c2.5 0 4.5-2 4.5-4.5 0-1.5-.8-2.8-2-3.5 1.2-.7 2-2 2-3.5C15 2 13 0 10.5 0H6v4zm2-2h2.5C11.3 2 12 2.7 12 3.5S11.3 5 10.5 5H8V2zm0 5h3c.8 0 1.5.7 1.5 1.5S11.8 10 11 10H8V7z"/>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            @click="formatCommentText('italic')"
+                            class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                            title="Cursiva"
+                          >
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M8 1h6v2H8V1zm2 2h2l-2 12H8l2-12z"/>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            @click="formatCommentText('underline')"
+                            class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                            title="Subrayado"
+                          >
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 18H4v-2h12v2H10zM10 2C7.8 2 6 3.8 6 6v4c0 2.2 1.8 4 4 4s4-1.8 4-4V6c0-2.2-1.8-4-4-4z"/>
+                            </svg>
+                          </button>
+                          <div class="w-px h-4" :class="isDark ? 'bg-gray-600' : 'bg-gray-300'"></div>
+                          <button
+                            type="button"
+                            @click="insertCommentList('ul')"
+                            class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                            title="Lista con viñetas"
+                          >
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M3 4a1 1 0 100 2 1 1 0 000-2zM6 5h11a1 1 0 110 2H6a1 1 0 110-2zM3 9a1 1 0 100 2 1 1 0 000-2zM6 10h11a1 1 0 110 2H6a1 1 0 110-2zM3 14a1 1 0 100 2 1 1 0 000-2zM6 15h11a1 1 0 110 2H6a1 1 0 110-2z"/>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            @click="insertCommentList('ol')"
+                            class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                            title="Lista numerada"
+                          >
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M3 4h1v1H3V4zM3 7h1v1H3V7zM3 10h1v1H3v-1zM6 5h11a1 1 0 110 2H6a1 1 0 110-2zM6 10h11a1 1 0 110 2H6a1 1 0 110-2zM6 15h11a1 1 0 110 2H6a1 1 0 110-2z"/>
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        <!-- Área de contenido editable -->
+                        <div
+                          ref="commentEditor"
+                          contenteditable="true"
+                          @input="updateCommentContent"
+                          class="p-3 min-h-[100px] focus:outline-none"
+                          :class="isDark ? 'bg-gray-700 text-white' : 'bg-white text-gray-900'"
+                          style="white-space: pre-wrap;"
+                          placeholder="Escribir comentario (se enviará por email)..."
+                          :disabled="sendingComment"
+                        ></div>
+                      </div>
+                      
+                      <!-- Adjuntar Archivos para Email -->
+                      <div class="mt-4">
+                        <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          Adjuntar Archivos
+                        </label>
+                        <div class="border-2 border-dashed rounded-lg p-4 text-center transition-colors"
+                             :class="isDark ? 'border-gray-600 hover:border-gray-500' : 'border-gray-300 hover:border-gray-400'"
+                             @dragover.prevent="$event.currentTarget.classList.add('drag-over')"
+                             @dragleave.prevent="$event.currentTarget.classList.remove('drag-over')"
+                             @drop.prevent="handleCommentFileDrop($event); $event.currentTarget.classList.remove('drag-over')">
+                          <input
+                            ref="commentFileInput"
+                            type="file"
+                            multiple
+                            @change="handleCommentFileSelect"
+                            class="hidden"
+                            accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                          >
+                          <svg class="w-6 h-6 mx-auto mb-2" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                          </svg>
+                          <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                            Arrastra archivos aquí o 
+                            <button
+                              type="button"
+                              @click="commentFileInput?.click()"
+                              class="text-blue-500 hover:text-blue-600 underline"
+                            >
+                              haz clic para seleccionar
+                            </button>
+                          </p>
+                          <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                            PDF, DOC, TXT, JPG, PNG (máx. 10MB por archivo)
+                          </p>
+                        </div>
+                        
+                        <!-- Lista de archivos adjuntos del comentario -->
+                        <div v-if="commentAttachments && commentAttachments.length > 0" class="mt-3 space-y-2">
+                          <div
+                            v-for="(file, index) in commentAttachments"
+                            :key="index"
+                            class="flex items-center justify-between p-2 rounded border"
+                            :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
+                          >
+                            <div class="flex items-center space-x-2">
+                              <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <span class="text-sm truncate" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                                {{ file.name }}
+                              </span>
+                              <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                                ({{ formatEmailFileSize(file.size) }})
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              @click="removeCommentAttachment(index)"
+                              class="text-red-500 hover:text-red-600 transition-colors"
+                              title="Eliminar archivo"
+                            >
+                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Comment Textarea (solo para mensaje) -->
                     <textarea 
+                      v-else
                       v-model="newComment"
-                      :placeholder="commentType === 'email' ? 'Escribir comentario (se enviará por email)...' : 'Escribir comentario...'"
+                      placeholder="Escribir comentario..."
                       class="w-full p-3 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                       :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
                       rows="4"
@@ -1549,9 +1697,13 @@
 
   <!-- Modal para agregar intervención manual -->
   <div v-if="showManualInterventionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="rounded-lg p-6 w-full max-w-lg mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+    <div class="rounded-lg p-6 w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto" 
+         :class="[
+           isDark ? 'bg-gray-800' : 'bg-white',
+           manualIntervention.type === 'email' ? 'max-w-4xl' : 'max-w-lg'
+         ]">
       <h3 class="text-lg font-semibold mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">
-        Add timesheet
+        {{ manualIntervention.type === 'email' ? '📧 Agregar Email' : '📝 Add timesheet' }}
       </h3>
       
       <div class="space-y-4">
@@ -1622,8 +1774,202 @@
           </select>
         </div>
         
-        <!-- Note -->
+        <!-- Tipo de Intervención -->
         <div>
+          <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Tipo de Intervención
+          </label>
+          <select
+            v-model="manualIntervention.type"
+            class="w-full p-2 border rounded-lg text-sm"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+          >
+            <option value="message">📝 Mensaje</option>
+            <option value="email">📧 Email</option>
+          </select>
+        </div>
+        
+        <!-- Campos específicos para Email -->
+        <div v-if="manualIntervention.type === 'email'" class="space-y-4">
+          <!-- Asunto del Email -->
+          <div>
+            <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Asunto
+            </label>
+            <input
+              v-model="manualIntervention.emailSubject"
+              type="text"
+              class="w-full p-2 border rounded-lg text-sm"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+              placeholder="Asunto del email..."
+            >
+          </div>
+          
+          <!-- Destinatario -->
+          <div>
+            <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Para (Email)
+            </label>
+            <input
+              v-model="manualIntervention.emailTo"
+              type="email"
+              class="w-full p-2 border rounded-lg text-sm"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+              placeholder="destinatario@ejemplo.com"
+            >
+          </div>
+          
+          <!-- Editor WYSIWYG para Email -->
+          <div>
+            <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Contenido del Email
+            </label>
+            <div class="border rounded-lg" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
+              <!-- Barra de herramientas del editor -->
+              <div class="flex items-center space-x-2 p-2 border-b" :class="isDark ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-50'">
+                <button
+                  type="button"
+                  @click="formatText('bold')"
+                  class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                  :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                  title="Negrita"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M6 4v12h4.5c2.5 0 4.5-2 4.5-4.5 0-1.5-.8-2.8-2-3.5 1.2-.7 2-2 2-3.5C15 2 13 0 10.5 0H6v4zm2-2h2.5C11.3 2 12 2.7 12 3.5S11.3 5 10.5 5H8V2zm0 5h3c.8 0 1.5.7 1.5 1.5S11.8 10 11 10H8V7z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  @click="formatText('italic')"
+                  class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                  :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                  title="Cursiva"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8 1h6v2H8V1zm2 2h2l-2 12H8l2-12z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  @click="formatText('underline')"
+                  class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                  :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                  title="Subrayado"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 18H4v-2h12v2H10zM10 2C7.8 2 6 3.8 6 6v4c0 2.2 1.8 4 4 4s4-1.8 4-4V6c0-2.2-1.8-4-4-4z"/>
+                  </svg>
+                </button>
+                <div class="w-px h-4" :class="isDark ? 'bg-gray-600' : 'bg-gray-300'"></div>
+                <button
+                  type="button"
+                  @click="insertList('ul')"
+                  class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                  :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                  title="Lista con viñetas"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 100 2 1 1 0 000-2zM6 5h11a1 1 0 110 2H6a1 1 0 110-2zM3 9a1 1 0 100 2 1 1 0 000-2zM6 10h11a1 1 0 110 2H6a1 1 0 110-2zM3 14a1 1 0 100 2 1 1 0 000-2zM6 15h11a1 1 0 110 2H6a1 1 0 110-2z"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  @click="insertList('ol')"
+                  class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                  :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                  title="Lista numerada"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4h1v1H3V4zM3 7h1v1H3V7zM3 10h1v1H3v-1zM6 5h11a1 1 0 110 2H6a1 1 0 110-2zM6 10h11a1 1 0 110 2H6a1 1 0 110-2zM6 15h11a1 1 0 110 2H6a1 1 0 110-2z"/>
+                  </svg>
+                </button>
+              </div>
+              
+              <!-- Área de contenido editable -->
+              <div
+                ref="emailEditor"
+                contenteditable="true"
+                @input="updateEmailContent"
+                class="p-3 min-h-[120px] focus:outline-none"
+                :class="isDark ? 'bg-gray-700 text-white' : 'bg-white text-gray-900'"
+                style="white-space: pre-wrap;"
+                placeholder="Escribe el contenido del email aquí..."
+              ></div>
+            </div>
+          </div>
+          
+          <!-- Adjuntar Archivos -->
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Adjuntar Archivos
+            </label>
+            <div class="border-2 border-dashed rounded-lg p-4 text-center transition-colors"
+                 :class="isDark ? 'border-gray-600 hover:border-gray-500' : 'border-gray-300 hover:border-gray-400'"
+                 @dragover.prevent="$event.currentTarget.classList.add('drag-over')"
+                 @dragleave.prevent="$event.currentTarget.classList.remove('drag-over')"
+                 @drop.prevent="handleEmailFileDrop($event); $event.currentTarget.classList.remove('drag-over')">
+              <input
+                ref="emailFileInput"
+                type="file"
+                multiple
+                @change="handleEmailFileSelect"
+                class="hidden"
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+              >
+              <svg class="w-8 h-8 mx-auto mb-2" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                Arrastra archivos aquí o 
+                <button
+                  type="button"
+                  @click="emailFileInput?.click()"
+                  class="text-blue-500 hover:text-blue-600 underline"
+                >
+                  haz clic para seleccionar
+                </button>
+              </p>
+              <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                PDF, DOC, TXT, JPG, PNG (máx. 10MB por archivo)
+              </p>
+            </div>
+            
+            <!-- Lista de archivos adjuntos -->
+            <div v-if="manualIntervention.emailAttachments && manualIntervention.emailAttachments.length > 0" class="mt-3 space-y-2">
+              <div
+                v-for="(file, index) in manualIntervention.emailAttachments"
+                :key="index"
+                class="flex items-center justify-between p-2 rounded border"
+                :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
+              >
+                <div class="flex items-center space-x-2">
+                  <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="text-sm truncate" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                    {{ file.name }}
+                  </span>
+                  <span class="text-xs" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                    ({{ formatEmailFileSize(file.size) }})
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  @click="removeEmailAttachment(index)"
+                  class="text-red-500 hover:text-red-600 transition-colors"
+                  title="Eliminar archivo"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Note (solo para mensaje) -->
+        <div v-else>
           <label class="block text-sm font-medium mb-1" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
             Note
           </label>
@@ -2311,7 +2657,12 @@ const manualIntervention = ref({
   member: '',
   note: '',
   useDuration: false,
-  duration: 0
+  duration: 0,
+  type: 'message', // 'message' o 'email'
+  emailSubject: '',
+  emailTo: '',
+  emailContent: '',
+  emailAttachments: []
 })
 
 // Comments state
@@ -2319,6 +2670,7 @@ const newComment = ref('')
 const commentType = ref('message') // 'message' or 'email'
 const sendingComment = ref(false)
 const messagesKey = ref(0) // Key to force re-render of messages
+const commentAttachments = ref([]) // Archivos adjuntos para comentarios por email
 const showInterventions = ref(false) // Control visibility of interventions list
 
 // Followers state (internally intervinientes/contacts)
@@ -2714,7 +3066,12 @@ const openManualInterventionModal = () => {
     member: authStore.user?.id || '',
     note: '',
     useDuration: false,
-    duration: 0
+    duration: 0,
+    type: 'message',
+    emailSubject: '',
+    emailTo: '',
+    emailContent: '',
+    emailAttachments: []
   }
   showManualInterventionModal.value = true
 }
@@ -2733,6 +3090,243 @@ const toggleDurationMode = () => {
   }
 }
 
+// Funciones del editor WYSIWYG
+const emailEditor = ref(null)
+const emailFileInput = ref(null)
+const commentEditor = ref(null)
+const commentFileInput = ref(null)
+
+const formatText = (command) => {
+  document.execCommand(command, false, null)
+  emailEditor.value?.focus()
+}
+
+const insertList = (type) => {
+  const command = type === 'ul' ? 'insertUnorderedList' : 'insertOrderedList'
+  document.execCommand(command, false, null)
+  emailEditor.value?.focus()
+}
+
+const updateEmailContent = () => {
+  if (emailEditor.value) {
+    manualIntervention.value.emailContent = emailEditor.value.innerHTML
+  }
+}
+
+// Funciones del editor WYSIWYG para comentarios
+const formatCommentText = (command) => {
+  document.execCommand(command, false, null)
+  commentEditor.value?.focus()
+}
+
+const insertCommentList = (type) => {
+  const command = type === 'ul' ? 'insertUnorderedList' : 'insertOrderedList'
+  document.execCommand(command, false, null)
+  commentEditor.value?.focus()
+}
+
+const updateCommentContent = () => {
+  if (commentEditor.value) {
+    newComment.value = commentEditor.value.innerHTML
+  }
+}
+
+// Watcher para sincronizar contenido entre editor y textarea
+watch(commentType, (newType, oldType) => {
+  if (newType === 'email' && oldType === 'message') {
+    // Cambio de mensaje a email: convertir texto plano a HTML
+    nextTick(() => {
+      if (commentEditor.value && newComment.value) {
+        commentEditor.value.innerHTML = newComment.value.replace(/\n/g, '<br>')
+      }
+    })
+  } else if (newType === 'message' && oldType === 'email') {
+    // Cambio de email a mensaje: convertir HTML a texto plano
+    if (commentEditor.value) {
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = commentEditor.value.innerHTML
+      newComment.value = tempDiv.textContent || tempDiv.innerText || ''
+    }
+    // Limpiar archivos adjuntos cuando se cambia a mensaje
+    commentAttachments.value = []
+  }
+})
+
+// Funciones para manejo de archivos adjuntos de comentarios
+const handleCommentFileSelect = (event) => {
+  const files = Array.from(event.target.files)
+  processCommentFiles(files, event.target)
+}
+
+const handleCommentFileDrop = (event) => {
+  const files = Array.from(event.dataTransfer.files)
+  processCommentFiles(files)
+}
+
+const processCommentFiles = (files, inputElement = null) => {
+  const maxSize = 10 * 1024 * 1024 // 10MB
+  const allowedTypes = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif']
+  
+  files.forEach(file => {
+    // Validar tamaño
+    if (file.size > maxSize) {
+      alert(`El archivo "${file.name}" es demasiado grande. Máximo 10MB.`)
+      return
+    }
+    
+    // Validar tipo
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase()
+    if (!allowedTypes.includes(fileExtension)) {
+      alert(`El archivo "${file.name}" no es un tipo permitido.`)
+      return
+    }
+    
+    // Agregar archivo
+    commentAttachments.value.push({
+      id: Date.now() + Math.random(),
+      name: file.name,
+      size: file.size,
+      file: file
+    })
+  })
+  
+  // Limpiar input si se proporcionó
+  if (inputElement) {
+    inputElement.value = ''
+  }
+}
+
+const removeCommentAttachment = (index) => {
+  commentAttachments.value.splice(index, 1)
+}
+
+// Función helper para convertir archivo a base64
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => {
+      // Remover el prefijo "data:tipo/mime;base64," para obtener solo el base64
+      const base64 = reader.result.split(',')[1]
+      resolve(base64)
+    }
+    reader.onerror = error => reject(error)
+  })
+}
+
+// Función para obtener el nombre de la empresa
+const getCompanyName = async () => {
+  try {
+    const response = await http.get('/api/doli/setup/company')
+    return response.data?.name || 'Sistema'
+  } catch (error) {
+    console.warn('Error obteniendo nombre de empresa:', error)
+    return 'Sistema'
+  }
+}
+
+// Función para generar el asunto del email
+const generateEmailSubject = async (ticketRef, ticketTitle) => {
+  const companyName = await getCompanyName()
+  return `[${companyName} - Ticket ${ticketRef}] ${ticketTitle}`
+}
+
+// Función para obtener la firma del usuario
+const getUserSignature = async (userId) => {
+  try {
+    // Primero intentar desde authStore si tiene signature
+    if (authStore.user?.signature) {
+      return authStore.user.signature
+    }
+    
+    // Si no, obtener desde la API
+    const response = await http.get(`/api/doli/users/${userId}`)
+    return response.data?.signature || ''
+  } catch (error) {
+    console.warn('Error obteniendo firma del usuario:', error)
+    return ''
+  }
+}
+
+// Función para enviar mensaje privado al ticket
+const sendPrivateMessage = async (ticketId, message) => {
+  try {
+    const trackId = selectedTicket.value?.track_id || ticketDetails.value?.track_id
+    
+    if (!trackId) {
+      console.warn('No se encontró track_id para mensaje privado')
+      return
+    }
+
+    const messageData = {
+      track_id: trackId,
+      message: message,
+      private: 1  // Mensaje privado
+    }
+
+    await http.post('/api/doli/tickets/newmessage', messageData)
+    console.log('✅ Mensaje privado enviado al ticket')
+  } catch (error) {
+    console.error('Error enviando mensaje privado:', error)
+  }
+}
+
+// Funciones para manejo de archivos adjuntos
+const handleEmailFileSelect = (event) => {
+  const files = Array.from(event.target.files)
+  processEmailFiles(files, event.target)
+}
+
+const handleEmailFileDrop = (event) => {
+  const files = Array.from(event.dataTransfer.files)
+  processEmailFiles(files)
+}
+
+const processEmailFiles = (files, inputElement = null) => {
+  const maxSize = 10 * 1024 * 1024 // 10MB
+  const allowedTypes = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif']
+  
+  files.forEach(file => {
+    // Validar tamaño
+    if (file.size > maxSize) {
+      alert(`El archivo "${file.name}" es demasiado grande. Máximo 10MB.`)
+      return
+    }
+    
+    // Validar tipo
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase()
+    if (!allowedTypes.includes(fileExtension)) {
+      alert(`El archivo "${file.name}" no es un tipo permitido.`)
+      return
+    }
+    
+    // Agregar archivo
+    manualIntervention.value.emailAttachments.push({
+      id: Date.now() + Math.random(),
+      name: file.name,
+      size: file.size,
+      file: file
+    })
+  })
+  
+  // Limpiar input si se proporcionó
+  if (inputElement) {
+    inputElement.value = ''
+  }
+}
+
+const removeEmailAttachment = (index) => {
+  manualIntervention.value.emailAttachments.splice(index, 1)
+}
+
+const formatEmailFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
 const saveManualIntervention = async () => {
   // Prevenir múltiples clics
   if (isSavingIntervention.value) {
@@ -2743,8 +3337,85 @@ const saveManualIntervention = async () => {
   let interventionId = null
   
   try {
-     console.log('🚀 INICIANDO PROCESO DE CREACIÓN DE INTERVENCIÓN MANUAL')
-     console.log('='.repeat(60))
+    // Si es tipo email, usar el endpoint de email
+    if (manualIntervention.value.type === 'email') {
+      console.log('📧 ENVIANDO EMAIL DESDE INTERVENCIÓN MANUAL')
+      
+      const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
+      if (!ticketId) {
+        throw new Error('No se encontró el ID del ticket')
+      }
+      
+      // Convertir archivos adjuntos a base64
+      const attachments = []
+      for (const attachment of manualIntervention.value.emailAttachments) {
+        try {
+          const base64 = await fileToBase64(attachment.file)
+          attachments.push({
+            name: attachment.name,
+            size: attachment.size,
+            type: attachment.file.type,
+            content: base64
+          })
+        } catch (error) {
+          console.error('Error convirtiendo archivo a base64:', attachment.name, error)
+        }
+      }
+      
+      // Preparar datos del email
+      const recipients = manualIntervention.value.emailTo ? [manualIntervention.value.emailTo] : []
+      // TEMPORAL: Agregar correo de prueba
+      recipients.push('cehojac@gmail.com')
+      
+      // Generar asunto con formato [EMPRESA - Ticket REF] TITULO
+      const ticketRef = selectedTicket.value?.ref || ticketDetails.value?.ref || ticketId
+      const ticketTitle = selectedTicket.value?.subject || ticketDetails.value?.subject || 'Ticket'
+      const emailSubject = await generateEmailSubject(ticketRef, ticketTitle)
+      
+      // Obtener firma del usuario
+      const userId = authStore.user?.id
+      const userSignature = userId ? await getUserSignature(userId) : ''
+      
+      // Agregar firma al mensaje si existe
+      let emailMessage = manualIntervention.value.emailContent || manualIntervention.value.note
+      if (userSignature) {
+        emailMessage += `<br><br>---<br>${userSignature}`
+      }
+      
+      const emailData = {
+        subject: manualIntervention.value.emailSubject || emailSubject,
+        message: emailMessage,
+        recipients: recipients,
+        attachments: attachments
+      }
+
+      console.log('📤 Enviando email con datos:', {
+        subject: emailData.subject,
+        recipients: emailData.recipients,
+        attachments: attachments.length
+      })
+
+      const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
+      console.log('✅ Email enviado:', response.data)
+      
+      // Enviar mensaje privado al ticket para registro
+      const privateMessage = `Email enviado a: ${recipients.join(', ')}\nAsunto: ${emailData.subject}\n\n${emailMessage}`
+      await sendPrivateMessage(ticketId, privateMessage)
+      
+      // Cerrar modal y limpiar
+      closeManualInterventionModal()
+      
+      // Refrescar ticket
+      if (ticketId) {
+        await fetchTicketDetails(ticketId)
+      }
+      
+      return
+    }
+    
+    // Proceso normal para intervenciones manuales (no email)
+    console.log('🚀 INICIANDO PROCESO DE CREACIÓN DE INTERVENCIÓN MANUAL')
+    console.log('='.repeat(60))
     
     // PASO 1: Crear intervención en BORRADOR
      console.log('📝 PASO 1: Creando intervención manual en borrador...')
@@ -3608,10 +4279,15 @@ const addFollower = async () => {
     
      console.log('➕ Agregando seguidor:', { type, id, ticketId })
     
-    const response = await http.post(`/api/doli/tickets/${ticketId}/contacts`, {
-      contactid: id,
-      type: type // 'user' or 'contact'
-    })
+    const requestData = {
+      contact_id: id,
+      contact_type: type // 'user' or 'contact'
+    }
+    
+    console.log('📤 Request data:', requestData)
+    console.log('📤 Endpoint:', `/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
+    
+    const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`, requestData)
     
      console.log('✅ Seguidor agregado:', response.data)
     
@@ -3640,7 +4316,7 @@ const removeFollower = async (followerId, followerType) => {
     
      console.log('➖ Eliminando seguidor:', { followerId, followerType, ticketId })
     
-    await http.delete(`/api/doli/tickets/${ticketId}/contacts/${followerId}`)
+    await http.delete(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts/${followerId}`)
     
      console.log('✅ Seguidor eliminado')
     
@@ -3681,46 +4357,116 @@ const sendComment = async () => {
   sendingComment.value = true
 
   try {
-    // Obtener el track_id del ticket
-    const trackId = selectedTicket.value?.track_id || ticketDetails.value?.track_id
+    // Obtener el ID del ticket
+    const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
     
-    if (!trackId) {
-      throw new Error('No se encontró el track_id del ticket')
+    if (!ticketId) {
+      throw new Error('No se encontró el ID del ticket')
     }
 
-     console.log('💬 Enviando comentario:', {
+    console.log('💬 Enviando comentario:', {
       type: commentType.value,
       message: newComment.value,
-      track_id: trackId
+      ticket_id: ticketId,
+      attachments: commentAttachments.value.length
     })
 
-    // Si es email, agregar información de destinatarios al mensaje
-    let finalMessage = newComment.value.trim()
-    if (commentType.value === 'email' && emailRecipientsPreview.value.length > 0) {
-      const recipientsList = emailRecipientsPreview.value
-        .map(r => `${r.name} (${r.email}) [${r.type === 'internal' ? 'INT' : 'EXT'}]`)
-        .join(', ')
+    let response
+
+    if (commentType.value === 'email') {
+      // Envío por email usando el endpoint específico
       
-      finalMessage += `\n\n--- Destinatarios del email ---\n${recipientsList}`
+      // Convertir archivos adjuntos a base64
+      const attachments = []
+      for (const attachment of commentAttachments.value) {
+        try {
+          const base64 = await fileToBase64(attachment.file)
+          attachments.push({
+            name: attachment.name,
+            size: attachment.size,
+            type: attachment.file.type,
+            content: base64
+          })
+        } catch (error) {
+          console.error('Error convirtiendo archivo a base64:', attachment.name, error)
+        }
+      }
       
-       console.log('📧 Destinatarios agregados al mensaje:', recipientsList)
+      // Preparar datos del email
+      const recipients = emailRecipientsPreview.value.length > 0 
+        ? emailRecipientsPreview.value.map(r => r.email)
+        : []
+      // TEMPORAL: Agregar correo de prueba
+      recipients.push('cehojac@gmail.com')
+      
+      // Generar asunto con formato [EMPRESA - Ticket REF] TITULO
+      const ticketRef = selectedTicket.value?.ref || ticketDetails.value?.ref || ticketId
+      const ticketTitle = selectedTicket.value?.subject || ticketDetails.value?.subject || 'Ticket'
+      const emailSubject = await generateEmailSubject(ticketRef, ticketTitle)
+      
+      // Obtener firma del usuario
+      const userId = authStore.user?.id
+      const userSignature = userId ? await getUserSignature(userId) : ''
+      
+      // Agregar firma al mensaje si existe
+      let emailMessage = newComment.value.trim()
+      if (userSignature) {
+        emailMessage += `<br><br>---<br>${userSignature}`
+      }
+      
+      const emailData = {
+        subject: emailSubject,
+        message: emailMessage,
+        recipients: recipients,
+        attachments: attachments
+      }
+
+      console.log('📤 Endpoint: /api/doli/dolibarmodernfrontendapi/tickets/' + ticketId + '/sendemail')
+      console.log('📧 Enviando email con archivos adjuntos:', attachments.length)
+      console.log('📋 Datos del email:', {
+        subject: emailData.subject,
+        recipients: emailData.recipients,
+        attachments: attachments.map(a => ({ name: a.name, size: a.size, type: a.type }))
+      })
+
+      response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
+      
+      // Enviar mensaje privado al ticket para registro
+      const privateMessage = `Email enviado a: ${recipients.join(', ')}\nAsunto: ${emailData.subject}\n\n${emailMessage}`
+      await sendPrivateMessage(ticketId, privateMessage)
+      
+    } else {
+      // Mensaje interno usando el endpoint original
+      const trackId = selectedTicket.value?.track_id || ticketDetails.value?.track_id
+      
+      if (!trackId) {
+        throw new Error('No se encontró el track_id del ticket')
+      }
+
+      const commentData = {
+        track_id: trackId,
+        message: newComment.value.trim(),
+        private: 1  // Mensaje interno
+      }
+
+      console.log('📤 Endpoint: /api/doli/tickets/newmessage')
+      console.log('📋 Datos del comentario:', commentData)
+
+      response = await http.post('/api/doli/tickets/newmessage', commentData)
     }
-
-    // Preparar datos según el endpoint de Dolibarr
-    const commentData = {
-      track_id: trackId,
-      message: finalMessage,
-      private: commentType.value === 'email' ? 0 : 1  // 0 = email, 1 = mensaje interno
-    }
-
-     console.log('📤 Endpoint: /api/doli/tickets/newmessage')
-     console.log('📋 Datos del comentario:', commentData)
-
-    const response = await http.post('/api/doli/tickets/newmessage', commentData)
      console.log('✅ Comentario enviado:', response.data)
 
     // Limpiar formulario
     newComment.value = ''
+    
+    // Limpiar archivos adjuntos si es email
+    if (commentType.value === 'email') {
+      commentAttachments.value = []
+      // Limpiar editor WYSIWYG
+      if (commentEditor.value) {
+        commentEditor.value.innerHTML = ''
+      }
+    }
     
     // Refrescar detalles del ticket para mostrar el nuevo comentario
     try {
@@ -5632,3 +6378,49 @@ const cleanup = () => {
 import { onUnmounted } from 'vue'
 onUnmounted(cleanup)
 </script>
+
+<style scoped>
+/* Estilos para el editor WYSIWYG */
+[contenteditable="true"]:empty:before {
+  content: attr(placeholder);
+  color: #9CA3AF;
+  font-style: italic;
+}
+
+[contenteditable="true"]:focus {
+  outline: none;
+}
+
+/* Estilos para el contenido del editor */
+[contenteditable="true"] p {
+  margin: 0.5rem 0;
+}
+
+[contenteditable="true"] ul,
+[contenteditable="true"] ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+[contenteditable="true"] li {
+  margin: 0.25rem 0;
+}
+
+[contenteditable="true"] strong {
+  font-weight: bold;
+}
+
+[contenteditable="true"] em {
+  font-style: italic;
+}
+
+[contenteditable="true"] u {
+  text-decoration: underline;
+}
+
+/* Estilos para drag and drop */
+.drag-over {
+  border-color: #3B82F6 !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+</style>
