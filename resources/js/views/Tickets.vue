@@ -3364,8 +3364,6 @@ const saveManualIntervention = async () => {
       
       // Preparar datos del email
       const recipients = manualIntervention.value.emailTo ? [manualIntervention.value.emailTo] : []
-      // TEMPORAL: Agregar correo de prueba
-      recipients.push('cehojac@gmail.com')
       
       // Generar asunto con formato [EMPRESA - Ticket REF] TITULO
       const ticketRef = selectedTicket.value?.ref || ticketDetails.value?.ref || ticketId
@@ -4396,8 +4394,6 @@ const sendComment = async () => {
       const recipients = emailRecipientsPreview.value.length > 0 
         ? emailRecipientsPreview.value.map(r => r.email)
         : []
-      // TEMPORAL: Agregar correo de prueba
-      recipients.push('cehojac@gmail.com')
       
       // Generar asunto con formato [EMPRESA - Ticket REF] TITULO
       const ticketRef = selectedTicket.value?.ref || ticketDetails.value?.ref || ticketId
