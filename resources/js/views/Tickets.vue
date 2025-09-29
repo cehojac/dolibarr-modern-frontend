@@ -375,22 +375,12 @@
                 </span>
               </td>
               <td class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
-                <button 
-                  @click.stop="handleTimerClick(ticket)"
-                  :class="isTimerRunning(ticket.id) ? 'text-red-500 hover:text-red-400 bg-red-50 hover:bg-red-100 border-red-200' : 'text-green-500 hover:text-green-400 bg-green-50 hover:bg-green-100 border-green-200'"
-                  class="transition-colors px-2 py-1 rounded-md border text-xs"
-                  :title="isTimerRunning(ticket.id) ? 'Parar cronómetro' : 'Iniciar cronómetro'"
-                >
-                  <div class="flex items-center space-x-1">
-                    <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path v-if="!isTimerRunning(ticket.id)" d="M8 5v14l11-7z"/>
-                      <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                    </svg>
-                    <span v-if="isTimerRunning(ticket.id)" class="text-xs font-mono font-bold hidden sm:inline">
-                      {{ formatElapsedTime(ticket.id) }}
-                    </span>
-                  </div>
-                </button>
+                <TimerButton 
+                  :entity-id="ticket.id"
+                  size="md"
+                  variant="table"
+                  @stopped="handleTimerStopped"
+                />
               </td>
             </tr>
           </tbody>
@@ -515,22 +505,13 @@
                   </button>
                   
                   <!-- Timer Button in Modal -->
-                  <button 
-                    @click="handleTimerClick(selectedTicket)"
-                    :class="isTimerRunning(selectedTicket?.id) ? 'text-red-500 hover:text-red-400 bg-red-50 hover:bg-red-100 border-red-200' : 'text-green-500 hover:text-green-400 bg-green-50 hover:bg-green-100 border-green-200'"
-                    class="flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors"
-                  >
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path v-if="!isTimerRunning(selectedTicket?.id)" d="M8 5v14l11-7z"/>
-                      <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                    </svg>
-                    <span class="text-sm">
-                      {{ isTimerRunning(selectedTicket?.id) ? 'Parar Timer' : 'Iniciar Timer' }}
-                    </span>
-                    <span v-if="isTimerRunning(selectedTicket?.id)" class="text-sm font-mono font-bold bg-red-100 px-2 py-1 rounded">
-                      {{ formatElapsedTime(selectedTicket?.id) }}
-                    </span>
-                  </button>
+                  <TimerButton 
+                    v-if="selectedTicket?.id"
+                    :entity-id="selectedTicket.id"
+                    size="lg"
+                    variant="modal"
+                    @stopped="handleTimerStopped"
+                  />
                   
                   <!-- Manual Intervention Button -->
                   <button 
@@ -908,69 +889,12 @@
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Empresa:</label>
                       <div v-if="editingCompany" class="space-y-2">
-                        <div class="relative">
-                          <input
-                            v-model="companySearchTerm"
-                            @input="filterCompanies"
-                            @focus="showCompanyDropdown = true"
-                            @blur="setTimeout(() => showCompanyDropdown = false, 200)"
-                            type="text"
-                            placeholder="Buscar empresa..."
-                            class="w-full px-3 py-2 pr-10 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-                          >
-                          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                          </div>
-                          
-                          <!-- Dropdown de empresas -->
-                          <div v-if="showCompanyDropdown" class="absolute z-10 w-full mt-1 rounded-lg shadow-lg border max-h-60 overflow-y-auto" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'">
-                            <!-- Opción "Sin empresa" -->
-                            <div 
-                              @click="selectCompany('', 'Sin empresa')"
-                              class="px-3 py-2 text-sm cursor-pointer hover:bg-opacity-80 transition-colors"
-                              :class="isDark ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-700'"
-                            >
-                              <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Sin empresa
-                              </div>
-                            </div>
-                            
-                            <!-- Búsqueda sin resultados -->
-                            <div v-if="filteredCompanies.length === 0 && companySearchTerm.length > 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                              No se encontraron empresas para "{{ companySearchTerm }}"
-                            </div>
-                            
-                            <!-- Instrucción de búsqueda -->
-                            <div v-if="filteredCompanies.length === 0 && companySearchTerm.length === 0 && availableCompanies.length > 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                              Escribe para buscar entre {{ availableCompanies.length }} empresa(s)...
-                            </div>
-                            
-                            <!-- Lista de empresas filtradas -->
-                            <div 
-                              v-for="company in filteredCompanies" 
-                              :key="company.id"
-                              @click="selectCompany(company.id, company.name)"
-                              class="px-3 py-2 text-sm cursor-pointer hover:bg-opacity-80 transition-colors"
-                              :class="isDark ? 'hover:bg-gray-600 text-gray-300' : 'hover:bg-gray-100 text-gray-700'"
-                            >
-                              <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h2M7 7h10M7 11h10M7 15h10" />
-                                </svg>
-                                <div>
-                                  <div class="font-medium">{{ company.name }}</div>
-                                  <div v-if="company.code_client" class="text-xs opacity-75">{{ company.code_client }}</div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                        <ThirdpartySearchInput
+                          v-model="selectedThirdparty"
+                          placeholder="Buscar cliente..."
+                          @selected="handleThirdpartySelected"
+                          @cleared="handleThirdpartyCleared"
+                        />
                         <div class="flex space-x-2">
                           <button 
                             @click="saveCompany" 
@@ -987,9 +911,16 @@
                         </div>
                       </div>
                       <div v-else class="flex items-center justify-between">
-                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                          {{ currentCompany?.name || (ticketDetails.fk_soc ? 'Cargando empresa...' : 'Sin empresa asignada') }}
-                        </p>
+                        <div class="flex items-center">
+                          <div class="w-6 h-6 rounded-full flex items-center justify-center mr-2" :class="isDark ? 'bg-green-600' : 'bg-green-500'">
+                            <span class="text-xs font-medium text-white">
+                              {{ currentCompany?.name ? currentCompany.name.charAt(0).toUpperCase() : 'E' }}
+                            </span>
+                          </div>
+                          <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                            {{ currentCompany?.name || (ticketDetails.fk_soc ? 'Cargando empresa...' : 'Sin empresa asignada') }}
+                          </p>
+                        </div>
                         <button 
                           @click="startEditCompany" 
                           class="ml-2 p-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
@@ -2348,6 +2279,8 @@ import { useTicketsCounter } from '../composables/useTicketsCounter'
 import { useInterventions } from '@/composables/useInterventions'
 import { useTicketTimer } from '@/composables/useTicketTimer'
 import { useAuthStore } from '../stores/auth'
+import TimerButton from '@/components/TimerButton.vue'
+import ThirdpartySearchInput from '@/components/ThirdpartySearchInput.vue'
 
 const { isDark } = useTheme()
 const authStore = useAuthStore()
@@ -2359,8 +2292,8 @@ const interventionsComposable = useInterventions()
 //  console.log('Interventions composable:', interventionsComposable)
 const { fetchUserInterventions, getInterventionsForTicket } = interventionsComposable
 
-// Timer functionality
-const { startTimer, stopTimer, isTimerRunning, formatElapsedTime } = useTicketTimer()
+// Timer functionality (solo para el modal de guardado)
+const { stopTimer } = useTicketTimer()
 
 // Timer state
 const showTimeEntryModal = ref(false)
@@ -2498,22 +2431,16 @@ const initializeReminderForm = () => {
 }
 
 // Timer methods
-const handleTimerClick = (ticket) => {
-  //  console.log('Timer click for ticket:', ticket.id)
-  //  console.log('Is timer running?', isTimerRunning(ticket.id))
+const handleTimerStopped = ({ entityId, elapsedSeconds }) => {
+  // Find the ticket by ID
+  const ticket = filteredTickets.value.find(t => t.id == entityId)
+  if (!ticket) return
   
-  if (isTimerRunning(ticket.id)) {
-    // Stop timer and show save modal
-    const elapsedSeconds = stopTimer(ticket.id)
-    recordedTime.value = elapsedSeconds
-    selectedTicket.value = ticket
-    showTimeEntryModal.value = true
-    //  console.log('Timer stopped, elapsed seconds:', elapsedSeconds)
-  } else {
-    // Start timer
-    startTimer(ticket.id)
-    //  console.log('Timer started for ticket:', ticket.id)
-  }
+  // Set up the time entry modal
+  recordedTime.value = elapsedSeconds
+  selectedTicket.value = ticket
+  showTimeEntryModal.value = true
+  //  console.log('Timer stopped, elapsed seconds:', elapsedSeconds)
 }
 
 const saveTimeEntry = async () => {
@@ -2752,12 +2679,14 @@ const filterByUnassigned = () => {
   selectedTercero.value = null
   selectedUser.value = null
   searchQuery.value = ''
+  statusFilter.value = ''
+  priorityFilter.value = ''
   
-  // Aplicar filtro personalizado para tickets sin asignar
-  filteredTickets.value = tickets.value.filter(ticket => {
-    const hasAssignedUser = ticket.fk_user_assign && ticket.fk_user_assign != '0'
-    return !hasAssignedUser
-  })
+  // IMPORTANTE: Desactivar "Mis Tickets" para ver tickets sin asignar
+  showOnlyMyTickets.value = false
+  
+  // Activar filtro de sin asignar
+  showUnassignedOnly.value = true
 }
 
 // Filter by assigned tickets
@@ -2767,12 +2696,13 @@ const filterByAssigned = () => {
   selectedUser.value = null
   selectedProject.value = null
   searchQuery.value = ''
+  statusFilter.value = ''
+  priorityFilter.value = ''
   
-  // Aplicar filtro personalizado para tickets asignados
-  filteredTickets.value = tickets.value.filter(ticket => {
-    const hasAssignedUser = ticket.fk_user_assign && ticket.fk_user_assign != '0'
-    return hasAssignedUser
-  })
+  // Desactivar filtro de sin asignar
+  showUnassignedOnly.value = false
+  
+  // Note: Los tickets asignados se muestran por defecto cuando no hay filtros activos
 }
 
 // Manual intervention methods
@@ -3943,6 +3873,7 @@ const terceroSearch = ref('')
 // userSearch is already declared above for create ticket form
 const selectedTercero = ref(null)
 const selectedUser = ref(null)
+const showUnassignedOnly = ref(false)
 const showTerceroDropdown = ref(false)
 // showUserDropdown is already declared above for create ticket form
 const filteredTercerosForFilters = ref([])
@@ -3957,6 +3888,7 @@ const currentProject = ref(null)
 // Company management
 const editingCompany = ref(false)
 const selectedCompanyId = ref('')
+const selectedThirdparty = ref(null)
 const availableCompanies = ref([])
 const currentCompany = ref(null)
 const showCompanyDropdown = ref(false)
@@ -4372,7 +4304,7 @@ const calculateTicketMetrics = () => {
 
 const fetchTerceros = async () => {
   try {
-    const response = await http.get('/api/doli/thirdparties?limit=1000&status=1')
+    const response = await http.get('/api/doli/thirdparties?limit=5000&status=1')
     terceros.value = response.data || []
   } catch (error) {
     console.error('Error fetching terceros:', error)
@@ -4440,6 +4372,7 @@ const clearFilters = () => {
   userSearch.value = ''
   selectedTercero.value = null
   selectedUser.value = null
+  showUnassignedOnly.value = false
   showTerceroDropdown.value = false
   showUserDropdown.value = false
   filteredTercerosForFilters.value = []
@@ -4487,6 +4420,14 @@ const filteredTickets = computed(() => {
     filtered = filtered.filter(ticket => 
       ticket.fk_user_assign == selectedUser.value.id
     )
+  }
+  
+  // Apply unassigned filter
+  if (showUnassignedOnly.value) {
+    filtered = filtered.filter(ticket => {
+      const hasAssignedUser = ticket.fk_user_assign && ticket.fk_user_assign != '0'
+      return !hasAssignedUser
+    })
   }
 
   // Apply status filter
@@ -4855,7 +4796,7 @@ const formatDate = (dateString) => {
 
 const getStatusText = (status, ticket = null) => {
   const statuses = {
-    '0': 'Borrador',
+    '0': 'Sin asignar',
     '1': 'Abierto',
     '4': 'Asignado',
     '5': 'En progreso',
@@ -5207,16 +5148,23 @@ const startEditCompany = async () => {
   editingCompany.value = true
   selectedCompanyId.value = ticketDetails.value?.fk_soc || ''
   
-  // Inicializar el término de búsqueda con el nombre de la empresa actual
-  if (currentCompany.value?.name) {
-    companySearchTerm.value = currentCompany.value.name
+  // Inicializar el componente ThirdpartySearchInput con la empresa actual
+  if (currentCompany.value) {
+    selectedThirdparty.value = {
+      id: currentCompany.value.id,
+      name: currentCompany.value.name,
+      alias: currentCompany.value.alias || '',
+      email: currentCompany.value.email || '',
+      idprof1: currentCompany.value.idprof1 || ''
+    }
   } else {
-    companySearchTerm.value = ''
+    selectedThirdparty.value = null
   }
   
   console.log('🔍 Starting company edit for ticket:', {
     ticketId: ticketDetails.value?.id,
-    currentCompany: ticketDetails.value?.fk_soc
+    currentCompany: ticketDetails.value?.fk_soc,
+    selectedThirdparty: selectedThirdparty.value
   })
   
   try {
@@ -5261,16 +5209,28 @@ const selectCompany = (companyId, companyName) => {
 const cancelEditCompany = () => {
   editingCompany.value = false
   selectedCompanyId.value = ''
-  companySearchTerm.value = ''
-  showCompanyDropdown.value = false
-  filteredCompanies.value = []
+  selectedThirdparty.value = null
+}
+
+// Nuevas funciones para ThirdpartySearchInput
+const handleThirdpartySelected = (thirdparty) => {
+  console.log('🏢 Tercero seleccionado:', thirdparty)
+  selectedThirdparty.value = thirdparty
+  selectedCompanyId.value = thirdparty.id
+}
+
+const handleThirdpartyCleared = () => {
+  console.log('🗑️ Tercero limpiado')
+  selectedThirdparty.value = null
+  selectedCompanyId.value = ''
 }
 
 const saveCompany = async () => {
   try {
     console.log('💾 Saving company for ticket:', {
       ticketId: ticketDetails.value?.id,
-      newCompanyId: selectedCompanyId.value
+      newCompanyId: selectedCompanyId.value,
+      selectedThirdparty: selectedThirdparty.value
     })
 
     const updateData = {
@@ -5286,22 +5246,22 @@ const saveCompany = async () => {
     }
 
     // Update current company info
-    if (selectedCompanyId.value) {
-      try {
-        const companyResponse = await http.get(`/api/doli/thirdparties/${selectedCompanyId.value}`)
-        currentCompany.value = companyResponse.data
-        console.log('✅ Updated company info:', currentCompany.value?.name)
-      } catch (error) {
-        console.warn('Error fetching updated company details:', error)
+    if (selectedThirdparty.value) {
+      // Usar los datos ya disponibles del tercero seleccionado
+      currentCompany.value = {
+        id: selectedThirdparty.value.id,
+        name: selectedThirdparty.value.name,
+        alias: selectedThirdparty.value.alias,
+        email: selectedThirdparty.value.email,
+        idprof1: selectedThirdparty.value.idprof1
       }
+      console.log('✅ Updated company info:', currentCompany.value?.name)
     } else {
       currentCompany.value = null
     }
     
     editingCompany.value = false
-    companySearchTerm.value = ''
-    showCompanyDropdown.value = false
-    filteredCompanies.value = []
+    selectedThirdparty.value = null
     console.log('✅ Empresa actualizada correctamente')
     
   } catch (error) {

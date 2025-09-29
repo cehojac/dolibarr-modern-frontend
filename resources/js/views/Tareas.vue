@@ -6,6 +6,172 @@
       <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Administra y supervisa todas las tareas del sistema</p>
     </div>
 
+    <!-- Tareas Overview -->
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Tareas Overview</h2>
+        <a href="#" class="text-blue-500 hover:text-blue-600 text-sm font-medium">Ver todas →</a>
+      </div>
+      
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-6">
+        <!-- Tareas Pendientes -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-all duration-200" 
+          :class="pendingTasks.length > 0 
+            ? (isDark ? 'bg-yellow-900/20 border-yellow-700 hover:bg-yellow-900/30' : 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100')
+            : (isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50')
+          "
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" 
+                 :class="pendingTasks.length > 0 
+                   ? (isDark ? 'text-yellow-300' : 'text-yellow-700')
+                   : (isDark ? 'text-white' : 'text-gray-900')
+                 ">
+                {{ pendingTasks.length }}
+              </p>
+              <p class="text-sm font-medium" 
+                 :class="pendingTasks.length > 0 ? 'text-yellow-500' : 'text-orange-500'">
+                Pendientes
+              </p>
+              <p class="text-xs" 
+                 :class="pendingTasks.length > 0 
+                   ? (isDark ? 'text-yellow-400' : 'text-yellow-600')
+                   : (isDark ? 'text-gray-400' : 'text-gray-600')
+                 ">
+                Por iniciar
+              </p>
+            </div>
+            <!-- Icono de alerta cuando hay tareas pendientes -->
+            <div v-if="pendingTasks.length > 0" class="ml-2">
+              <svg class="w-6 h-6" :class="isDark ? 'text-yellow-400' : 'text-yellow-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tareas En Progreso -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ inProgressTasks.length }}</p>
+              <p class="text-sm font-medium text-blue-500">En Progreso</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Actualmente trabajando</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tareas Completadas -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ completedTasks.length }}</p>
+              <p class="text-sm font-medium text-green-500">Completadas</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Finalizadas</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tareas Vencidas -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-all duration-200" 
+          :class="overdueTasks.length > 0 
+            ? (isDark ? 'bg-red-900/20 border-red-700 hover:bg-red-900/30' : 'bg-red-50 border-red-200 hover:bg-red-100')
+            : (isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50')
+          "
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" 
+                 :class="overdueTasks.length > 0 
+                   ? (isDark ? 'text-red-300' : 'text-red-700')
+                   : (isDark ? 'text-white' : 'text-gray-900')
+                 ">
+                {{ overdueTasks.length }}
+              </p>
+              <p class="text-sm font-medium" 
+                 :class="overdueTasks.length > 0 ? 'text-red-500' : 'text-orange-500'">
+                Vencidas
+              </p>
+              <p class="text-xs" 
+                 :class="overdueTasks.length > 0 
+                   ? (isDark ? 'text-red-400' : 'text-red-600')
+                   : (isDark ? 'text-gray-400' : 'text-gray-600')
+                 ">
+                Fecha límite pasada
+              </p>
+            </div>
+            <!-- Icono de alerta cuando hay tareas vencidas -->
+            <div v-if="overdueTasks.length > 0" class="ml-2">
+              <svg class="w-6 h-6" :class="isDark ? 'text-red-400' : 'text-red-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tareas de Alta Prioridad -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-all duration-200" 
+          :class="highPriorityTasks.length > 0 
+            ? (isDark ? 'bg-purple-900/20 border-purple-700 hover:bg-purple-900/30' : 'bg-purple-50 border-purple-200 hover:bg-purple-100')
+            : (isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50')
+          "
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" 
+                 :class="highPriorityTasks.length > 0 
+                   ? (isDark ? 'text-purple-300' : 'text-purple-700')
+                   : (isDark ? 'text-white' : 'text-gray-900')
+                 ">
+                {{ highPriorityTasks.length }}
+              </p>
+              <p class="text-sm font-medium" 
+                 :class="highPriorityTasks.length > 0 ? 'text-purple-500' : 'text-gray-500'">
+                Alta Prioridad
+              </p>
+              <p class="text-xs" 
+                 :class="highPriorityTasks.length > 0 
+                   ? (isDark ? 'text-purple-400' : 'text-purple-600')
+                   : (isDark ? 'text-gray-400' : 'text-gray-600')
+                 ">
+                Urgentes/Críticas
+              </p>
+            </div>
+            <!-- Icono de prioridad cuando hay tareas de alta prioridad -->
+            <div v-if="highPriorityTasks.length > 0" class="ml-2">
+              <svg class="w-6 h-6" :class="isDark ? 'text-purple-400' : 'text-purple-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total de Tareas -->
+        <div 
+          class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
+          :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ filteredTasks.length }}</p>
+              <p class="text-sm font-medium text-gray-500">Total</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Todas las tareas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Filters -->
     <div class="mb-6 grid grid-cols-1 md:grid-cols-6 gap-4">
       <!-- Search -->
@@ -124,83 +290,134 @@
     <div class="rounded-xl border overflow-hidden" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-100'">
+          <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-50'">
             <tr>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Ref.</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Título</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Proyecto</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Prioridad</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tercero</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Progreso</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Fecha Inicio</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Fecha Fin</th>
-              <th scope="col" class="px-8 xl:px-10 2xl:px-12 py-4 xl:py-5 2xl:py-6 text-left text-sm xl:text-base 2xl:text-lg font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Asignado a</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tarea</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Prioridad</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tercero</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Progreso</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Fechas</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Asignado</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Timer</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="10" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex items-center justify-center space-x-2 xl:space-x-3 2xl:space-x-4">
-                  <div class="animate-spin rounded-full h-6 w-6 xl:h-8 xl:w-8 2xl:h-10 2xl:w-10 border-b-2 border-blue-500"></div>
-                  <span class="text-sm xl:text-base 2xl:text-lg">Cargando tareas...</span>
+              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <div class="flex items-center justify-center space-x-2">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                  <span class="text-sm">Cargando tareas...</span>
                 </div>
               </td>
             </tr>
             <tr v-else-if="paginatedTasks.length === 0">
-              <td colspan="10" class="px-6 xl:px-8 2xl:px-10 py-8 xl:py-10 2xl:py-12 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex flex-col items-center space-y-2 xl:space-y-3 2xl:space-y-4">
-                  <svg class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <div class="flex flex-col items-center space-y-2">
+                  <svg class="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span class="text-sm xl:text-base 2xl:text-lg">No se encontraron tareas</span>
+                  <span class="text-sm">No se encontraron tareas</span>
                 </div>
               </td>
             </tr>
-            <tr v-else v-for="task in paginatedTasks" :key="task.id" class="transition-colors" :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'">
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap text-sm xl:text-base 2xl:text-lg font-medium">
-                <button 
-                  @click="viewTaskDetails(task)"
-                  class="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer font-medium"
-                >
-                  {{ task.ref }}
-                </button>
+            <tr v-else v-for="task in paginatedTasks" :key="task.id" class="hover:bg-opacity-50 transition-colors" :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'">
+              <!-- Tarea (Ref + Título + Proyecto) -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex flex-col">
+                  <button 
+                    @click="viewTaskDetails(task)"
+                    class="text-blue-500 hover:text-blue-600 font-medium text-sm transition-colors text-left"
+                  >
+                    {{ task.ref }}
+                  </button>
+                  <div class="text-sm max-w-xs truncate" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
+                    {{ task.label }}
+                  </div>
+                  <div v-if="task.project_name" class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    📁 {{ task.project_name }}
+                  </div>
+                </div>
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 text-sm xl:text-base 2xl:text-lg max-w-xs xl:max-w-sm 2xl:max-w-md truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
-                {{ task.label }}
-              </td>
-              <td class="px-8 xl:px-10 2xl:px-12 py-6 xl:py-7 2xl:py-8 whitespace-nowrap text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ task.project_name || '-' }}
-              </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
-                <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-2 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full" :class="getStatusClass(task.status)">
+
+              <!-- Estado -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(task.status)">
                   {{ getStatusText(task.status) }}
                 </span>
               </td>
-              <td class="px-6 xl:px-8 2xl:px-10 py-4 xl:py-5 2xl:py-6 whitespace-nowrap">
-                <span class="inline-flex px-3 xl:px-4 2xl:px-5 py-1 xl:py-2 2xl:py-2 text-xs xl:text-sm 2xl:text-base font-semibold rounded-full" :class="getPriorityClass(task.priority)">
+
+              <!-- Prioridad -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getPriorityClass(task.priority)">
                   {{ getPriorityText(task.priority) }}
                 </span>
               </td>
-              <td class="px-8 xl:px-10 2xl:px-12 py-6 xl:py-7 2xl:py-8 whitespace-nowrap text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ task.tercero_name || '-' }}
-              </td>
-              <td class="px-8 xl:px-10 2xl:px-12 py-6 xl:py-7 2xl:py-8 whitespace-nowrap text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                <div class="flex items-center">
-                  <div class="w-full rounded-full h-2 xl:h-3 2xl:h-4 mr-2 xl:mr-3 2xl:mr-4" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'">
-                    <div class="bg-blue-500 h-2 xl:h-3 2xl:h-4 rounded-full" :style="`width: ${task.progress}%`"></div>
+
+              <!-- Tercero -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div v-if="task.tercero_name" class="flex items-center">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" :class="isDark ? 'bg-green-600' : 'bg-green-500'">
+                    <span class="text-xs font-medium text-white">
+                      {{ task.tercero_name.charAt(0).toUpperCase() }}
+                    </span>
                   </div>
-                  <span class="text-xs xl:text-sm 2xl:text-base">{{ task.progress }}%</span>
+                  <div>
+                    <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                      {{ task.tercero_name }}
+                    </div>
+                    <div class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                      Cliente
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="text-sm text-gray-400">Sin tercero</div>
+              </td>
+
+              <!-- Progreso -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="w-16 bg-gray-200 rounded-full h-2 mr-2" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'">
+                    <div class="bg-blue-500 h-2 rounded-full" :style="`width: ${task.progress || 0}%`"></div>
+                  </div>
+                  <span class="text-xs" :class="isDark ? 'text-gray-300' : 'text-gray-600'">{{ task.progress || 0 }}%</span>
                 </div>
               </td>
-              <td class="px-8 xl:px-10 2xl:px-12 py-6 xl:py-7 2xl:py-8 whitespace-nowrap text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ formatDate(task.dateo) }}
+
+              <!-- Fechas -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-xs" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                  <div v-if="task.dateo">Inicio: {{ formatDate(task.dateo) }}</div>
+                  <div v-if="task.datee" class="mt-1">Fin: {{ formatDate(task.datee) }}</div>
+                  <div v-if="!task.dateo && !task.datee" class="text-gray-400">-</div>
+                </div>
               </td>
-              <td class="px-8 xl:px-10 2xl:px-12 py-6 xl:py-7 2xl:py-8 whitespace-nowrap text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ formatDate(task.datee) }}
+
+              <!-- Asignado -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex justify-center">
+                  <div v-if="task.assigned_to" class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                    <span class="text-xs font-medium text-white">
+                      {{ task.assigned_to.charAt(0).toUpperCase() }}
+                    </span>
+                  </div>
+                </div>
               </td>
-              <td class="px-8 xl:px-10 2xl:px-12 py-6 xl:py-7 2xl:py-8 whitespace-nowrap text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ task.assigned_to || '-' }}
+
+              <!-- Timer -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex justify-center">
+                  <TimerButton 
+                    :entity-id="task.id"
+                    size="md"
+                    variant="table"
+                    :show-time="false"
+                    :custom-is-running="(taskId) => taskTimers[taskId]?.isRunning || false"
+                    :custom-format-time="(taskId) => formatTime(taskTimers[taskId]?.elapsed || 0)"
+                    @started="handleTaskTimerStarted"
+                    @stopped="handleTaskTimerStopped"
+                  />
+                </div>
               </td>
             </tr>
           </tbody>
@@ -253,6 +470,670 @@
         </div>
       </div>
     </div>
+
+    <!-- Task Detail Modal -->
+    <div v-if="showTaskModal" class="fixed inset-0 z-50 overflow-y-auto">
+      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Overlay -->
+        <div class="fixed inset-0 bg-black bg-opacity-75 transition-opacity" @click="closeTaskModal"></div>
+
+        <!-- Modal -->
+        <div class="relative inline-block align-bottom rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full border" :class="isDark ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'" @click.stop>
+          <!-- Header -->
+          <div class="px-6 py-4 border-b" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-purple-600' : 'bg-purple-500'">
+                  <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ taskDetails?.label || selectedTask?.label || 'Cargando...' }}</h3>
+                  <div class="flex items-center space-x-2 mt-1">
+                    <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tarea {{ selectedTask?.ref }}</p>
+                    <span v-if="selectedTask?.project_name" class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full" :class="isDark ? 'bg-blue-900/30 text-blue-300 border border-blue-700/50' : 'bg-blue-100 text-blue-800 border border-blue-200'">
+                      📁 {{ selectedTask.project_name }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center space-x-3">
+                <span v-if="taskDetails" class="inline-flex px-3 py-1 text-xs font-medium rounded-lg" :class="getStatusClass(taskDetails.status)">
+                  {{ taskDetails.status_text }}
+                </span>
+                <button @click="closeTaskModal" class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="flex h-[70vh]" :class="isDark ? 'bg-gray-900' : 'bg-white'">
+            <div v-if="loadingTaskDetails" class="flex items-center justify-center w-full py-8">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+              <span class="ml-3" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Cargando detalles...</span>
+            </div>
+
+            <div v-else-if="taskDetails" class="flex w-full min-h-0">
+              <!-- Left Panel - Main Content -->
+              <div class="flex-1 p-6 overflow-y-auto min-w-0">
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-3 mb-6">
+                  <TimerButton 
+                    v-if="selectedTask?.id"
+                    :entity-id="selectedTask.id"
+                    size="lg"
+                    variant="modal"
+                    :custom-is-running="(taskId) => taskTimers[taskId]?.isRunning || false"
+                    :custom-format-time="(taskId) => formatTime(taskTimers[taskId]?.elapsed || 0)"
+                    @started="handleTaskTimerStarted"
+                    @stopped="handleTaskTimerStopped"
+                  />
+                </div>
+
+                <!-- Description Section -->
+                <div class="mb-8">
+                  <div class="flex items-center space-x-2 mb-4">
+                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                    </svg>
+                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Descripción</h3>
+                  </div>
+                  <div class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
+                    <div class="text-sm p-4 rounded-lg" :class="isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-700'">
+                      {{ taskDetails.description }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Progress Section -->
+                <div class="mb-8">
+                  <div class="flex items-center space-x-2 mb-4">
+                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Progreso</h3>
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <div class="flex-1 bg-gray-200 rounded-full h-3" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'">
+                      <div class="bg-blue-500 h-3 rounded-full transition-all duration-300" :style="`width: ${taskDetails.progress || 0}%`"></div>
+                    </div>
+                    <span class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                      {{ taskDetails.progress || 0 }}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Panel - Task Info -->
+              <div class="w-80 max-w-sm border-l p-6 overflow-y-auto" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
+                <div class="space-y-6">
+                  <!-- Task Info -->
+                  <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Información</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Estado:</label>
+                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getStatusClass(taskDetails.status)">
+                          {{ taskDetails.status_text }}
+                        </span>
+                      </div>
+                      
+                      <div>
+                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Prioridad:</label>
+                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getPriorityClass(taskDetails.priority)">
+                          {{ taskDetails.priority_text }}
+                        </span>
+                      </div>
+                      
+                      <div v-if="taskDetails.created_date">
+                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Fecha de inicio:</label>
+                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ formatDate(taskDetails.created_date) }}</p>
+                      </div>
+                      
+                      <div v-if="taskDetails.due_date">
+                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Fecha de vencimiento:</label>
+                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ formatDate(taskDetails.due_date) }}</p>
+                      </div>
+                      
+                      <!-- Company/Tercero Section -->
+                      <div>
+                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Cliente:</label>
+                        
+                        <!-- Edit mode -->
+                        <div v-if="editingTaskCompany" class="space-y-2">
+                          <div class="relative">
+                            <input
+                              v-model="taskCompanySearchTerm"
+                              @focus="showTaskCompanyDropdown = true"
+                              @blur="setTimeout(() => showTaskCompanyDropdown = false, 200)"
+                              type="text"
+                              placeholder="Buscar empresa..."
+                              class="w-full p-2 border rounded-lg text-sm"
+                              :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                            />
+                            <svg class="absolute right-2 top-2 w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            
+                            <!-- Company Dropdown -->
+                            <div v-if="showTaskCompanyDropdown" class="absolute z-10 w-full mt-1 max-h-40 overflow-auto border rounded-lg shadow-lg" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'">
+                              <!-- Sin empresa option -->
+                              <button
+                                @click="selectTaskCompany('', 'Sin empresa')"
+                                class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors border-b"
+                                :class="isDark ? 'text-white hover:bg-gray-600 border-gray-600' : 'text-gray-900 hover:bg-gray-100 border-gray-200'"
+                              >
+                                Sin empresa
+                              </button>
+                              
+                              <!-- Filtered companies -->
+                              <button
+                                v-for="company in filteredTaskCompanies"
+                                :key="company.id"
+                                @click="selectTaskCompany(company.id, company.name)"
+                                class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors"
+                                :class="isDark ? 'text-white hover:bg-gray-600' : 'text-gray-900 hover:bg-gray-100'"
+                              >
+                                {{ company.name }}
+                              </button>
+                              
+                              <!-- No results -->
+                              <div v-if="filteredTaskCompanies.length === 0 && taskCompanySearchTerm" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                                No se encontraron empresas
+                              </div>
+                            </div>
+                          </div>
+                          <div class="flex space-x-2">
+                            <button 
+                              @click="saveTaskCompany"
+                              class="px-3 py-1 text-xs rounded-lg transition-colors"
+                              :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                            >
+                              Guardar
+                            </button>
+                            <button 
+                              @click="cancelEditTaskCompany"
+                              class="px-3 py-1 text-xs rounded-lg transition-colors"
+                              :class="isDark ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-500 hover:bg-gray-600 text-white'"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <!-- Display mode -->
+                        <div v-else class="flex items-center justify-between">
+                          <div v-if="currentTaskCompany" class="flex items-center space-x-2">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-green-600' : 'bg-green-500'">
+                              <span class="text-xs font-medium text-white">
+                                {{ currentTaskCompany.name.charAt(0).toUpperCase() }}
+                              </span>
+                            </div>
+                            <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ currentTaskCompany.name }}</p>
+                          </div>
+                          <div v-else>
+                            <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Sin empresa asignada</p>
+                          </div>
+                          <button 
+                            @click="startEditTaskCompany"
+                            class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-100'"
+                            title="Editar empresa"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <!-- Assigned User Section -->
+                      <div>
+                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Asignado a:</label>
+                        
+                        <!-- Edit mode -->
+                        <div v-if="editingTaskAssignment" class="space-y-2">
+                          <div class="relative">
+                            <input
+                              v-model="taskAssignmentSearchTerm"
+                              @focus="showTaskAssignmentDropdown = true"
+                              @blur="setTimeout(() => showTaskAssignmentDropdown = false, 200)"
+                              type="text"
+                              placeholder="Buscar usuario..."
+                              class="w-full p-2 border rounded-lg text-sm"
+                              :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                            />
+                            <svg class="absolute right-2 top-2 w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            
+                            <!-- Assignment Dropdown -->
+                            <div v-if="showTaskAssignmentDropdown" class="absolute z-10 w-full mt-1 max-h-40 overflow-auto border rounded-lg shadow-lg" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'">
+                              <!-- Sin asignar option -->
+                              <button
+                                @click="selectTaskAssignedUser('', 'Sin asignar')"
+                                class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors border-b"
+                                :class="isDark ? 'text-white hover:bg-gray-600 border-gray-600' : 'text-gray-900 hover:bg-gray-100 border-gray-200'"
+                              >
+                                Sin asignar
+                              </button>
+                              
+                              <!-- Filtered users -->
+                              <button
+                                v-for="user in filteredTaskAssignmentUsers"
+                                :key="user.id"
+                                @click="selectTaskAssignedUser(user.id, `${user.firstname} ${user.lastname}`)"
+                                class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors"
+                                :class="isDark ? 'text-white hover:bg-gray-600' : 'text-gray-900 hover:bg-gray-100'"
+                              >
+                                {{ user.firstname }} {{ user.lastname }} ({{ user.login }})
+                              </button>
+                              
+                              <!-- No results -->
+                              <div v-if="filteredTaskAssignmentUsers.length === 0 && taskAssignmentSearchTerm" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                                No se encontraron usuarios
+                              </div>
+                            </div>
+                          </div>
+                          <div class="flex space-x-2">
+                            <button 
+                              @click="saveTaskAssignment"
+                              class="px-3 py-1 text-xs rounded-lg transition-colors"
+                              :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                            >
+                              Guardar
+                            </button>
+                            <button 
+                              @click="cancelEditTaskAssignment"
+                              class="px-3 py-1 text-xs rounded-lg transition-colors"
+                              :class="isDark ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-500 hover:bg-gray-600 text-white'"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <!-- Display mode -->
+                        <div v-else class="flex items-center justify-between">
+                          <div v-if="currentTaskAssignedUser" class="flex items-center space-x-2">
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                              <span class="text-xs font-medium text-white">
+                                {{ currentTaskAssignedUser.firstname.charAt(0).toUpperCase() }}
+                              </span>
+                            </div>
+                            <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                              {{ currentTaskAssignedUser.firstname }} {{ currentTaskAssignedUser.lastname }}
+                            </p>
+                          </div>
+                          <div v-else>
+                            <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Sin asignar</p>
+                          </div>
+                          <button 
+                            @click="startEditTaskAssignment"
+                            class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-100'"
+                            title="Editar asignación"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div v-if="taskDetails.total_time > 0">
+                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tiempo total:</label>
+                        <p class="text-sm font-mono" :class="isDark ? 'text-green-400' : 'text-green-600'">{{ formatTime(taskDetails.total_time) }}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Private Notes -->
+                  <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Notas Privadas</h3>
+                    </div>
+                    
+                    <div class="space-y-3">
+                      <textarea
+                        v-model="privateNote"
+                        placeholder="Agregar nota privada..."
+                        rows="3"
+                        class="w-full p-3 border rounded-lg text-sm resize-none"
+                        :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                      ></textarea>
+                      <button 
+                        @click="savePrivateNote"
+                        :disabled="!privateNote.trim()"
+                        class="w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600' : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-300'"
+                      >
+                        Guardar Nota Privada
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Public Notes -->
+                  <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Notas Públicas</h3>
+                    </div>
+                    
+                    <div class="space-y-3">
+                      <textarea
+                        v-model="publicNote"
+                        placeholder="Agregar nota pública..."
+                        rows="3"
+                        class="w-full p-3 border rounded-lg text-sm resize-none"
+                        :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                      ></textarea>
+                      <button 
+                        @click="savePublicNote"
+                        :disabled="!publicNote.trim()"
+                        class="w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        :class="isDark ? 'bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-600' : 'bg-green-500 hover:bg-green-600 text-white disabled:bg-gray-300'"
+                      >
+                        Guardar Nota Pública
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- File Upload -->
+                  <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Archivos</h3>
+                    </div>
+                    
+                    <div class="space-y-3">
+                      <!-- File Drop Zone -->
+                      <div 
+                        @drop="handleFileDrop"
+                        @dragover.prevent
+                        @dragenter.prevent
+                        class="border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer"
+                        :class="isDark ? 'border-gray-600 hover:border-gray-500 bg-gray-800' : 'border-gray-300 hover:border-gray-400 bg-gray-50'"
+                        @click="$refs.fileInput?.click()"
+                      >
+                        <svg class="mx-auto h-8 w-8 mb-2" :class="isDark ? 'text-gray-400' : 'text-gray-400'" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                          Arrastra archivos aquí o haz click para seleccionar
+                        </p>
+                        <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                          PNG, JPG, PDF hasta 10MB
+                        </p>
+                      </div>
+                      
+                      <!-- Hidden File Input -->
+                      <input
+                        ref="fileInput"
+                        type="file"
+                        multiple
+                        accept=".png,.jpg,.jpeg,.pdf,.doc,.docx"
+                        @change="handleFileSelect"
+                        class="hidden"
+                      />
+                      
+                      <!-- Uploaded Files List -->
+                      <div v-if="uploadedFiles.length > 0" class="space-y-2">
+                        <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          Archivos subidos ({{ uploadedFiles.length }})
+                        </h4>
+                        <div 
+                          v-for="file in uploadedFiles" 
+                          :key="file.id"
+                          class="flex items-center justify-between p-2 rounded border"
+                          :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
+                        >
+                          <div class="flex items-center space-x-2 flex-1 min-w-0">
+                            <svg class="w-4 h-4 flex-shrink-0" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span class="text-sm truncate" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                              {{ file.name }}
+                            </span>
+                          </div>
+                          <button 
+                            @click="removeFile(file.id)"
+                            class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'text-red-400 hover:bg-red-900' : 'text-red-600 hover:bg-red-100'"
+                            title="Eliminar archivo"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Reminders -->
+                  <div>
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Recordatorios</h3>
+                      </div>
+                      <button 
+                        @click="showAddReminder = !showAddReminder"
+                        class="p-1 rounded hover:bg-opacity-50 transition-colors"
+                        :class="isDark ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-100'"
+                        title="Agregar recordatorio"
+                      >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <!-- Add Reminder Form -->
+                    <div v-if="showAddReminder" class="space-y-3 mb-4 p-3 rounded-lg" :class="isDark ? 'bg-gray-800' : 'bg-gray-50'">
+                      <div class="grid grid-cols-2 gap-2">
+                        <input
+                          v-model="newReminderDate"
+                          type="date"
+                          class="p-2 border rounded text-xs"
+                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                        />
+                        <input
+                          v-model="newReminderTime"
+                          type="time"
+                          class="p-2 border rounded text-xs"
+                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                        />
+                      </div>
+                      <input
+                        v-model="newReminderNote"
+                        type="text"
+                        placeholder="Nota del recordatorio (opcional)"
+                        class="w-full p-2 border rounded text-xs"
+                        :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                      />
+                      <div class="flex space-x-2">
+                        <button 
+                          @click="addReminder"
+                          :disabled="!newReminderDate || !newReminderTime"
+                          class="px-3 py-1 text-xs rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600' : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-300'"
+                        >
+                          Agregar
+                        </button>
+                        <button 
+                          @click="showAddReminder = false"
+                          class="px-3 py-1 text-xs rounded transition-colors"
+                          :class="isDark ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-500 hover:bg-gray-600 text-white'"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Reminders List -->
+                    <div v-if="taskReminders.length > 0" class="space-y-2">
+                      <div 
+                        v-for="reminder in taskReminders" 
+                        :key="reminder.id"
+                        class="flex items-center justify-between p-2 rounded border"
+                        :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
+                      >
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center space-x-2">
+                            <svg class="w-3 h-3 flex-shrink-0" :class="isDark ? 'text-yellow-400' : 'text-yellow-500'" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            <span class="text-xs font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                              {{ reminder.date }} {{ reminder.time }}
+                            </span>
+                          </div>
+                          <p v-if="reminder.note" class="text-xs mt-1 truncate" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                            {{ reminder.note }}
+                          </p>
+                        </div>
+                        <button 
+                          @click="removeReminder(reminder.id)"
+                          class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
+                          :class="isDark ? 'text-red-400 hover:bg-red-900' : 'text-red-600 hover:bg-red-100'"
+                          title="Eliminar recordatorio"
+                        >
+                          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div v-else class="text-xs text-center py-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                      No hay recordatorios para esta tarea
+                    </div>
+                  </div>
+
+                  <!-- Followers -->
+                  <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Seguidores</h3>
+                    </div>
+                    
+                    <!-- Add Follower -->
+                    <div v-if="availableContacts.length > 0" class="space-y-3 mb-4">
+                      <div class="relative">
+                        <input
+                          v-model="followerSearchTerm"
+                          @focus="showFollowerDropdown = true"
+                          @blur="setTimeout(() => showFollowerDropdown = false, 200)"
+                          type="text"
+                          placeholder="Buscar contacto para agregar..."
+                          class="w-full p-2 border rounded-lg text-sm"
+                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                        />
+                        <svg class="absolute right-2 top-2 w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        
+                        <!-- Follower Dropdown -->
+                        <div v-if="showFollowerDropdown && followerSearchTerm" class="absolute z-10 w-full mt-1 max-h-40 overflow-auto border rounded-lg shadow-lg" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'">
+                          <button
+                            v-for="contact in filteredFollowerContacts"
+                            :key="contact.id"
+                            @click="addFollower(contact)"
+                            class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'text-white hover:bg-gray-600' : 'text-gray-900 hover:bg-gray-100'"
+                          >
+                            <div class="flex items-center space-x-2">
+                              <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-purple-600' : 'bg-purple-500'">
+                                <span class="text-xs font-medium text-white">
+                                  {{ contact.firstname.charAt(0).toUpperCase() }}
+                                </span>
+                              </div>
+                              <div>
+                                <div class="font-medium">{{ contact.firstname }} {{ contact.lastname }}</div>
+                                <div class="text-xs opacity-75">{{ contact.email }}</div>
+                              </div>
+                            </div>
+                          </button>
+                          
+                          <!-- No results -->
+                          <div v-if="filteredFollowerContacts.length === 0" class="px-3 py-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                            No se encontraron contactos
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Followers List -->
+                    <div v-if="taskFollowers.length > 0" class="space-y-2">
+                      <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                        Contactos siguiendo ({{ taskFollowers.length }})
+                      </h4>
+                      <div 
+                        v-for="follower in taskFollowers" 
+                        :key="follower.id"
+                        class="flex items-center justify-between p-2 rounded border"
+                        :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
+                      >
+                        <div class="flex items-center space-x-2 flex-1 min-w-0">
+                          <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-purple-600' : 'bg-purple-500'">
+                            <span class="text-xs font-medium text-white">
+                              {{ follower.firstname.charAt(0).toUpperCase() }}
+                            </span>
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
+                              {{ follower.firstname }} {{ follower.lastname }}
+                            </p>
+                            <p class="text-xs truncate" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                              {{ follower.email }}
+                            </p>
+                          </div>
+                        </div>
+                        <button 
+                          @click="removeFollower(follower.id)"
+                          class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
+                          :class="isDark ? 'text-red-400 hover:bg-red-900' : 'text-red-600 hover:bg-red-100'"
+                          title="Eliminar seguidor"
+                        >
+                          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div v-else class="text-xs text-center py-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                      {{ availableContacts.length > 0 ? 'No hay seguidores para esta tarea' : 'Selecciona una empresa para ver contactos disponibles' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -262,6 +1143,7 @@ import http from '../utils/http'
 import { useTheme } from '../composables/useTheme'
 import { useAuth } from '../composables/useAuth'
 import { useAuthStore } from '../stores/auth'
+import TimerButton from '@/components/TimerButton.vue'
 
 const { isDark } = useTheme()
 const { currentUser } = useAuth()
@@ -294,6 +1176,47 @@ const showUserDropdown = ref(false)
 const currentPage = ref(1)
 const itemsPerPage = 20
 
+// Timer functionality
+const taskTimers = ref({})
+const timerIntervals = ref({})
+
+// Task detail modal
+const showTaskModal = ref(false)
+const selectedTask = ref(null)
+const taskDetails = ref(null)
+const loadingTaskDetails = ref(false)
+
+// Notes and files
+const privateNote = ref('')
+const publicNote = ref('')
+const uploadedFiles = ref([])
+const fileInput = ref(null)
+
+// Task editing functionality
+const editingTaskCompany = ref(false)
+const selectedTaskCompanyId = ref('')
+const taskCompanySearchTerm = ref('')
+const showTaskCompanyDropdown = ref(false)
+const currentTaskCompany = ref(null)
+
+const editingTaskAssignment = ref(false)
+const selectedTaskAssignedUserId = ref('')
+const taskAssignmentSearchTerm = ref('')
+const showTaskAssignmentDropdown = ref(false)
+const currentTaskAssignedUser = ref(null)
+
+// Reminders and followers
+const taskReminders = ref([])
+const newReminderDate = ref('')
+const newReminderTime = ref('')
+const newReminderNote = ref('')
+const showAddReminder = ref(false)
+
+const taskFollowers = ref([])
+const followerSearchTerm = ref('')
+const showFollowerDropdown = ref(false)
+const availableContacts = ref([])
+
 // Computed properties
 const filteredProjects = computed(() => {
   if (!projectSearchQuery.value) return projects.value.slice(0, 10)
@@ -307,6 +1230,27 @@ const filteredUsers = computed(() => {
   if (!userSearchQuery.value) return users.value.slice(0, 10)
   return users.value.filter(user => 
     `${user.firstname} ${user.lastname}`.toLowerCase().includes(userSearchQuery.value.toLowerCase())
+  ).slice(0, 10)
+})
+
+const filteredTaskCompanies = computed(() => {
+  if (!taskCompanySearchTerm.value) return terceros.value.slice(0, 10)
+  return terceros.value.filter(company => 
+    company.name.toLowerCase().includes(taskCompanySearchTerm.value.toLowerCase())
+  ).slice(0, 10)
+})
+
+const filteredTaskAssignmentUsers = computed(() => {
+  if (!taskAssignmentSearchTerm.value) return users.value.slice(0, 10)
+  return users.value.filter(user => 
+    `${user.firstname} ${user.lastname} ${user.login}`.toLowerCase().includes(taskAssignmentSearchTerm.value.toLowerCase())
+  ).slice(0, 10)
+})
+
+const filteredFollowerContacts = computed(() => {
+  if (!followerSearchTerm.value) return availableContacts.value.slice(0, 10)
+  return availableContacts.value.filter(contact => 
+    `${contact.firstname} ${contact.lastname} ${contact.email}`.toLowerCase().includes(followerSearchTerm.value.toLowerCase())
   ).slice(0, 10)
 })
 
@@ -375,6 +1319,45 @@ const visiblePages = computed(() => {
   }
   
   return pages
+})
+
+// Métricas de tareas
+const pendingTasks = computed(() => {
+  return filteredTasks.value.filter(task => task.status === 'pending' || task.status === '0')
+})
+
+const inProgressTasks = computed(() => {
+  return filteredTasks.value.filter(task => task.status === 'in_progress' || task.status === '1')
+})
+
+const completedTasks = computed(() => {
+  return filteredTasks.value.filter(task => task.status === 'completed' || task.status === '2')
+})
+
+const overdueTasks = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
+  return filteredTasks.value.filter(task => {
+    if (!task.datee) return false // Sin fecha de fin
+    
+    const endDate = new Date(task.datee)
+    endDate.setHours(0, 0, 0, 0)
+    
+    // Vencida si la fecha de fin es anterior a hoy y no está completada
+    return endDate < today && task.status !== 'completed' && task.status !== '2'
+  })
+})
+
+const highPriorityTasks = computed(() => {
+  return filteredTasks.value.filter(task => 
+    task.priority === 'HIGH' || 
+    task.priority === 'URGENT' || 
+    task.priority === 'CRITICAL' ||
+    task.priority === '3' ||
+    task.priority === '4' ||
+    task.priority === '5'
+  )
 })
 
 // Methods
@@ -509,12 +1492,34 @@ const loadTasks = async () => {
 
           // Try to get tercero from project or task directly
           let tercero = null
+          
+          if (index < 3) {
+            console.log(`🔍 Task ${task.ref} - Searching for tercero...`)
+            console.log(`Task fields:`, {
+              fk_soc: task.fk_soc,
+              fk_societe: task.fk_societe,
+              socid: task.socid,
+              client_id: task.client_id
+            })
+            if (project) {
+              console.log(`Project fields:`, {
+                fk_soc: project.fk_soc,
+                fk_societe: project.fk_societe,
+                socid: project.socid,
+                client_id: project.client_id
+              })
+            }
+          }
+          
           if (project) {
             // Try multiple possible tercero ID fields from project
-            const terceroIds = [project.fk_soc, project.fk_societe, project.socid, project.client_id]
+            const terceroIds = [project.fk_soc, project.fk_societe, project.socid, project.client_id, project.fk_thirdparty]
             for (const terceroId of terceroIds) {
               if (terceroId && tercerosMap[terceroId]) {
                 tercero = tercerosMap[terceroId]
+                if (index < 3) {
+                  console.log(`✅ Found tercero from project: ${tercero.name} (ID: ${terceroId})`)
+                }
                 break
               }
             }
@@ -522,16 +1527,24 @@ const loadTasks = async () => {
           
           // If no tercero from project, try task direct fields
           if (!tercero) {
-            const taskTerceroIds = [task.fk_soc, task.fk_societe, task.socid, task.client_id]
+            const taskTerceroIds = [task.fk_soc, task.fk_societe, task.socid, task.client_id, task.fk_thirdparty]
             for (const terceroId of taskTerceroIds) {
               if (terceroId && tercerosMap[terceroId]) {
                 tercero = tercerosMap[terceroId]
+                if (index < 3) {
+                  console.log(`✅ Found tercero from task: ${tercero.name} (ID: ${terceroId})`)
+                }
                 break
               }
             }
           }
 
-           console.log(`Task ${task.ref}: project=${project?.title || project?.ref || 'none'}, tercero=${tercero?.name || 'none'}`)
+          if (index < 3) {
+            console.log(`Task ${task.ref}: project=${project?.title || project?.ref || 'none'}, tercero=${tercero?.name || 'none'}`)
+            if (!tercero) {
+              console.log(`❌ No tercero found for task ${task.ref}`)
+            }
+          }
           
           return {
             ...task,
@@ -600,9 +1613,468 @@ const clearFilters = () => {
   currentPage.value = 1
 }
 
-const viewTaskDetails = (task) => {
-  // Navigate to projects view or task details
-  window.open('/proyectos', '_blank')
+const viewTaskDetails = async (task) => {
+  selectedTask.value = task
+  taskDetails.value = null
+  showTaskModal.value = true
+  loadingTaskDetails.value = true
+  
+  try {
+    // Simulate loading task details (replace with actual API call)
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // For now, use the task data we already have
+    taskDetails.value = {
+      ...task,
+      description: task.note || 'Sin descripción disponible',
+      created_by: task.assigned_to || 'Sistema',
+      created_date: task.dateo || new Date().toISOString(),
+      due_date: task.datee,
+      priority_text: getPriorityText(task.priority),
+      status_text: getStatusText(task.status),
+      total_time: taskTimers.value[task.id]?.elapsed || 0
+    }
+    
+    // Initialize current company and user
+    if (task.tercero_name) {
+      currentTaskCompany.value = terceros.value.find(t => t.name === task.tercero_name) || { name: task.tercero_name }
+      if (currentTaskCompany.value?.id) {
+        loadContactsForCompany(currentTaskCompany.value.id)
+      }
+    }
+    
+    if (task.assigned_to) {
+      currentTaskAssignedUser.value = users.value.find(u => 
+        `${u.firstname} ${u.lastname}` === task.assigned_to
+      ) || { firstname: task.assigned_to.split(' ')[0], lastname: task.assigned_to.split(' ').slice(1).join(' ') }
+    }
+  } catch (error) {
+    console.error('Error loading task details:', error)
+  } finally {
+    loadingTaskDetails.value = false
+  }
+}
+
+const closeTaskModal = () => {
+  showTaskModal.value = false
+  selectedTask.value = null
+  taskDetails.value = null
+  // Clear notes and files
+  privateNote.value = ''
+  publicNote.value = ''
+  uploadedFiles.value = []
+  // Clear editing states
+  editingTaskCompany.value = false
+  editingTaskAssignment.value = false
+  selectedTaskCompanyId.value = ''
+  selectedTaskAssignedUserId.value = ''
+  taskCompanySearchTerm.value = ''
+  taskAssignmentSearchTerm.value = ''
+  showTaskCompanyDropdown.value = false
+  showTaskAssignmentDropdown.value = false
+  currentTaskCompany.value = null
+  currentTaskAssignedUser.value = null
+  // Clear reminders and followers
+  taskReminders.value = []
+  taskFollowers.value = []
+  newReminderDate.value = ''
+  newReminderTime.value = ''
+  newReminderNote.value = ''
+  showAddReminder.value = false
+  followerSearchTerm.value = ''
+  showFollowerDropdown.value = false
+  availableContacts.value = []
+}
+
+// Notes functions
+const savePrivateNote = async () => {
+  if (!privateNote.value.trim()) return
+  
+  try {
+    console.log('Saving private note:', privateNote.value)
+    console.log('Task ID:', taskDetails.value.id)
+    console.log('Full URL:', `/api/doli/task/${taskDetails.value.id}`)
+    
+    // Prepare data for API
+    const updateData = {
+      note_private: privateNote.value.trim()
+    }
+    
+    console.log('Update data:', updateData)
+    
+    // API call to update task using http.put like in tickets
+    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    console.log('✅ Private note update response:', response.data)
+    
+    // Update local data
+    taskDetails.value.note_private = privateNote.value.trim()
+    
+    // Clear the note after saving
+    privateNote.value = ''
+    
+    console.log('Private note saved successfully')
+  } catch (error) {
+    console.error('Error saving private note:', error)
+    alert('Error al guardar la nota privada')
+  }
+}
+
+const savePublicNote = async () => {
+  if (!publicNote.value.trim()) return
+  
+  try {
+    console.log('💾 Saving public note for task:', selectedTask.value.id, publicNote.value)
+    
+    // Prepare data for API
+    const updateData = {
+      note_public: publicNote.value.trim()
+    }
+    
+    // API call to update task using http.put like in tickets
+    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    console.log('✅ Public note update response:', response.data)
+    
+    // Update local data
+    taskDetails.value.note_public = publicNote.value.trim()
+    
+    // Clear the note after saving
+    publicNote.value = ''
+    
+    console.log('✅ Public note saved successfully')
+  } catch (error) {
+    console.error('❌ Error saving public note:', error)
+    alert('Error al guardar la nota pública')
+  }
+}
+
+// File functions
+const handleFileSelect = (event) => {
+  const files = Array.from(event.target.files)
+  processFiles(files)
+}
+
+const handleFileDrop = (event) => {
+  event.preventDefault()
+  const files = Array.from(event.dataTransfer.files)
+  processFiles(files)
+}
+
+const processFiles = (files) => {
+  files.forEach(file => {
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      console.warn('⚠️ File too large:', file.name)
+      return
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    if (!allowedTypes.includes(file.type)) {
+      console.warn('⚠️ File type not allowed:', file.name)
+      return
+    }
+    
+    // Add file to list
+    const fileObj = {
+      id: Date.now() + Math.random(),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      file: file
+    }
+    
+    uploadedFiles.value.push(fileObj)
+    console.log('📎 File added:', file.name)
+  })
+  
+  // Clear file input
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
+
+const removeFile = (fileId) => {
+  uploadedFiles.value = uploadedFiles.value.filter(file => file.id !== fileId)
+  console.log('🗑️ File removed')
+}
+
+// Task company editing functions
+const startEditTaskCompany = () => {
+  editingTaskCompany.value = true
+  selectedTaskCompanyId.value = taskDetails.value?.fk_soc || ''
+  taskCompanySearchTerm.value = currentTaskCompany.value?.name || ''
+}
+
+const cancelEditTaskCompany = () => {
+  editingTaskCompany.value = false
+  selectedTaskCompanyId.value = ''
+  taskCompanySearchTerm.value = ''
+  showTaskCompanyDropdown.value = false
+}
+
+const selectTaskCompany = (companyId, companyName) => {
+  selectedTaskCompanyId.value = companyId
+  taskCompanySearchTerm.value = companyName
+  showTaskCompanyDropdown.value = false
+}
+
+const saveTaskCompany = async () => {
+  try {
+    console.log('Saving task company:', selectedTaskCompanyId.value)
+    
+    const selectedCompany = terceros.value.find(t => t.id === selectedTaskCompanyId.value)
+    
+    // Prepare data for API
+    const updateData = {
+      socid: selectedTaskCompanyId.value || null,
+      thirdparty_id: selectedTaskCompanyId.value || null,
+      thirdparty_name: selectedCompany?.name || null
+    }
+    
+    // API call to update task using http.put like in tickets
+    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    console.log('✅ Company update response:', response.data)
+    
+    // Update local data
+    if (selectedCompany) {
+      taskDetails.value.tercero_name = selectedCompany.name
+      taskDetails.value.socid = selectedCompany.id
+      taskDetails.value.thirdparty_id = selectedCompany.id
+      taskDetails.value.thirdparty_name = selectedCompany.name
+      currentTaskCompany.value = selectedCompany
+      
+      // Load contacts for the new company
+      loadContactsForCompany(selectedCompany.id)
+    } else {
+      taskDetails.value.tercero_name = null
+      taskDetails.value.socid = null
+      taskDetails.value.thirdparty_id = null
+      taskDetails.value.thirdparty_name = null
+      currentTaskCompany.value = null
+    }
+    
+    editingTaskCompany.value = false
+    selectedTaskCompanyId.value = ''
+    taskCompanySearchTerm.value = ''
+    showTaskCompanyDropdown.value = false
+    
+    console.log('Task company updated successfully')
+  } catch (error) {
+    console.error('Error saving task company:', error)
+    alert('Error al actualizar la empresa de la tarea')
+  }
+}
+
+const startEditTaskAssignment = () => {
+  editingTaskAssignment.value = true
+  selectedTaskAssignedUserId.value = taskDetails.value?.fk_user_assign || ''
+  taskAssignmentSearchTerm.value = currentTaskAssignedUser.value ? 
+    `${currentTaskAssignedUser.value.firstname} ${currentTaskAssignedUser.value.lastname}` : ''
+}
+
+const cancelEditTaskAssignment = () => {
+  editingTaskAssignment.value = false
+  selectedTaskAssignedUserId.value = ''
+  taskAssignmentSearchTerm.value = ''
+  showTaskAssignmentDropdown.value = false
+}
+
+const selectTaskAssignedUser = (userId, displayText) => {
+  selectedTaskAssignedUserId.value = userId
+  taskAssignmentSearchTerm.value = displayText
+  showTaskAssignmentDropdown.value = false
+}
+
+const saveTaskAssignment = async () => {
+  try {
+    console.log('💾 Saving task assignment:', {
+      taskId: selectedTask.value.id,
+      userId: selectedTaskAssignedUserId.value
+    })
+    
+    const selectedUser = selectedTaskAssignedUserId.value ? 
+      users.value.find(u => u.id == selectedTaskAssignedUserId.value) : null
+    
+    // Prepare data for API
+    const updateData = {
+      fk_user_assign: selectedTaskAssignedUserId.value || null
+    }
+    
+    // API call to update task using http.put like in tickets
+    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    console.log('✅ Assignment update response:', response.data)
+    
+    // Update local data
+    if (selectedUser) {
+      currentTaskAssignedUser.value = selectedUser
+      taskDetails.value.assigned_to = `${selectedUser.firstname} ${selectedUser.lastname}`
+      taskDetails.value.fk_user_assign = selectedUser.id
+    } else {
+      currentTaskAssignedUser.value = null
+      taskDetails.value.assigned_to = null
+      taskDetails.value.fk_user_assign = null
+    }
+    
+    cancelEditTaskAssignment()
+    console.log('✅ Task assignment updated successfully')
+  } catch (error) {
+    console.error('❌ Error updating task assignment:', error)
+    alert('Error al actualizar el usuario asignado')
+  }
+}
+
+// Load contacts for company
+const loadContactsForCompany = async (companyId) => {
+  try {
+    console.log('📞 Loading contacts for company:', companyId)
+    
+    // Simulate API call to load contacts
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // Mock contacts data
+    availableContacts.value = [
+      { id: 1, firstname: 'Juan', lastname: 'Pérez', email: 'juan@empresa.com', fk_soc: companyId },
+      { id: 2, firstname: 'María', lastname: 'García', email: 'maria@empresa.com', fk_soc: companyId },
+      { id: 3, firstname: 'Carlos', lastname: 'López', email: 'carlos@empresa.com', fk_soc: companyId }
+    ]
+    
+    console.log('✅ Contacts loaded:', availableContacts.value.length)
+  } catch (error) {
+    console.error('❌ Error loading contacts:', error)
+  }
+}
+
+// Reminder functions
+const addReminder = () => {
+  if (!newReminderDate.value || !newReminderTime.value) return
+  
+  const reminder = {
+    id: Date.now(),
+    date: newReminderDate.value,
+    time: newReminderTime.value,
+    note: newReminderNote.value || 'Recordatorio de tarea',
+    created_at: new Date().toISOString()
+  }
+  
+  taskReminders.value.push(reminder)
+  
+  // Clear form
+  newReminderDate.value = ''
+  newReminderTime.value = ''
+  newReminderNote.value = ''
+  showAddReminder.value = false
+  
+  console.log('⏰ Reminder added:', reminder)
+}
+
+const removeReminder = (reminderId) => {
+  taskReminders.value = taskReminders.value.filter(r => r.id !== reminderId)
+  console.log('🗑️ Reminder removed')
+}
+
+// Follower functions
+const addFollower = (contact) => {
+  if (taskFollowers.value.find(f => f.id === contact.id)) return
+  
+  taskFollowers.value.push(contact)
+  followerSearchTerm.value = ''
+  showFollowerDropdown.value = false
+  
+  console.log('👥 Follower added:', contact)
+}
+
+const removeFollower = (contactId) => {
+  taskFollowers.value = taskFollowers.value.filter(f => f.id !== contactId)
+  console.log('🗑️ Follower removed')
+}
+
+// Timer functions (legacy - mantener para compatibilidad con modal)
+const toggleTimer = (taskId) => {
+  if (!taskTimers.value[taskId]) {
+    taskTimers.value[taskId] = {
+      isRunning: false,
+      elapsed: 0,
+      startTime: null
+    }
+  }
+
+  const timer = taskTimers.value[taskId]
+  
+  if (timer.isRunning) {
+    // Pause timer
+    timer.isRunning = false
+    if (timerIntervals.value[taskId]) {
+      clearInterval(timerIntervals.value[taskId])
+      delete timerIntervals.value[taskId]
+    }
+  } else {
+    // Start timer
+    timer.isRunning = true
+    timer.startTime = Date.now() - timer.elapsed
+    
+    timerIntervals.value[taskId] = setInterval(() => {
+      timer.elapsed = Date.now() - timer.startTime
+    }, 1000)
+  }
+}
+
+// New timer handlers for TimerButton component
+const handleTaskTimerStarted = ({ entityId }) => {
+  // Use the existing toggleTimer logic to start
+  if (!taskTimers.value[entityId]) {
+    taskTimers.value[entityId] = {
+      isRunning: false,
+      elapsed: 0,
+      startTime: null
+    }
+  }
+  
+  const timer = taskTimers.value[entityId]
+  if (!timer.isRunning) {
+    timer.isRunning = true
+    timer.startTime = Date.now() - timer.elapsed
+    
+    timerIntervals.value[entityId] = setInterval(() => {
+      timer.elapsed = Date.now() - timer.startTime
+    }, 1000)
+  }
+  
+  console.log(`▶️ Timer started for task ${entityId}`)
+}
+
+const handleTaskTimerStopped = ({ entityId, isRunning }) => {
+  // Find the task by ID
+  const task = filteredTasks.value.find(t => t.id == entityId)
+  if (!task) return
+  
+  // Use the existing toggleTimer logic to stop
+  const timer = taskTimers.value[entityId]
+  if (timer && timer.isRunning) {
+    timer.isRunning = false
+    if (timerIntervals.value[entityId]) {
+      clearInterval(timerIntervals.value[entityId])
+      delete timerIntervals.value[entityId]
+    }
+    
+    const elapsedSeconds = Math.floor(timer.elapsed / 1000)
+    console.log(`⏱️ Timer stopped for task ${entityId}:`, elapsedSeconds, 'seconds')
+    
+    // Show confirmation with time
+    alert(`Timer parado: ${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s registrados para la tarea "${task.label}"`);
+  }
+}
+
+const formatTime = (milliseconds) => {
+  const totalSeconds = Math.floor(milliseconds / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  
+  if (hours > 0) {
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  } else {
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
 }
 
 // Utility functions
@@ -688,5 +2160,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('click', closeDropdowns)
+  
+  // Clear all timers
+  Object.values(timerIntervals.value).forEach(interval => {
+    clearInterval(interval)
+  })
+  timerIntervals.value = {}
 })
 </script>
