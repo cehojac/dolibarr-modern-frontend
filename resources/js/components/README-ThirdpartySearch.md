@@ -20,7 +20,7 @@ GET /api/doli/thirdparties
 
 ### Parámetros utilizados:
 - `properties`: `id,idprof1,email,name,alias`
-- `sqlfilters`: `(client:=:1) and (status:=:1) and ((t.nom:LIKE:'%término%')or(t.name_alias:LIKE:'%término%'))`
+- `sqlfilters`: `(status:=:1) and ((t.nom:LIKE:'%término%')or(t.name_alias:LIKE:'%término%'))`
 - `limit`: `50` (para mejor rendimiento)
 
 ## Uso Básico

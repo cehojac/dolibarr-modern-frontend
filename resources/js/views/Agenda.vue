@@ -183,16 +183,16 @@
           </div>
         </div>
 
-        <!-- Total de Eventos -->
+        <!-- Eventos Pendientes -->
         <div 
           class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-shadow" 
           :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
         >
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ filteredEventos.length }}</p>
-              <p class="text-sm font-medium text-gray-500">Total</p>
-              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Todos los eventos</p>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ pendingEvents.length }}</p>
+              <p class="text-sm font-medium text-yellow-500">Pendientes</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Por completar</p>
             </div>
           </div>
         </div>
@@ -257,22 +257,38 @@
               <div
                 v-for="event in getEventsForDay(day.date)"
                 :key="event.id"
-                class="text-xs p-1 rounded cursor-pointer hover:opacity-80 transition-opacity"
-                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800'"
+                class="text-xs p-1 rounded cursor-pointer hover:opacity-80 transition-all duration-200 relative"
+                :class="event.status === '1' 
+                  ? (isDark ? 'bg-green-600 text-white border border-green-500' : 'bg-green-100 text-green-800 border border-green-300')
+                  : (isDark ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800')"
                 @click="showEventDetail(event)"
               >
-                <!-- Hora del evento -->
-                <div class="font-semibold text-xs mb-1">
-                  {{ formatEventTime(event) }}
+                <!-- Badge de completado -->
+                <div v-if="event.status === '1'" class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                  <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" />
+                  </svg>
                 </div>
+                
+                <!-- Hora del evento -->
+                <div class="font-semibold text-xs mb-1 flex items-center justify-between">
+                  <span>{{ formatEventTime(event) }}</span>
+                  <!-- Indicador de completado en línea -->
+                  <span v-if="event.status === '1'" class="text-xs">✅</span>
+                </div>
+                
                 <!-- Título del evento -->
-                <div class="truncate" :title="event.label">
+                <div class="truncate" :title="event.label" 
+                     :class="event.status === '1' ? 'line-through opacity-75' : ''">
                   {{ event.label }}
                 </div>
+                
                 <!-- Badge del tercero si existe -->
                 <div v-if="event.thirdparty_name" class="mt-1">
                   <span class="inline-block px-1 py-0.5 text-xs rounded" 
-                        :class="isDark ? 'bg-blue-800 text-blue-100' : 'bg-blue-200 text-blue-900'">
+                        :class="event.status === '1' 
+                          ? (isDark ? 'bg-green-800 text-green-100' : 'bg-green-200 text-green-900')
+                          : (isDark ? 'bg-blue-800 text-blue-100' : 'bg-blue-200 text-blue-900')">
                     {{ event.thirdparty_name }}
                   </span>
                 </div>
@@ -713,22 +729,111 @@
           <!-- Estado -->
           <div v-if="selectedEvent.status !== undefined">
             <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-              Estado
+              Estado del Evento
             </label>
-            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
-              <span class="inline-block px-3 py-1 text-sm rounded-full" 
-                    :class="selectedEvent.status === '1' 
-                      ? (isDark ? 'bg-green-600 text-white' : 'bg-green-100 text-green-800')
-                      : (isDark ? 'bg-yellow-600 text-white' : 'bg-yellow-100 text-yellow-800')
-                    ">
-                {{ selectedEvent.status === '1' ? '✅ Completado' : '⏳ Pendiente' }}
-              </span>
+            <div class="p-4 rounded-lg" :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
+              <!-- Check visual de completado -->
+              <div class="flex items-center space-x-3 mb-3">
+                <!-- Check visual grande -->
+                <div v-if="selectedEvent.status === '1'" 
+                     class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+                  <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <!-- Círculo vacío para eventos pendientes -->
+                <div v-else 
+                     class="w-8 h-8 rounded-full border-2 flex items-center justify-center"
+                     :class="isDark ? 'border-gray-500 bg-gray-600' : 'border-gray-300 bg-gray-100'">
+                  <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                
+                <div class="flex-1">
+                  <span class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                    {{ selectedEvent.status === '1' ? '✅ Evento completado' : '⏳ Evento pendiente' }}
+                  </span>
+                  <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    {{ selectedEvent.status === '1' 
+                      ? 'Este evento ha sido marcado como realizado' 
+                      : 'Marca como completado cuando hayas realizado este evento' 
+                    }}
+                  </p>
+                </div>
+                
+                <!-- Spinner de carga -->
+                <div v-if="updatingEvent" class="flex items-center">
+                  <svg class="animate-spin w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+              </div>
+              
+              <!-- Barra de progreso -->
+              <div v-if="selectedEvent.percentage !== undefined" class="flex items-center space-x-3">
+                <span class="text-xs font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                  Progreso:
+                </span>
+                <div class="flex-1 bg-gray-200 rounded-full h-2" :class="isDark ? 'bg-gray-600' : 'bg-gray-200'">
+                  <div class="h-2 rounded-full transition-all duration-500" 
+                       :class="selectedEvent.status === '1' ? 'bg-green-500' : 'bg-blue-500'"
+                       :style="{ width: `${selectedEvent.percentage || 0}%` }">
+                  </div>
+                </div>
+                <span class="text-xs font-medium min-w-[3rem] text-right" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                  {{ selectedEvent.percentage || 0 }}%
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Footer -->
-        <div class="flex justify-end p-6 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+        <div class="flex justify-between p-6 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+          <!-- Botón de completar/descompletar -->
+          <div class="flex space-x-3">
+            <button 
+              v-if="selectedEvent.status !== '1'"
+              @click="markEventAsCompleted"
+              :disabled="updatingEvent"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center space-x-2"
+              :class="updatingEvent 
+                ? 'bg-gray-400 text-white cursor-not-allowed' 
+                : 'bg-green-500 text-white hover:bg-green-600'"
+            >
+              <svg v-if="updatingEvent" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{{ updatingEvent ? 'Actualizando...' : 'Marcar como Completado' }}</span>
+            </button>
+            
+            <button 
+              v-else
+              @click="markEventAsPending"
+              :disabled="updatingEvent"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center space-x-2"
+              :class="updatingEvent 
+                ? 'bg-gray-400 text-white cursor-not-allowed' 
+                : 'bg-yellow-500 text-white hover:bg-yellow-600'"
+            >
+              <svg v-if="updatingEvent" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{{ updatingEvent ? 'Actualizando...' : 'Marcar como Pendiente' }}</span>
+            </button>
+          </div>
+          
+          <!-- Botón cerrar -->
           <button 
             @click="closeEventDetail"
             class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
@@ -751,7 +856,7 @@ import http from '../utils/http'
 
 const { isDark } = useTheme()
 const authStore = useAuthStore()
-const { incrementTodayCount } = useAgendaCounter()
+const { incrementTodayCount, decrementTodayCount, incrementFromCompleted } = useAgendaCounter()
 
 // Estado del calendario
 const currentDate = ref(new Date())
@@ -768,6 +873,7 @@ const creating = ref(false)
 // Modal de detalle de evento
 const showEventDetailModal = ref(false)
 const selectedEvent = ref(null)
+const updatingEvent = ref(false)
 const newEvent = ref({
   type: 'AC_RDV',
   label: '',
@@ -883,12 +989,21 @@ const userInitials = computed(() => {
 // Métricas de eventos
 const todayEvents = computed(() => {
   const today = new Date()
-  const todayStr = today.toISOString().split('T')[0]
+  
+  // Inicio del día: hoy a las 00:00:01
+  const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 1)
+  
+  // Final del día: hoy a las 23:59:59
+  const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
   
   return filteredEventos.value.filter(event => {
-    const eventDate = new Date(event.datep || event.date_start_real)
-    const eventDateStr = eventDate.toISOString().split('T')[0]
-    return eventDateStr === todayStr
+    const eventDateTime = new Date(event.datep * 1000)
+    
+    // Verificar si el evento está dentro del rango del día completo
+    const isToday = eventDateTime >= startOfDay && eventDateTime <= endOfDay
+    
+    // TODOS los eventos del día (completados y no completados) - solo informativo
+    return isToday
   })
 })
 
@@ -900,8 +1015,10 @@ const thisWeekEvents = computed(() => {
   weekEnd.setDate(weekStart.getDate() + 6) // Domingo
   
   return filteredEventos.value.filter(event => {
-    const eventDate = new Date(event.datep || event.date_start_real)
-    return eventDate >= weekStart && eventDate <= weekEnd
+    const eventDate = new Date(event.datep * 1000)
+    // Solo contar eventos pendientes (no completados al 100%)
+    const isPending = event.status !== '1' && (event.percentage || '0') !== '100'
+    return eventDate >= weekStart && eventDate <= weekEnd && isPending
   })
 })
 
@@ -911,19 +1028,34 @@ const upcomingEvents = computed(() => {
   nextWeek.setDate(today.getDate() + 7)
   
   return filteredEventos.value.filter(event => {
-    const eventDate = new Date(event.datep || event.date_start_real)
-    return eventDate > today && eventDate <= nextWeek
+    const eventDate = new Date(event.datep * 1000)
+    // Solo contar eventos pendientes (no completados al 100%)
+    const isPending = event.status !== '1' && (event.percentage || '0') !== '100'
+    return eventDate > today && eventDate <= nextWeek && isPending
   })
 })
 
 const overdueEvents = computed(() => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const now = new Date()
   
   return filteredEventos.value.filter(event => {
-    const eventDate = new Date(event.datep || event.date_start_real)
-    eventDate.setHours(0, 0, 0, 0)
-    return eventDate < today
+    // Convertir timestamp a fecha/hora
+    const eventDateTime = new Date(event.datep * 1000)
+    
+    // Verificar si el evento es anterior a la hora actual (now)
+    const isOverdue = eventDateTime < now
+    
+    // Verificar si NO está completado al 100%
+    const isNotCompleted = event.status !== '1' && (event.percentage || '0') !== '100'
+    
+    return isOverdue && isNotCompleted
+  })
+})
+
+const pendingEvents = computed(() => {
+  return filteredEventos.value.filter(event => {
+    // Solo eventos pendientes (no completados al 100%)
+    return event.status !== '1' && (event.percentage || '0') !== '100'
   })
 })
 
@@ -1355,6 +1487,89 @@ const createEvent = async () => {
     alert('Error al crear el evento. Por favor, inténtalo de nuevo.')
   } finally {
     creating.value = false
+  }
+}
+
+// Funciones para actualizar estado del evento
+const markEventAsCompleted = async () => {
+  await updateEventStatus('1')
+}
+
+const markEventAsPending = async () => {
+  await updateEventStatus('0')
+}
+
+const updateEventStatus = async (newStatus) => {
+  if (!selectedEvent.value?.id) {
+    console.error('❌ No hay evento seleccionado para actualizar')
+    return
+  }
+
+  try {
+    updatingEvent.value = true
+    
+    console.log('🔄 Actualizando estado del evento:', {
+      eventId: selectedEvent.value.id,
+      currentStatus: selectedEvent.value.status,
+      newStatus: newStatus
+    })
+
+    // Preparar datos para actualización
+    const updateData = {
+      status: newStatus,
+      percentage: newStatus === '1' ? '100' : selectedEvent.value.percentage || '0'
+    }
+
+    // Realizar petición PUT al endpoint
+    const response = await http.put(`/api/doli/agendaevents/${selectedEvent.value.id}`, updateData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      }
+    })
+
+    console.log('✅ Evento actualizado:', response.data)
+
+    // Actualizar el evento localmente
+    selectedEvent.value.status = newStatus
+    selectedEvent.value.percentage = updateData.percentage
+
+    // Actualizar en la lista de eventos
+    const eventIndex = eventos.value.findIndex(e => e.id === selectedEvent.value.id)
+    if (eventIndex !== -1) {
+      eventos.value[eventIndex].status = newStatus
+      eventos.value[eventIndex].percentage = updateData.percentage
+    }
+
+    // Actualizar contador de eventos pendientes si es evento de hoy
+    const eventDate = new Date(selectedEvent.value.datep * 1000)
+    const today = new Date()
+    const isToday = eventDate.toDateString() === today.toDateString()
+    
+    if (isToday) {
+      if (newStatus === '1') {
+        // Evento marcado como completado - decrementar contador
+        decrementTodayCount()
+      } else {
+        // Evento marcado como pendiente - incrementar contador
+        incrementFromCompleted()
+      }
+    }
+
+    // Mostrar mensaje de éxito
+    const statusText = newStatus === '1' ? 'completado' : 'pendiente'
+    console.log(`🎉 Evento marcado como ${statusText}`)
+
+  } catch (error) {
+    console.error('❌ Error actualizando evento:', error)
+    console.error('Error details:', error.response?.data || error.message)
+    
+    // Mostrar mensaje de error al usuario
+    const statusText = newStatus === '1' ? 'completado' : 'pendiente'
+    alert(`Error al marcar el evento como ${statusText}. Por favor, inténtalo de nuevo.`)
+    
+  } finally {
+    updatingEvent.value = false
   }
 }
 
