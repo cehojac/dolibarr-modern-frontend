@@ -342,7 +342,7 @@
                 {{ ticket.subject }}
               </td>
               <td class="hidden lg:table-cell px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap text-xs sm:text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ ticket.category_code || ticket.category || '-' }}
+                {{ getCategoryName(ticket.category_code || ticket.category) || '-' }}
               </td>
               <td class="px-2 sm:px-3 lg:px-4 py-2 sm:py-3 whitespace-nowrap">
                 <span class="inline-flex px-1 sm:px-2 py-1 text-xs font-medium rounded-lg"
@@ -1026,11 +1026,48 @@
                   </div>
                   
                   <div class="space-y-4">
+                    <!-- Estado del ticket (editable) -->
                     <div>
                       <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Estado:</label>
-                      <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getStatusClass(ticketDetails.fk_statut, ticketDetails)">
-                        {{ getStatusText(ticketDetails.fk_statut, ticketDetails) }}
-                      </span>
+                      <div v-if="editingStatus" class="space-y-2">
+                        <select
+                          v-model="selectedStatus"
+                          class="w-full px-2 py-1 text-xs border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                        >
+                          <option v-for="(status, key) in TICKET_STATUSES" :key="key" :value="key">
+                            {{ status.label }}
+                          </option>
+                        </select>
+                        <div class="flex space-x-2">
+                          <button 
+                            @click="saveStatus" 
+                            class="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                          >
+                            Guardar
+                          </button>
+                          <button 
+                            @click="cancelEditStatus" 
+                            class="px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                      <div v-else class="flex items-center justify-between">
+                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getStatusClass(ticketDetails.fk_statut, ticketDetails)">
+                          {{ getStatusText(ticketDetails.fk_statut, ticketDetails) }}
+                        </span>
+                        <button 
+                          @click="startEditStatus" 
+                          class="ml-2 p-1 text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                          title="Cambiar estado"
+                        >
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     
                     <!-- Empresa del ticket -->
@@ -2249,7 +2286,7 @@
                 :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
                 style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 4 5&quot;><path fill=&quot;%23666&quot; d=&quot;M2 0L0 2h4zm0 5L0 3h4z&quot;/></svg>'); background-position: right 0.7rem center; background-size: 0.65rem auto;"
               >
-                <option v-for="type in ticketTypes" :key="type.value" :value="type.value">
+                <option v-for="type in ticketTypesOptions" :key="type.value" :value="type.value">
                   {{ type.label }}
                 </option>
               </select>
@@ -2633,12 +2670,24 @@ import { useTicketsCounter } from '../composables/useTicketsCounter'
 import { useInterventions } from '@/composables/useInterventions'
 import { useTicketTimer } from '@/composables/useTicketTimer'
 import { useAuthStore } from '../stores/auth'
+import { useTicketReferences } from '@/composables/useTicketReferences'
 import TimerButton from '@/components/TimerButton.vue'
 import ThirdpartySearchInput from '@/components/ThirdpartySearchInput.vue'
 
 const { isDark } = useTheme()
 const authStore = useAuthStore()
 const { refreshCounter: updateTicketsCounter } = useTicketsCounter()
+
+// Inicializar composable de referencias de tickets
+const {
+  ticketCategories,
+  ticketSeverities,
+  ticketTypes,
+  fetchAllTicketReferences,
+  getCategoryName,
+  getSeverityName,
+  getTypeName
+} = useTicketReferences()
 
 // Debug: Check if useInterventions is working
 //  console.log('=== IMPORTING INTERVENTIONS ===')
@@ -2722,32 +2771,74 @@ const newTicket = ref({
 })
 
 // Options for selectors (valores reales de Dolibarr)
-const ticketTypes = ref([
-  { value: '', label: 'Seleccionar tipo...' },
-  { value: 'COM', label: 'Pregunta comercial' },
-  { value: 'HELP', label: 'Solicitud de ayuda funcional' },
-  { value: 'ISSUE', label: 'Problema o error' },
-  { value: 'REQUEST', label: 'Solicitud de cambio o mejora' },
-  { value: 'OTHER', label: 'Otro' }
-])
+// Computed property para tipos de tickets desde referencias de Dolibarr
+const ticketTypesOptions = computed(() => {
+  if (ticketTypes.value && ticketTypes.value.length > 0) {
+    return [
+      { value: '', label: 'Seleccionar tipo...' },
+      ...ticketTypes.value.map(type => ({
+        value: type.code || type.id,
+        label: type.label || type.name || type.code
+      }))
+    ]
+  }
+  
+  // Fallback si no se han cargado las referencias
+  return [
+    { value: '', label: 'Seleccionar tipo...' },
+    { value: 'COM', label: 'Pregunta comercial' },
+    { value: 'HELP', label: 'Solicitud de ayuda funcional' },
+    { value: 'ISSUE', label: 'Problema o error' },
+    { value: 'REQUEST', label: 'Solicitud de cambio o mejora' },
+    { value: 'OTHER', label: 'Otro' }
+  ]
+})
 
-const ticketGroups = ref([
-  { value: '', label: 'Seleccionar grupo...' },
-  { value: 'PLUGIN', label: 'Plugin' },
-  { value: 'HOSTING', label: 'Hosting' },
-  { value: 'MANTENIMIENTO', label: 'Mantenimiento' },
-  { value: 'PROGRAMACION', label: 'Programación' },
-  { value: 'KIT-DIGITAL', label: 'Kit Digital' },
-  { value: 'OTHER', label: 'Otro' }
-])
+// Computed property para categorías de tickets desde referencias de Dolibarr
+const ticketGroups = computed(() => {
+  if (ticketCategories.value && ticketCategories.value.length > 0) {
+    return [
+      { value: '', label: 'Seleccionar categoría...' },
+      ...ticketCategories.value.map(category => ({
+        value: category.code || category.id,
+        label: category.label || category.name || category.code
+      }))
+    ]
+  }
+  
+  // Fallback si no se han cargado las referencias
+  return [
+    { value: '', label: 'Seleccionar grupo...' },
+    { value: 'PLUGIN', label: 'Plugin' },
+    { value: 'HOSTING', label: 'Hosting' },
+    { value: 'MANTENIMIENTO', label: 'Mantenimiento' },
+    { value: 'PROGRAMACION', label: 'Programación' },
+    { value: 'KIT-DIGITAL', label: 'Kit Digital' },
+    { value: 'OTHER', label: 'Otro' }
+  ]
+})
 
-const severityLevels = ref([
-  { value: '', label: 'Seleccionar gravedad...' },
-  { value: 'LOW', label: 'Bajo' },
-  { value: 'NORMAL', label: 'Normal' },
-  { value: 'HIGH', label: 'Alto' },
-  { value: 'BLOCKING', label: 'Crítico, Bloqueo' }
-])
+// Computed property para niveles de gravedad desde referencias de Dolibarr
+const severityLevels = computed(() => {
+  if (ticketSeverities.value && ticketSeverities.value.length > 0) {
+    return [
+      { value: '', label: 'Seleccionar gravedad...' },
+      ...ticketSeverities.value.map(severity => ({
+        value: severity.code || severity.id,
+        label: severity.label || severity.name || severity.code
+      }))
+    ]
+  }
+  
+  // Fallback si no se han cargado las referencias
+  return [
+    { value: '', label: 'Seleccionar gravedad...' },
+    { value: 'LOW', label: 'Bajo' },
+    { value: 'NORMAL', label: 'Normal' },
+    { value: 'HIGH', label: 'Alto' },
+    { value: 'BLOCKING', label: 'Crítico, Bloqueo' }
+  ]
+})
 
 // Search states for selectors
 const thirdpartySearch = ref('')
@@ -4698,6 +4789,10 @@ const selectedProjectId = ref('')
 const availableProjects = ref([])
 const currentProject = ref(null)
 
+// Status management
+const editingStatus = ref(false)
+const selectedStatus = ref(null)
+
 // Company management
 const editingCompany = ref(false)
 const selectedCompanyId = ref('')
@@ -5618,55 +5713,73 @@ const formatDate = (dateString) => {
   return new Date(dateString * 1000).toLocaleDateString('es-ES')
 }
 
+// Estados de tickets (constantes de Dolibarr)
+const TICKET_STATUSES = {
+  0: { id: 0, code: 'STATUS_NOT_READ', label: 'No leído', description: 'No leído / borrador' },
+  1: { id: 1, code: 'STATUS_READ', label: 'Leído', description: 'Leído' },
+  2: { id: 2, code: 'STATUS_ASSIGNED', label: 'Asignado', description: 'Asignado (no iniciado)' },
+  3: { id: 3, code: 'STATUS_IN_PROGRESS', label: 'En progreso', description: 'En progreso' },
+  5: { id: 5, code: 'STATUS_NEED_MORE_INFO', label: 'Necesita más info', description: 'Esperando información del solicitante' },
+  7: { id: 7, code: 'STATUS_WAITING', label: 'En espera', description: 'En espera / On Hold' },
+  8: { id: 8, code: 'STATUS_CLOSED', label: 'Cerrado', description: 'Cerrado / Resuelto' },
+  9: { id: 9, code: 'STATUS_CANCELED', label: 'Cancelado', description: 'Cancelado / No resuelto' }
+}
+
 const getStatusText = (status, ticket = null) => {
-  const statuses = {
-    '0': 'Sin asignar',
-    '1': 'Abierto',
-    '4': 'Asignado',
-    '5': 'En progreso',
-    '8': 'Cerrado',
-    '9': 'Cancelado'
-  }
+  const statusNum = parseInt(status)
   
-  // Si el estado no está definido pero tiene usuario asignado, mostrar "Asignado"
-  if (!statuses[status] && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
+  // Si el estado es 0 o 1 y tiene usuario asignado, mostrar "Asignado"
+  if ((statusNum === 0 || statusNum === 1) && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
     return 'Asignado'
   }
   
-  // Para estados 0 y 1, si tiene usuario asignado, mostrar "Asignado"
-  if ((status === '0' || status === '1') && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
-    return 'Asignado'
-  }
-  
-  return statuses[status] || 'Desconocido'
+  return TICKET_STATUSES[statusNum]?.label || 'Desconocido'
+}
+
+const getStatusDescription = (status) => {
+  const statusNum = parseInt(status)
+  return TICKET_STATUSES[statusNum]?.description || 'Estado desconocido'
+}
+
+const getStatusCode = (status) => {
+  const statusNum = parseInt(status)
+  return TICKET_STATUSES[statusNum]?.code || 'UNKNOWN'
 }
 
 const getStatusClass = (status, ticket = null) => {
-  const classes = {
-    '0': 'bg-red-50 text-red-600 border border-red-200', // Open/Abierto
-    '1': 'bg-green-50 text-green-600 border border-green-200', // In Progress/En progreso
-    '4': 'bg-yellow-50 text-yellow-600 border border-yellow-200', // Assigned/Asignado
-    '5': 'bg-blue-50 text-blue-600 border border-blue-200', // Answered/Respondido
-    '8': 'bg-green-50 text-green-600 border border-green-200', // Closed/Cerrado
-    '9': 'bg-gray-50 text-gray-600 border border-gray-200' // On Hold/En espera
-  }
+  const statusNum = parseInt(status)
   
-  // Si el estado no está definido pero tiene usuario asignado, usar estilo de "Asignado"
-  if (!classes[status] && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
-    return 'bg-yellow-50 text-yellow-600 border border-yellow-200' // Mismo estilo que "Asignado"
+  const classes = {
+    0: 'bg-red-50 text-red-600 border border-red-200',        // No leído
+    1: 'bg-blue-50 text-blue-600 border border-blue-200',     // Leído
+    2: 'bg-yellow-50 text-yellow-600 border border-yellow-200', // Asignado
+    3: 'bg-purple-50 text-purple-600 border border-purple-200', // En progreso
+    5: 'bg-orange-50 text-orange-600 border border-orange-200', // Necesita más info
+    7: 'bg-gray-50 text-gray-600 border border-gray-200',     // En espera
+    8: 'bg-green-50 text-green-600 border border-green-200',  // Cerrado
+    9: 'bg-gray-50 text-gray-700 border border-gray-300'      // Cancelado
   }
   
   // Para estados 0 y 1, si tiene usuario asignado, usar estilo de "Asignado"
-  if ((status === '0' || status === '1') && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
-    return 'bg-yellow-50 text-yellow-600 border border-yellow-200' // Mismo estilo que "Asignado"
+  if ((statusNum === 0 || statusNum === 1) && ticket && ticket.fk_user_assign && ticket.fk_user_assign != '0') {
+    return 'bg-yellow-50 text-yellow-600 border border-yellow-200' // Asignado
   }
   
-  return classes[status] || 'bg-gray-50 text-gray-600 border border-gray-200'
+  return classes[statusNum] || 'bg-gray-50 text-gray-600 border border-gray-200'
 }
 
 const getPriorityText = (priority) => {
   if (!priority) return 'Normal'
   
+  // Intentar obtener el nombre desde las referencias de Dolibarr
+  const severityName = getSeverityName(priority)
+  
+  // Si se encontró en las referencias, usarlo
+  if (severityName && severityName !== priority) {
+    return severityName
+  }
+  
+  // Fallback a mapeo manual si no está en las referencias
   const priorityStr = String(priority).toUpperCase()
   
   const priorityMap = {
@@ -5783,11 +5896,18 @@ const closeDropdowns = (event) => {
 
 onMounted(async () => {
   try {
-    // Load users and terceros first to enrich ticket data
+    // Load users, terceros and ticket references first to enrich ticket data
     await Promise.all([
       fetchUsers(),
-      fetchTerceros()
+      fetchTerceros(),
+      fetchAllTicketReferences() // Cargar referencias de tickets (categorías, gravedades, tipos)
     ])
+    
+    console.log('✅ Referencias de tickets cargadas:', {
+      categorias: ticketCategories.value.length,
+      gravedades: ticketSeverities.value.length,
+      tipos: ticketTypes.value.length
+    })
     
     // Then load tickets with enriched data
     await fetchTickets()
@@ -5964,6 +6084,61 @@ const saveProject = async () => {
     
     // Show error message to user
     alert('Error al actualizar el proyecto: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+// Status management functions
+const startEditStatus = () => {
+  editingStatus.value = true
+  selectedStatus.value = ticketDetails.value?.fk_statut || 0
+  console.log('✏️ Iniciando edición de estado:', selectedStatus.value)
+}
+
+const cancelEditStatus = () => {
+  editingStatus.value = false
+  selectedStatus.value = null
+}
+
+const saveStatus = async () => {
+  try {
+    console.log('💾 Guardando estado del ticket:', {
+      ticketId: ticketDetails.value?.id,
+      estadoAnterior: ticketDetails.value?.fk_statut,
+      estadoNuevo: selectedStatus.value
+    })
+
+    if (!ticketDetails.value?.id) {
+      alert('Error: No se encontró el ID del ticket')
+      return
+    }
+
+    const updateData = {
+      fk_statut: parseInt(selectedStatus.value)
+    }
+
+    const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
+    
+    console.log('✅ Estado actualizado:', response.data)
+    
+    // Actualizar el estado local
+    ticketDetails.value.fk_statut = parseInt(selectedStatus.value)
+    
+    // Actualizar también en la lista de tickets si existe
+    const ticketIndex = tickets.value.findIndex(t => t.id === ticketDetails.value.id)
+    if (ticketIndex !== -1) {
+      tickets.value[ticketIndex].fk_statut = parseInt(selectedStatus.value)
+    }
+    
+    // Cerrar modo edición
+    editingStatus.value = false
+    
+    // Actualizar contador de tickets
+    await updateTicketsCounter()
+    
+    console.log('✅ Estado del ticket actualizado exitosamente')
+  } catch (error) {
+    console.error('❌ Error actualizando estado:', error)
+    alert('Error al actualizar el estado del ticket: ' + (error.response?.data?.message || error.message))
   }
 }
 
