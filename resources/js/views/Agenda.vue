@@ -686,6 +686,36 @@
             </div>
           </div>
 
+          <!-- Teléfono (solo para llamadas telefónicas) -->
+          <div v-if="selectedEvent.thirdparty_phone && isPhoneCall(selectedEvent)">
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Teléfono
+            </label>
+            <div class="p-3 rounded-lg flex items-center space-x-3" :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
+              <!-- Link de llamada -->
+              <a :href="`tel:${selectedEvent.thirdparty_phone}`" 
+                 class="flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors"
+                 :class="isDark ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-500 hover:bg-green-600 text-white'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                <span class="font-medium">{{ selectedEvent.thirdparty_phone }}</span>
+              </a>
+              
+              <!-- Link de WhatsApp -->
+              <a :href="`https://wa.me/${selectedEvent.thirdparty_phone.replace(/[^0-9]/g, '')}`" 
+                 target="_blank"
+                 class="flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors"
+                 :class="isDark ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-500 hover:bg-green-600 text-white'"
+                 title="Abrir en WhatsApp">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                <span class="font-medium">WhatsApp</span>
+              </a>
+            </div>
+          </div>
+
           <!-- Tipo de evento -->
           <div v-if="selectedEvent.type">
             <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
@@ -701,8 +731,7 @@
             <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
               Descripción
             </label>
-            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
-              {{ selectedEvent.note }}
+            <div class="p-3 rounded-lg whitespace-pre-line" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'" v-html="selectedEvent.note">
             </div>
           </div>
 
@@ -1179,6 +1208,26 @@ const formatEventTime = (event) => {
   })
 }
 
+// Detectar si el evento es una llamada telefónica
+const isPhoneCall = (event) => {
+  if (!event) return false
+  
+  const label = (event.label || '').toLowerCase()
+  const type = (event.type || '').toLowerCase()
+  const note = (event.note || '').toLowerCase()
+  const code = (event.code || '').toLowerCase()
+  
+  // Palabras clave que indican una llamada telefónica
+  const phoneKeywords = ['llamada', 'call', 'teléfono', 'telefono', 'phone', 'ac_tel']
+  
+  return phoneKeywords.some(keyword => 
+    label.includes(keyword) || 
+    type.includes(keyword) || 
+    note.includes(keyword) ||
+    code.includes(keyword)
+  )
+}
+
 // Mostrar detalle del evento
 const showEventDetail = (event) => {
   selectedEvent.value = event
@@ -1194,16 +1243,19 @@ const closeEventDetail = () => {
 // Cargar eventos
 const loadEventos = async () => {
   try {
-     console.log('🔍 Cargando eventos de la agenda...')
+    console.log('🔍 Cargando eventos de la agenda...')
     
     // Obtener el ID del usuario logueado
     const userId = authStore.user?.id || 1
-     console.log('👤 Usuario ID:', userId)
+    console.log('👤 Usuario ID:', userId)
     
-    // Llamar a la API de Dolibarr con los parámetros especificados
-    const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=100&user_ids=${userId}`)
+    // Llamar a la API de Dolibarr (límite ampliado a 500 eventos)
+    const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=500&user_ids=${userId}`)
+    
+    console.log('📦 Respuesta de la API:', response.data)
+    
     eventos.value = response.data || []
-     console.log('✅ Eventos cargados:', eventos.value.length)
+    console.log('✅ Eventos cargados:', eventos.value.length)
     
     // Obtener IDs únicos de terceros para consultar sus nombres
     const thirdpartyIds = [...new Set(
@@ -1214,38 +1266,46 @@ const loadEventos = async () => {
     
     console.log('🏢 IDs de terceros encontrados:', thirdpartyIds)
     
-    // Consultar nombres de terceros si hay IDs
-    const thirdpartyNames = {}
+    // Consultar nombres y teléfonos de terceros si hay IDs
+    const thirdpartyData = {}
     if (thirdpartyIds.length > 0) {
       try {
         for (const id of thirdpartyIds) {
           const thirdpartyResponse = await http.get(`/api/doli/thirdparties/${id}`)
-          if (thirdpartyResponse.data && thirdpartyResponse.data.name) {
-            thirdpartyNames[id] = thirdpartyResponse.data.name
+          if (thirdpartyResponse.data) {
+            thirdpartyData[id] = {
+              name: thirdpartyResponse.data.name,
+              phone: thirdpartyResponse.data.phone || thirdpartyResponse.data.phone_pro || null
+            }
           }
         }
-        console.log('🏢 Nombres de terceros obtenidos:', thirdpartyNames)
+        console.log('🏢 Datos de terceros obtenidos:', thirdpartyData)
       } catch (error) {
-        console.warn('⚠️ Error obteniendo nombres de terceros:', error)
+        console.warn('⚠️ Error obteniendo datos de terceros:', error)
       }
     }
 
     // Procesar eventos para asegurar formato correcto
     eventos.value = eventos.value.map(event => {
       const thirdpartyId = event.fk_soc || event.id_soc || event.socid
+      const thirdpartyInfo = thirdpartyData[thirdpartyId]
+      
       return {
         ...event,
         // Asegurar que tenemos un label
-        label: event.label || event.title || event.note || 'Evento sin título',
+        label: event.label || event.title || event.note_public || 'Evento sin título',
         // Convertir datep si viene como timestamp
         datep: event.datep || event.datehour || event.date_creation,
         // Asegurar que tenemos una duración
         duration: event.duration || event.duree || '1h',
         // Información del tercero relacionado
-        thirdparty_name: thirdpartyNames[thirdpartyId] || event.thirdparty_name || event.societe_nom || event.contact_name || null,
+        thirdparty_name: thirdpartyInfo?.name || event.thirdparty_name || event.societe_nom || event.contact_name || null,
+        thirdparty_phone: thirdpartyInfo?.phone || null,
         thirdparty_id: thirdpartyId || null,
         // Ubicación del evento
         location: event.location || event.lieu || null,
+        // Descripción/Notas del evento
+        note: event.note_public || event.note_private || event.note || event.description || null,
         // Tipo de evento
         type: event.type || event.type_code || 'Evento',
         // Estado del evento
