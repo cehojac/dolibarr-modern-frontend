@@ -1,14 +1,14 @@
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
-const todayEventsCount = ref(0)
+const overdueEventsCount = ref(0)
 const isLoading = ref(false)
 const lastFetch = ref(null)
 
 export function useAgendaCounter() {
   const authStore = useAuthStore()
 
-  const fetchTodayEventsCount = async () => {
+  const fetchOverdueEventsCount = async () => {
     if (!authStore.isAuthenticated) {
        console.log('🚫 No authenticated user for agenda counter')
       return
@@ -17,25 +17,17 @@ export function useAgendaCounter() {
     isLoading.value = true
     
     try {
-     //  console.log('📅 Fetching today upcoming events count (from now until end of day)...')
+      console.log('📅 Fetching overdue events count (past incomplete events)...')
       
-      // Obtener fecha y hora actual en formato string para filtros SQL
+      // Obtener fecha y hora actual
       const now = new Date()
-      const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59)
       
       // Para comparación interna (timestamps)
       const currentTimestamp = Math.floor(now.getTime() / 1000)
       
-      // Para filtros SQL (strings de fecha)
-      const currentDateTime = now.toISOString().slice(0, 19).replace('T', ' ')
-      const endDateTime = endOfDay.toISOString().slice(0, 19).replace('T', ' ')
-      
-      // Filtro SQL con strings de fecha
-      const sqlFilters = `(t.datep:>=:'${currentDateTime}')AND(t.datep:<=:'${endDateTime}')`
-      
-      
-      // Llamar a la API con filtros de fecha y usuario
-      const response = await fetch(`/api/doli/agendaevents?limit=1000&user_ids=${authStore.user.id}&sqlfilters=${encodeURIComponent(sqlFilters)}`, {
+      // Llamar a la API SIN filtros SQL - traer todos los eventos del usuario
+      // (igual que en la página Agenda para consistencia)
+      const response = await fetch(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=500&user_ids=${authStore.user.id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -49,9 +41,9 @@ export function useAgendaCounter() {
       }
 
       const data = await response.json()
-     //  console.log('📅 Today events response:', data)
+      console.log('📅 Overdue events response:', data)
       
-      // Contar eventos del día actual, excluyendo eventos systemauto
+      // Contar eventos vencidos, excluyendo eventos systemauto y completados
       let count = 0
       let events = []
       
@@ -61,85 +53,61 @@ export function useAgendaCounter() {
         events = Object.values(data)
       }
       
+      console.log('📊 Total events received:', events.length)
       
-      // Primero filtrar por hora (solo eventos futuros)
-      const futureEvents = events.filter(event => {
-        // Convertir datep a timestamp si es string
-        let eventTimestamp
-        if (typeof event.datep === 'string') {
-          eventTimestamp = Math.floor(new Date(event.datep).getTime() / 1000)
-        } else {
-          eventTimestamp = event.datep
-        }
-        
-        // Comparar timestamps numéricos
-        return eventTimestamp >= currentTimestamp
-      })
-      
-      // console.log('⏰ Future events after time filter:', futureEvents.length)
-      
-      // Luego filtrar eventos systemauto y eventos completados
-      const filteredEvents = futureEvents.filter(event => {
+      // PASO 1: Filtrar eventos systemauto (igual que filteredEventos en Agenda.vue)
+      const eventsWithoutSystemAuto = events.filter(event => {
         const label = (event.label || '').toLowerCase()
-        const note = (event.note || event.note_private || '').toLowerCase()
+        const note = (event.note || '').toLowerCase()
         const type = (event.type || '').toLowerCase()
-        const typeCode = (event.type_code || '').toLowerCase()
         
-        // Excluir eventos que contengan 'systemauto' en cualquier campo relevante
-        const isSystemAuto = label.includes('systemauto') || 
-                            note.includes('systemauto') || 
-                            type.includes('systemauto') ||
-                            typeCode.includes('auto') ||
-                            event.type === 'systemauto'
-        
-        // Excluir eventos completados (status === '1')
-        const isCompleted = event.status === '1'
-        
-        return !isSystemAuto && !isCompleted
+        return !label.includes('systemauto') && 
+               !note.includes('systemauto') && 
+               !type.includes('systemauto')
       })
+      
+      console.log('🚫 Events after systemauto filter:', eventsWithoutSystemAuto.length)
+      
+      // PASO 2: Filtrar eventos vencidos (igual que overdueEvents en Agenda.vue)
+      const filteredEvents = eventsWithoutSystemAuto.filter(event => {
+        // Convertir datep a Date (viene como timestamp Unix en segundos)
+        const eventDateTime = new Date(event.datep * 1000)
+        
+        // Verificar si el evento es anterior a la hora actual (now)
+        const isOverdue = eventDateTime < now
+        
+        // Verificar si NO está completado al 100%
+        const isNotCompleted = event.status !== '1' && (event.percentage || '0') !== '100'
+        
+        return isOverdue && isNotCompleted
+      })
+      
+      console.log('⏰ Overdue incomplete events:', filteredEvents.length)
       
       // Calcular estadísticas de filtrado
       count = filteredEvents.length
       const totalEvents = events.length
-      const futureEventsCount = futureEvents.length
+      const eventsWithoutSystemAutoCount = eventsWithoutSystemAuto.length
+      const systemAutoEvents = totalEvents - eventsWithoutSystemAutoCount
       
-      // Contar eventos completados para estadísticas
-      const completedEvents = futureEvents.filter(event => event.status === '1').length
-      const systemAutoEvents = futureEvents.filter(event => {
-        const label = (event.label || '').toLowerCase()
-        const note = (event.note || event.note_private || '').toLowerCase()
-        const type = (event.type || '').toLowerCase()
-        const typeCode = (event.type_code || '').toLowerCase()
-        
-        return label.includes('systemauto') || 
-               note.includes('systemauto') || 
-               type.includes('systemauto') ||
-               typeCode.includes('auto') ||
-               event.type === 'systemauto'
-      }).length
-      
-      todayEventsCount.value = count
+      overdueEventsCount.value = count
       lastFetch.value = new Date()
       
-      console.log('📅 Today pending events count updated:', count)
+      console.log('⏰ Overdue events count updated:', count)
       console.log('📊 Events breakdown:', {
         total: totalEvents,
-        future: futureEventsCount,
-        completed: completedEvents,
+        withoutSystemAuto: eventsWithoutSystemAutoCount,
         systemAuto: systemAutoEvents,
-        pending: count
+        overdueIncomplete: count
       })
       
-      if (completedEvents > 0) {
-        console.log('✅ Filtered out', completedEvents, 'completed events')
-      }
       if (systemAutoEvents > 0) {
         console.log('🚫 Filtered out', systemAutoEvents, 'systemauto events')
       }
       
     } catch (error) {
-      console.error('❌ Error fetching today events count:', error)
-      todayEventsCount.value = 0
+      console.error('❌ Error fetching overdue events count:', error)
+      overdueEventsCount.value = 0
     } finally {
       isLoading.value = false
     }
@@ -150,8 +118,8 @@ export function useAgendaCounter() {
     
     // Refrescar cada 5 minutos
     const interval = setInterval(() => {
-       console.log('🔄 Auto-refreshing today events count...')
-      fetchTodayEventsCount()
+       console.log('🔄 Auto-refreshing overdue events count...')
+      fetchOverdueEventsCount()
     }, 5 * 60 * 1000) // 5 minutos
 
     // Función para detener el auto-refresh
@@ -163,44 +131,30 @@ export function useAgendaCounter() {
 
   // Computed para mostrar el contador solo si hay eventos
   const displayCount = computed(() => {
-    return todayEventsCount.value > 0 ? todayEventsCount.value : null
+    return overdueEventsCount.value > 0 ? overdueEventsCount.value : null
   })
 
-  // Función para incrementar el contador cuando se crea un evento futuro de hoy
-  const incrementTodayCount = (eventTimestamp) => {
-    const now = Math.floor(Date.now() / 1000)
-    
-    // Solo incrementar si el evento es futuro (superior a la hora actual)
-    if (eventTimestamp >= now) {
-      todayEventsCount.value = (todayEventsCount.value || 0) + 1
-      console.log('📅 Today pending events count incremented to:', todayEventsCount.value)
-    } else {
-      console.log('📅 Event is in the past, not incrementing counter')
+  // Función para decrementar el contador cuando un evento vencido se completa
+  const decrementOverdueCount = () => {
+    if (overdueEventsCount.value > 0) {
+      overdueEventsCount.value = overdueEventsCount.value - 1
+      console.log('✅ Overdue events count decremented to:', overdueEventsCount.value)
     }
   }
 
-  // Función para decrementar el contador cuando un evento se marca como completado
-  const decrementTodayCount = () => {
-    if (todayEventsCount.value > 0) {
-      todayEventsCount.value = todayEventsCount.value - 1
-      console.log('✅ Today pending events count decremented to:', todayEventsCount.value)
-    }
-  }
-
-  // Función para incrementar el contador cuando un evento completado se marca como pendiente
-  const incrementFromCompleted = () => {
-    todayEventsCount.value = (todayEventsCount.value || 0) + 1
-    console.log('⏳ Today pending events count incremented from completed to:', todayEventsCount.value)
+  // Función para incrementar el contador cuando un evento vencido se marca como pendiente
+  const incrementOverdueCount = () => {
+    overdueEventsCount.value = (overdueEventsCount.value || 0) + 1
+    console.log('⏳ Overdue events count incremented to:', overdueEventsCount.value)
   }
 
   return {
-    todayEventsCount: displayCount,
+    overdueEventsCount: displayCount,
     isLoading,
     lastFetch,
-    fetchTodayEventsCount,
+    fetchOverdueEventsCount,
     startAutoRefresh,
-    incrementTodayCount,
-    decrementTodayCount,
-    incrementFromCompleted
+    decrementOverdueCount,
+    incrementOverdueCount
   }
 }
