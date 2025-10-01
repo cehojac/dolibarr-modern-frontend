@@ -1188,10 +1188,16 @@
                       >
                         <div class="flex items-start justify-between">
                           <div class="flex items-start space-x-3 flex-1">
-                            <div class="w-6 h-6 rounded-full flex items-center justify-center" :class="isDark ? 'bg-orange-600' : 'bg-orange-500'">
-                              <!-- <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5z" />
-                              </svg> -->
+                            <!-- Checkbox para marcar como completado -->
+                            <div class="flex items-center pt-1">
+                              <input
+                                type="checkbox"
+                                :id="`reminder-${reminder.id}`"
+                                @change="toggleReminderComplete(reminder.id, $event.target.checked)"
+                                class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'"
+                                title="Marcar como completado"
+                              />
                             </div>
                             <div class="flex-1 min-w-0">
                               <p class="text-sm font-medium break-words" :class="isDark ? 'text-white' : 'text-gray-900'">
@@ -1208,15 +1214,17 @@
                               </p>
                             </div>
                           </div>
-                          <button 
-                            @click="deleteReminder(reminder.id)"
-                            class="p-1 text-red-500 hover:text-red-700 transition-colors ml-2"
-                            title="Eliminar recordatorio"
-                          >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          <div class="flex items-center space-x-1">
+                            <button 
+                              @click="deleteReminder(reminder.id)"
+                              class="p-1 text-red-500 hover:text-red-700 transition-colors"
+                              title="Eliminar recordatorio"
+                            >
+                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3271,6 +3279,22 @@ const sendPrivateMessage = async (ticketId, message) => {
   }
 }
 
+// Función para eliminar destinatarios duplicados
+const removeDuplicateRecipients = (recipients) => {
+  const seen = new Set()
+  const unique = []
+  
+  recipients.forEach(email => {
+    const normalizedEmail = email.toLowerCase().trim()
+    if (!seen.has(normalizedEmail) && normalizedEmail) {
+      seen.add(normalizedEmail)
+      unique.push(email)
+    }
+  })
+  
+  return unique
+}
+
 // Funciones para manejo de archivos adjuntos
 const handleEmailFileSelect = (event) => {
   const files = Array.from(event.target.files)
@@ -3363,7 +3387,16 @@ const saveManualIntervention = async () => {
       }
       
       // Preparar datos del email
-      const recipients = manualIntervention.value.emailTo ? [manualIntervention.value.emailTo] : []
+      const rawRecipients = manualIntervention.value.emailTo ? [manualIntervention.value.emailTo] : []
+      const recipients = removeDuplicateRecipients(rawRecipients)
+      
+      if (rawRecipients.length !== recipients.length) {
+        console.log('🔄 Duplicados eliminados en intervención manual:', {
+          original: rawRecipients.length,
+          unique: recipients.length,
+          removed: rawRecipients.length - recipients.length
+        })
+      }
       
       // Generar asunto con formato [EMPRESA - Ticket REF] TITULO
       const ticketRef = selectedTicket.value?.ref || ticketDetails.value?.ref || ticketId
@@ -3768,6 +3801,31 @@ const createReminder = async () => {
     console.error('❌ Error creando recordatorio:', error)
     console.error('❌ Error details:', error.response?.data)
     alert('Error al crear recordatorio: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+const toggleReminderComplete = async (reminderId, isCompleted) => {
+  try {
+    console.log('✅ Marcando recordatorio como completado:', { reminderId, isCompleted })
+    
+    // Actualizar evento en la agenda con percent = 100 (completado)
+    const updateData = {
+      percent: isCompleted ? 100 : 0
+    }
+    
+    await http.put(`/api/doli/agendaevents/${reminderId}`, updateData)
+    console.log('✅ Recordatorio actualizado en la agenda')
+    
+    if (isCompleted) {
+      // Si se marca como completado, remover de la lista local
+      // ya que el filtro solo muestra eventos no completados
+      ticketReminders.value = ticketReminders.value.filter(r => r.id !== reminderId)
+      console.log('✅ Recordatorio removido de la lista (completado)')
+    }
+    
+  } catch (error) {
+    console.error('❌ Error actualizando recordatorio:', error)
+    alert('Error al actualizar recordatorio: ' + (error.response?.data?.message || error.message))
   }
 }
 
@@ -4183,12 +4241,14 @@ const fetchTicketFollowers = async (ticketId) => {
 const fetchTicketReminders = async (ticketId) => {
   try {
      console.log('📅 Obteniendo recordatorios del ticket:', ticketId)
+     console.log('📅 Filtrando solo eventos NO completados (percent != 100)')
     
-    // Buscar eventos de agenda vinculados al ticket
-    const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=ASC&limit=100&sqlfilters=(t.fk_task:=:${ticketId})`)
+    // Buscar eventos de agenda vinculados al ticket (solo los no completados)
+    // Filtrar eventos donde percent != 100 (no completados)
+    const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=ASC&limit=100&sqlfilters=(t.fk_task:=:${ticketId}) AND (t.percent:!=:100)`)
     
     const events = response.data || []
-     console.log('📅 Eventos encontrados:', events.length)
+     console.log('📅 Eventos NO completados encontrados:', events.length)
     
     // Convertir eventos a formato de recordatorios
     ticketReminders.value = events.map(event => {
@@ -4391,9 +4451,20 @@ const sendComment = async () => {
       }
       
       // Preparar datos del email
-      const recipients = emailRecipientsPreview.value.length > 0 
+      const rawRecipients = emailRecipientsPreview.value.length > 0 
         ? emailRecipientsPreview.value.map(r => r.email)
         : []
+      const recipients = removeDuplicateRecipients(rawRecipients)
+      
+      if (rawRecipients.length !== recipients.length) {
+        console.log('🔄 Duplicados eliminados en comentario:', {
+          original: rawRecipients.length,
+          unique: recipients.length,
+          removed: rawRecipients.length - recipients.length,
+          originalEmails: rawRecipients,
+          uniqueEmails: recipients
+        })
+      }
       
       // Generar asunto con formato [EMPRESA - Ticket REF] TITULO
       const ticketRef = selectedTicket.value?.ref || ticketDetails.value?.ref || ticketId
@@ -5287,7 +5358,18 @@ const emailRecipientsPreview = computed(() => {
     )
   }
   
-  return recipients
+  // Eliminar duplicados basado en email (case-insensitive)
+  const seen = new Set()
+  const uniqueRecipients = recipients.filter(recipient => {
+    const normalizedEmail = recipient.email.toLowerCase().trim()
+    if (!seen.has(normalizedEmail) && normalizedEmail) {
+      seen.add(normalizedEmail)
+      return true
+    }
+    return false
+  })
+  
+  return uniqueRecipients
 })
 
 // Computed property for total registered time
