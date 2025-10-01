@@ -211,15 +211,14 @@
             :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
           >
             <option value="">Todos los estados</option>
-            <option value="1">Abierto</option>
-            <option value="4">Asignado</option>
-            <option value="5">En progreso</option>
-            <option value="8">Cerrado</option>
+            <option v-for="(status, key) in TICKET_STATUSES" :key="key" :value="key">
+              {{ status.label }}
+            </option>
             <option value="show_all">Mostrar todos (incluye cerrados)</option>
           </select>
         </div>
 
-        <!-- Priority Filter -->
+        <!-- Priority/Severity Filter -->
         <div>
           <select
             v-model="priorityFilter"
@@ -227,11 +226,40 @@
             class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
           >
-            <option value="">Todas las prioridades</option>
-            <option value="1">Baja</option>
-            <option value="2">Normal</option>
-            <option value="3">Alta</option>
-            <option value="4">Urgente</option>
+            <option value="">Todas las gravedades</option>
+            <option v-for="severity in ticketSeverities" :key="severity.id" :value="severity.code || severity.id">
+              {{ severity.label || severity.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Category Filter -->
+        <div>
+          <select
+            v-model="categoryFilter"
+            @change="applyFilters"
+            class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
+          >
+            <option value="">Todas las categorías</option>
+            <option v-for="category in ticketCategories" :key="category.id" :value="category.code || category.id">
+              {{ category.label || category.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Type Filter -->
+        <div>
+          <select
+            v-model="typeFilter"
+            @change="applyFilters"
+            class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
+          >
+            <option value="">Todos los tipos</option>
+            <option v-for="type in ticketTypes" :key="type.id" :value="type.code || type.id">
+              {{ type.label || type.name }}
+            </option>
           </select>
         </div>
         
@@ -3132,12 +3160,13 @@ const filterByUnassigned = () => {
   searchQuery.value = ''
   statusFilter.value = ''
   priorityFilter.value = ''
+  categoryFilter.value = ''
+  typeFilter.value = ''
   
   // IMPORTANTE: Desactivar "Mis Tickets" para ver tickets sin asignar
   showOnlyMyTickets.value = false
-  
-  // Activar filtro de sin asignar
   showUnassignedOnly.value = true
+  applyFilters()
 }
 
 // Filter by assigned tickets
@@ -3149,11 +3178,13 @@ const filterByAssigned = () => {
   searchQuery.value = ''
   statusFilter.value = ''
   priorityFilter.value = ''
+  categoryFilter.value = ''
+  typeFilter.value = ''
   
-  // Desactivar filtro de sin asignar
+  // Mostrar solo tickets asignados (no cerrados)
+  showOnlyMyTickets.value = true
   showUnassignedOnly.value = false
-  
-  // Note: Los tickets asignados se muestran por defecto cuando no hay filtros activos
+  applyFilters()
 }
 
 // Manual intervention methods
@@ -4769,6 +4800,8 @@ const showOnlyMyTickets = ref(true)
 const searchQuery = ref('')
 const statusFilter = ref('')
 const priorityFilter = ref('')
+const categoryFilter = ref('')
+const typeFilter = ref('')
 
 // Terceros and Users search
 const terceros = ref([])
@@ -5269,13 +5302,18 @@ const selectUserFilter = (user) => {
   selectedUser.value = user
   userSearch.value = `${user.firstname} ${user.lastname}`
   showUserDropdown.value = false
+  
+  // IMPORTANTE: Desactivar "Mis Tickets" para mostrar todos los tickets del usuario seleccionado
+  showOnlyMyTickets.value = false
+  
   applyFilters()
 }
-
 const clearFilters = () => {
   searchQuery.value = ''
   statusFilter.value = ''
   priorityFilter.value = ''
+  categoryFilter.value = ''
+  typeFilter.value = ''
   terceroSearch.value = ''
   userSearch.value = ''
   selectedTercero.value = null
@@ -5302,8 +5340,8 @@ const filteredTickets = computed(() => {
   }
 
   // Filtrar tickets cerrados por defecto (a menos que se especifique mostrar todos)
-  if (statusFilter.value !== 'show_all' && statusFilter.value !== '8') {
-    filtered = filtered.filter(ticket => ticket.fk_statut !== '8')
+  if (statusFilter.value !== 'show_all' && statusFilter.value !== '8' && statusFilter.value !== 8) {
+    filtered = filtered.filter(ticket => ticket.fk_statut != '8' && ticket.fk_statut != 8)
   }
 
   // Apply search filter
@@ -5340,12 +5378,34 @@ const filteredTickets = computed(() => {
 
   // Apply status filter
   if (statusFilter.value && statusFilter.value !== 'show_all') {
-    filtered = filtered.filter(ticket => ticket.fk_statut === statusFilter.value)
+    filtered = filtered.filter(ticket => 
+      ticket.fk_statut == statusFilter.value || 
+      String(ticket.fk_statut) === String(statusFilter.value)
+    )
   }
 
   // Apply priority filter
   if (priorityFilter.value) {
-    filtered = filtered.filter(ticket => ticket.severity === priorityFilter.value)
+    filtered = filtered.filter(ticket => 
+      ticket.severity_code === priorityFilter.value || 
+      ticket.severity === priorityFilter.value
+    )
+  }
+
+  // Apply category filter
+  if (categoryFilter.value) {
+    filtered = filtered.filter(ticket => 
+      ticket.category_code === categoryFilter.value || 
+      ticket.category === categoryFilter.value
+    )
+  }
+
+  // Apply type filter
+  if (typeFilter.value) {
+    filtered = filtered.filter(ticket => 
+      ticket.type_code === typeFilter.value || 
+      ticket.type === typeFilter.value
+    )
   }
 
   // Apply sorting
@@ -5882,8 +5942,20 @@ const formatDuration = (duration) => {
 }
 
 // Watch for filter changes to reset pagination
-watch([searchQuery, statusFilter, priorityFilter], () => {
+watch([searchQuery, statusFilter, priorityFilter, categoryFilter, typeFilter], () => {
   currentPage.value = 1
+})
+
+// Watch para limpiar filtro de usuario cuando se active "Mis Tickets"
+watch(showOnlyMyTickets, (newValue) => {
+  if (newValue === true) {
+    // Si se activa "Mis Tickets", limpiar el filtro de usuario específico
+    if (selectedUser.value) {
+      selectedUser.value = null
+      userSearch.value = ''
+      console.log('🧹 Filtro de usuario limpiado al activar "Mis Tickets"')
+    }
+  }
 })
 
 // Close dropdowns when clicking outside
