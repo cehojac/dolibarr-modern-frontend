@@ -1,37 +1,78 @@
 <template>
   <div class="min-h-screen flex" :class="isDark ? 'bg-black' : 'bg-gray-100'">
     <!-- Sidebar -->
-    <div class="fixed inset-y-0 left-0 z-50 w-64 xl:w-80 2xl:w-96 shadow-xl flex flex-col" :class="isDark ? 'bg-gradient-to-b from-blue-600 to-blue-800' : 'bg-gradient-to-b from-blue-500 to-blue-600'">
+    <div class="fixed inset-y-0 left-0 z-50 shadow-xl flex flex-col transition-all duration-300" 
+         :class="[
+           isDark ? 'bg-gradient-to-b from-blue-600 to-blue-800' : 'bg-gradient-to-b from-blue-500 to-blue-600',
+           sidebarCollapsed ? 'w-20' : 'w-64 xl:w-80 2xl:w-96'
+         ]">
       <!-- Logo -->
-      <div class="flex items-center h-16 xl:h-20 2xl:h-24 px-4 xl:px-6 2xl:px-8 border-b border-opacity-30 flex-shrink-0" :class="isDark ? 'border-blue-500' : 'border-blue-300'">
-        <div class="w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 bg-white rounded-lg flex items-center justify-center mr-3 shadow-sm">
-          <span class="text-blue-600 font-bold text-lg xl:text-xl 2xl:text-2xl">D</span>
+      <div class="flex items-center h-16 xl:h-20 2xl:h-24 border-b border-opacity-30 flex-shrink-0 transition-all duration-300" 
+           :class="[
+             isDark ? 'border-blue-500' : 'border-blue-300',
+             sidebarCollapsed ? 'px-2 justify-center' : 'px-4 xl:px-6 2xl:px-8'
+           ]">
+        <div class="bg-white rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 transition-all duration-300"
+             :class="sidebarCollapsed ? 'w-10 h-10' : 'w-10 h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 mr-3'">
+          <span class="text-blue-600 font-bold" :class="sidebarCollapsed ? 'text-base' : 'text-lg xl:text-xl 2xl:text-2xl'">D</span>
         </div>
-        <div class="flex flex-col">
+        <div v-if="!sidebarCollapsed" class="flex flex-col">
           <h1 class="text-lg xl:text-xl 2xl:text-2xl font-bold text-white leading-tight">Dolibarr</h1>
           <p class="text-xs xl:text-sm 2xl:text-base text-blue-100 opacity-80">Modern Frontend</p>
         </div>
+        <!-- Toggle Button -->
+        <button 
+          v-if="!sidebarCollapsed"
+          @click="toggleSidebar"
+          class="ml-auto p-2 rounded-lg hover:bg-white hover:bg-opacity-20 transition-colors"
+          title="Contraer menú"
+        >
+          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          </svg>
+        </button>
       </div>
       
+      <!-- Expand Button (when collapsed) -->
+      <button 
+        v-if="sidebarCollapsed"
+        @click="toggleSidebar"
+        class="mx-2 mt-4 p-2 rounded-lg hover:bg-white hover:bg-opacity-20 transition-colors flex items-center justify-center"
+        title="Expandir menú"
+      >
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+        </svg>
+      </button>
+
       <!-- Navigation -->
-      <nav class="mt-8 px-4 xl:px-6 2xl:px-8 flex-1 overflow-y-auto">
+      <nav class="mt-8 flex-1 overflow-y-auto transition-all duration-300" :class="sidebarCollapsed ? 'px-2' : 'px-4 xl:px-6 2xl:px-8'">
         <div class="space-y-2">
           <!-- Regular navigation items -->
           <template v-for="item in navigation" :key="item.name">
             <!-- Items with submenu -->
             <div v-if="item.submenu" class="space-y-1">
               <button
-                @click="toggleSubmenu(item.name)"
-                class="group flex items-center w-full px-4 xl:px-5 2xl:px-6 py-3 xl:py-4 2xl:py-5 text-sm xl:text-base 2xl:text-lg font-medium rounded-xl transition-all duration-200"
-                :class="isSubmenuActive(item) 
-                  ? 'bg-white text-blue-700 shadow-lg font-semibold' 
-                  : 'text-blue-100 hover:bg-white hover:bg-opacity-25 hover:text-blue-700 focus:bg-white focus:bg-opacity-25 focus:text-blue-700'"
+                @click="sidebarCollapsed ? null : toggleSubmenu(item.name)"
+                class="group flex items-center w-full transition-all duration-200"
+                :class="[
+                  isSubmenuActive(item) 
+                    ? 'bg-white text-blue-700 shadow-lg font-semibold' 
+                    : 'text-blue-100 hover:bg-white hover:bg-opacity-25 hover:text-blue-700',
+                  sidebarCollapsed 
+                    ? 'px-2 py-2 rounded-lg justify-center' 
+                    : 'px-4 xl:px-5 2xl:px-6 py-3 xl:py-4 2xl:py-5 text-sm xl:text-base 2xl:text-lg font-medium rounded-xl'
+                ]"
+                :title="sidebarCollapsed ? item.name : ''"
               >
-                <svg class="mr-3 xl:mr-4 2xl:mr-5 h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg class="flex-shrink-0 transition-all duration-200" 
+                     :class="sidebarCollapsed ? 'h-5 w-5' : 'mr-3 xl:mr-4 2xl:mr-5 h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7'" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
                 </svg>
-                {{ item.name }}
+                <span v-if="!sidebarCollapsed" class="flex-1">{{ item.name }}</span>
                 <svg 
+                  v-if="!sidebarCollapsed"
                   class="ml-auto h-4 w-4 xl:h-5 xl:w-5 2xl:h-6 2xl:w-6 transform transition-transform duration-200"
                   :class="openSubmenus.includes(item.name) ? 'rotate-180' : ''"
                   fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -49,7 +90,7 @@
                 leave-from-class="transform scale-100 opacity-100"
                 leave-to-class="transform scale-95 opacity-0"
               >
-                <div v-show="openSubmenus.includes(item.name)" class="ml-8 xl:ml-10 2xl:ml-12 space-y-1 mt-2">
+                <div v-show="!sidebarCollapsed && openSubmenus.includes(item.name)" class="ml-8 xl:ml-10 2xl:ml-12 space-y-1 mt-2">
                   <router-link
                     v-for="subitem in item.submenu"
                     :key="subitem.name"
@@ -72,16 +113,29 @@
             <router-link
               v-else
               :to="item.href"
-              class="group flex items-center px-4 xl:px-5 2xl:px-6 py-3 xl:py-4 2xl:py-5 text-sm xl:text-base 2xl:text-lg font-medium rounded-xl transition-all duration-200"
-              :class="route.path === item.href 
-                ? 'bg-white text-blue-700 shadow-lg font-semibold' 
-                : 'text-blue-100 hover:bg-white hover:bg-opacity-25 hover:text-blue-700 focus:bg-white focus:bg-opacity-25 focus:text-blue-700'"
+              class="group flex items-center transition-all duration-200 relative"
+              :class="[
+                route.path === item.href 
+                  ? 'bg-white text-blue-700 shadow-lg font-semibold' 
+                  : 'text-blue-100 hover:bg-white hover:bg-opacity-25 hover:text-blue-700',
+                sidebarCollapsed 
+                  ? 'px-2 py-2 rounded-lg justify-center' 
+                  : 'px-4 xl:px-5 2xl:px-6 py-3 xl:py-4 2xl:py-5 text-sm xl:text-base 2xl:text-lg font-medium rounded-xl'
+              ]"
+              :title="sidebarCollapsed ? item.name : ''"
             >
-              <svg class="mr-3 xl:mr-4 2xl:mr-5 h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="flex-shrink-0 transition-all duration-200" 
+                   :class="sidebarCollapsed ? 'h-5 w-5' : 'mr-3 xl:mr-4 2xl:mr-5 h-5 w-5 xl:h-6 xl:w-6 2xl:h-7 2xl:w-7'" 
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.iconPath" />
               </svg>
-              {{ item.name }}
-              <span v-if="item.count && item.count > 0" class="ml-auto bg-white text-blue-600 text-xs xl:text-sm 2xl:text-base font-bold px-2 xl:px-3 2xl:px-4 py-1 xl:py-1.5 2xl:py-2 rounded-full">
+              <span v-if="!sidebarCollapsed" class="flex-1">{{ item.name }}</span>
+              <!-- Badge for counts -->
+              <span v-if="item.count && item.count > 0" 
+                    class="bg-white text-blue-600 font-bold rounded-full transition-all duration-200"
+                    :class="sidebarCollapsed 
+                      ? 'absolute -top-1 -right-1 w-5 h-5 text-xs flex items-center justify-center' 
+                      : 'ml-auto text-xs xl:text-sm 2xl:text-base px-2 xl:px-3 2xl:px-4 py-1 xl:py-1.5 2xl:py-2'">
                 {{ item.count }}
               </span>
             </router-link>
@@ -90,8 +144,9 @@
       </nav>
 
       <!-- User info at bottom - Always visible -->
-      <div v-if="authStore.user" class="p-4 xl:p-6 2xl:p-8 border-t border-blue-300 border-opacity-30 flex-shrink-0 mt-auto">
-        <div class="flex items-center space-x-3 xl:space-x-4 2xl:space-x-5 mb-4">
+      <div v-if="authStore.user" class="border-t border-blue-300 border-opacity-30 flex-shrink-0 mt-auto transition-all duration-300" 
+           :class="sidebarCollapsed ? 'p-2' : 'p-4 xl:p-6 2xl:p-8'">
+        <div v-if="!sidebarCollapsed" class="flex items-center space-x-3 xl:space-x-4 2xl:space-x-5 mb-4">
           <div class="w-12 h-12 xl:w-14 xl:h-14 2xl:w-16 2xl:h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
             <span class="text-blue-900 font-bold text-lg xl:text-xl 2xl:text-2xl">{{ userInitials }}</span>
           </div>
@@ -104,18 +159,34 @@
             </p>
           </div>
         </div>
+        <div v-else class="flex justify-center mb-2">
+          <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur-sm">
+            <span class="text-blue-900 font-bold text-base">{{ userInitials }}</span>
+          </div>
+        </div>
         <button
           @click="handleLogout"
-          class="w-full px-4 xl:px-5 2xl:px-6 py-2 xl:py-3 2xl:py-4 text-sm xl:text-base 2xl:text-lg rounded-xl transition-all duration-200 font-medium shadow-sm"
-          :class="isDark ? 'bg-white text-blue-600 hover:bg-blue-50' : 'bg-white text-blue-600 hover:bg-blue-50'"
+          class="w-full rounded-xl transition-all duration-200 font-medium shadow-sm"
+          :class="[
+            isDark ? 'bg-white text-blue-600 hover:bg-blue-50' : 'bg-white text-blue-600 hover:bg-blue-50',
+            sidebarCollapsed ? 'px-2 py-2 text-xs' : 'px-4 xl:px-5 2xl:px-6 py-2 xl:py-3 2xl:py-4 text-sm xl:text-base 2xl:text-lg'
+          ]"
+          :title="sidebarCollapsed ? 'Cerrar sesión' : ''"
         >
-          Cerrar sesión
+          <span v-if="!sidebarCollapsed">Cerrar sesión</span>
+          <svg v-else class="w-5 h-5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
         </button>
       </div>
     </div>
 
     <!-- Main content -->
-    <div class="flex flex-col w-0 flex-1 overflow-hidden ml-64 xl:ml-80 2xl:ml-96" :class="isDark ? 'bg-black' : 'bg-white'">
+    <div class="flex flex-col w-0 flex-1 overflow-hidden transition-all duration-300" 
+         :class="[
+           isDark ? 'bg-black' : 'bg-white',
+           sidebarCollapsed ? 'ml-20' : 'ml-64 xl:ml-80 2xl:ml-96'
+         ]">
       <!-- Top bar -->
       <div class="relative z-10 flex-shrink-0 flex h-16 xl:h-20 2xl:h-24 shadow-lg border-b" 
            :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
@@ -227,6 +298,9 @@ const shouldShowMenuItem = (itemName) => {
   return hasPermission
 }
 
+// Sidebar collapse state - Load from localStorage
+const sidebarCollapsed = ref(JSON.parse(localStorage.getItem('sidebarCollapsed') || 'false'))
+
 // Submenu state - Load from localStorage
 const openSubmenus = ref(JSON.parse(localStorage.getItem('openSubmenus') || '[]'))
 
@@ -317,6 +391,13 @@ const navigation = computed(() => {
 })
 
 // Navigation computed is working correctly
+
+// Sidebar toggle function
+const toggleSidebar = () => {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+  // Save to localStorage
+  localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed.value))
+}
 
 // Submenu functions
 const toggleSubmenu = (menuName) => {
