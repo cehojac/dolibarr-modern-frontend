@@ -6,7 +6,7 @@
         <div>
           <h1 class="text-2xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Contratos</h1>
           <div class="flex items-center mt-1">
-            <span class="text-sm text-gray-500">Gestión de contratos y servicios recurrentes</span>
+            <span class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Gestión de contratos y servicios recurrentes</span>
           </div>
         </div>
       </div>
@@ -15,46 +15,46 @@
     <!-- Métricas Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
       <!-- Total Contracts -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalContracts }}</div>
-        <div class="text-sm text-gray-500">Total Contracts</div>
+        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Total Contracts</div>
       </div>
       
       <!-- Active Contracts -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
-        <div class="text-2xl font-bold text-green-600">{{ activeContracts }}</div>
-        <div class="text-sm text-green-600">Active</div>
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="text-2xl font-bold" :class="isDark ? 'text-green-400' : 'text-green-600'">{{ activeContracts }}</div>
+        <div class="text-sm" :class="isDark ? 'text-green-400' : 'text-green-600'">Active</div>
       </div>
       
       <!-- Expired Contracts -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
-        <div class="text-2xl font-bold text-red-600">{{ expiredContracts }}</div>
-        <div class="text-sm text-red-600">Expired</div>
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="text-2xl font-bold" :class="isDark ? 'text-red-400' : 'text-red-600'">{{ expiredContracts }}</div>
+        <div class="text-sm" :class="isDark ? 'text-red-400' : 'text-red-600'">Expired</div>
       </div>
       
       <!-- Expiring Soon -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
-        <div class="text-2xl font-bold text-yellow-600">{{ expiringSoon }}</div>
-        <div class="text-sm text-yellow-600">Expiring Soon</div>
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="text-2xl font-bold" :class="isDark ? 'text-yellow-400' : 'text-yellow-600'">{{ expiringSoon }}</div>
+        <div class="text-sm" :class="isDark ? 'text-yellow-400' : 'text-yellow-600'">Expiring Soon</div>
       </div>
       
       <!-- Monthly Revenue -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
-        <div class="text-2xl font-bold text-blue-600">{{ formatCurrency(monthlyRevenue) }}</div>
-        <div class="text-sm text-blue-600">Monthly Revenue</div>
+      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="text-2xl font-bold" :class="isDark ? 'text-blue-400' : 'text-blue-600'">{{ formatCurrency(monthlyRevenue) }}</div>
+        <div class="text-sm" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Monthly Revenue</div>
       </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center space-x-3">
-        <button class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+        <button class="text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-900 hover:bg-gray-800'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           New Contract
         </button>
-        <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center" :class="isDark ? 'border-gray-600 text-gray-300' : ''">
+        <button class="border px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
@@ -62,7 +62,7 @@
         </button>
       </div>
       
-      <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center" :class="isDark ? 'border-gray-600 text-gray-300' : ''">
+      <button class="border px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
         <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
@@ -78,9 +78,9 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-blue-600 hover:text-blue-800 text-sm">Export</button>
-        <button class="text-blue-600 hover:text-blue-800 text-sm">Bulk Actions</button>
-        <button class="text-gray-500 hover:text-gray-700" @click="loadContracts">
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadContracts">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
@@ -103,10 +103,10 @@
     </div>
 
     <!-- Tabla de Contratos -->
-    <div class="bg-white rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+    <div class="rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-gray-50" :class="isDark ? 'bg-gray-700' : ''">
+          <thead :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-400' : ''">
                 <div class="flex items-center">
@@ -125,7 +125,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Actions</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200" :class="isDark ? 'bg-gray-800 divide-gray-700' : ''">
+          <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
               <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center justify-center space-x-2">
@@ -152,18 +152,18 @@
               
               <!-- Customer -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ getCustomerName(contract) }}
+                {{ getThirdpartyName(contract.socid) }}
               </td>
               
               <!-- Start Date -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ formatDate(contract.date_contrat) }}
+                {{ formatDoliDate(contract.date_contrat) }}
               </td>
               
               <!-- End Date -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
                 <span :class="isExpiringSoon(contract.date_fin_validite) ? 'text-yellow-600 font-medium' : ''">
-                  {{ formatDate(contract.date_fin_validite) }}
+                  {{ formatDoliDate(contract.date_fin_validite) }}
                 </span>
               </td>
               
@@ -280,9 +280,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '../../composables/useTheme'
+import { useThirdparties } from '../../composables/useThirdparties'
+import { useDateFormatter } from '../../composables/useDateFormatter'
 import http from '../../utils/http'
 
 const { isDark } = useTheme()
+const { loadAllThirdparties, getThirdpartyName } = useThirdparties()
+const { formatDate: formatDoliDate } = useDateFormatter()
 
 // Reactive data
 const contracts = ref([])
@@ -368,20 +372,31 @@ const visiblePages = computed(() => {
 const loadContracts = async () => {
   loading.value = true
   try {
-     console.log('🔄 Cargando contratos...')
-    const response = await http.get('/api/doli/contracts?limit=1000')
-    contracts.value = response.data || []
-     console.log('✅ Contratos cargados:', contracts.value.length)
+    // 1. Cargar TODOS los terceros primero (solo una vez)
+    await loadAllThirdparties()
+    
+    // 2. Cargar contratos
+    console.log('🔄 Cargando contratos...')
+    const response = await http.get('/api/doli/contracts?limit=1000&sortfield=t.ref&sortorder=DESC')
+    const contractsData = response.data || []
+    console.log('✅ Contratos cargados:', contractsData.length)
+    
+    // 3. Enriquecer contratos con nombres de terceros (desde caché, instantáneo)
+    contracts.value = contractsData.map(contract => {
+      if (contract.socid) {
+        contract.thirdparty_name = getThirdpartyName(contract.socid)
+      }
+      return contract
+    })
+    
+    console.log('✅ Contratos enriquecidos con nombres de terceros')
+    
   } catch (error) {
     console.error('❌ Error loading contracts:', error)
     contracts.value = []
   } finally {
     loading.value = false
   }
-}
-
-const getCustomerName = (contract) => {
-  return contract.socid_name || contract.thirdparty_name || 'N/A'
 }
 
 const getStatusClass = (status) => {
@@ -424,21 +439,6 @@ const isExpiringSoon = (endDate) => {
   const thirtyDaysFromNow = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000))
   const contractEndDate = new Date(endDate)
   return contractEndDate > now && contractEndDate <= thirtyDaysFromNow
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return '-'
-  
-  try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  } catch (error) {
-    return dateString
-  }
 }
 
 const formatCurrency = (amount) => {
