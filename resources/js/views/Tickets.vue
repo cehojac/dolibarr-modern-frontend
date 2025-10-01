@@ -6,12 +6,103 @@
         <h1 class="text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Tickets</h1>
         <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Sistema de soporte y tickets</p>
       </div>
-      <button 
-        @click="openCreateTicketModal"
-        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-medium transition-colors"
-      >
-        + Crear Ticket
-      </button>
+      <div class="flex items-center space-x-4">
+        <!-- Selector de Vista -->
+        <div class="flex rounded-lg border" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
+          <button
+            @click="currentView = 'table'"
+            class="px-4 py-2 text-sm font-medium transition-colors rounded-l-lg"
+            :class="currentView === 'table' 
+              ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+              : (isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100')
+            "
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </button>
+          <button
+            @click="currentView = 'kanban'"
+            class="px-4 py-2 text-sm font-medium transition-colors rounded-r-lg"
+            :class="currentView === 'kanban' 
+              ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+              : (isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100')
+            "
+          >
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Selector de Columnas Kanban (solo visible en vista Kanban) -->
+        <div v-if="currentView === 'kanban'" class="relative">
+          <button
+            @click="showColumnSelector = !showColumnSelector"
+            class="px-4 py-2 text-sm font-medium rounded-lg border transition-colors flex items-center space-x-2"
+            :class="isDark ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            <span>Columnas</span>
+          </button>
+
+          <!-- Dropdown de columnas -->
+          <div
+            v-if="showColumnSelector"
+            class="absolute right-0 mt-2 w-64 rounded-lg shadow-lg border z-50"
+            :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+          >
+            <div class="p-3">
+              <div class="text-xs font-semibold mb-2 uppercase" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                Mostrar/Ocultar Columnas
+              </div>
+              <div class="space-y-2">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" v-model="visibleKanbanColumns.notRead" class="rounded">
+                  <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">No leído</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" v-model="visibleKanbanColumns.read" class="rounded">
+                  <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Leído</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" v-model="visibleKanbanColumns.assigned" class="rounded">
+                  <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Asignado</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" v-model="visibleKanbanColumns.inProgress" class="rounded">
+                  <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">En progreso</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" v-model="visibleKanbanColumns.needMoreInfo" class="rounded">
+                  <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Necesita más info</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" v-model="visibleKanbanColumns.waiting" class="rounded">
+                  <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">En espera</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" v-model="visibleKanbanColumns.closed" class="rounded">
+                  <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Cerrado</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                  <input type="checkbox" v-model="visibleKanbanColumns.canceled" class="rounded">
+                  <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Cancelado</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button 
+          @click="openCreateTicketModal"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl font-medium transition-colors"
+        >
+          + Crear Ticket
+        </button>
+      </div>
     </div>
 
     <!-- Tickets Overview Metrics -->
@@ -276,8 +367,628 @@
       </div>
     </div>
 
+    <!-- Vista Kanban -->
+    <div v-if="currentView === 'kanban'" class="grid gap-4" :class="{
+      'grid-cols-1': true,
+      'md:grid-cols-2': true,
+      'lg:grid-cols-3': Object.values(visibleKanbanColumns).filter(v => v).length <= 4,
+      'lg:grid-cols-4': Object.values(visibleKanbanColumns).filter(v => v).length > 4 && Object.values(visibleKanbanColumns).filter(v => v).length <= 6,
+      'xl:grid-cols-6': Object.values(visibleKanbanColumns).filter(v => v).length > 6
+    }">
+      <!-- Columna: No leído -->
+      <div v-if="visibleKanbanColumns.notRead" class="rounded-xl border p-4" :class="isDark ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-200'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm" :class="isDark ? 'text-red-300' : 'text-red-700'">
+            No leído
+          </h3>
+          <span class="text-xs px-2 py-1 rounded-full" :class="isDark ? 'bg-red-800 text-red-200' : 'bg-red-200 text-red-800'">
+            {{ kanbanColumns.notRead.length }}
+          </span>
+        </div>
+        <div 
+          class="space-y-3 min-h-[200px]"
+          @drop="handleKanbanDrop($event, 0)"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div
+            v-for="ticket in kanbanColumns.notRead"
+            :key="ticket.id"
+            draggable="true"
+            @dragstart="handleKanbanDragStart($event, ticket)"
+            @dragend="handleKanbanDragEnd"
+            @click="viewTicketDetails(ticket)"
+            class="p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md"
+            :class="isDark ? 'bg-gray-800 border-gray-700 hover:border-blue-500' : 'bg-white border-gray-200 hover:border-blue-400'"
+          >
+            <!-- Tercero -->
+            <div class="flex items-center space-x-2 mb-2">
+              <div 
+                class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-green-600 text-white' : 'bg-green-500 text-white'"
+                :title="ticket.thirdparty_name || 'Sin tercero'"
+              >
+                {{ getKanbanThirdpartyInitials(ticket) }}
+              </div>
+            </div>
+            
+            <!-- Referencia -->
+            <div class="text-xs font-mono mb-1" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+              {{ ticket.ref }}
+            </div>
+            
+            <!-- Título -->
+            <div class="text-sm font-medium mb-2 line-clamp-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ ticket.subject }}
+            </div>
+            
+            <!-- Grupo -->
+            <div v-if="ticket.category_code || ticket.type_code" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{{ ticket.category_code || ticket.type_code || 'General' }}</span>
+            </div>
+            
+            <!-- Fecha de creación -->
+            <div class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formatKanbanDate(ticket.datec) }}</span>
+            </div>
+            
+            <!-- Usuario asignado -->
+            <div class="flex items-center">
+              <div 
+                v-if="ticket.fk_user_assign && ticket.fk_user_assign != '0'"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
+                :title="getKanbanUserName(ticket.fk_user_assign)"
+              >
+                {{ getKanbanUserInitials(ticket.fk_user_assign) }}
+              </div>
+              <div v-else class="w-6 h-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna: Leído -->
+      <div v-if="visibleKanbanColumns.read" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Leído
+          </h3>
+          <span class="text-xs px-2 py-1 rounded-full" :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'">
+            {{ kanbanColumns.read.length }}
+          </span>
+        </div>
+        <div 
+          class="space-y-3 min-h-[200px]"
+          @drop="handleKanbanDrop($event, 1)"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div
+            v-for="ticket in kanbanColumns.read"
+            :key="ticket.id"
+            draggable="true"
+            @dragstart="handleKanbanDragStart($event, ticket)"
+            @dragend="handleKanbanDragEnd"
+            @click="viewTicketDetails(ticket)"
+            class="p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md"
+            :class="isDark ? 'bg-gray-800 border-gray-700 hover:border-blue-500' : 'bg-white border-gray-200 hover:border-blue-400'"
+          >
+            <!-- Referencia -->
+            <div class="text-xs font-mono mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+              {{ ticket.ref }}
+            </div>
+            
+            <!-- Título -->
+            <div class="text-sm font-medium mb-2 line-clamp-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ ticket.subject }}
+            </div>
+            
+            <!-- Tercero -->
+            <div v-if="ticket.thirdparty_name" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-green-400' : 'text-green-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span class="truncate">{{ ticket.thirdparty_name }}</span>
+            </div>
+            
+            <!-- Grupo/Categoría -->
+            <div v-if="ticket.category_code || ticket.type_code" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{{ ticket.category_code || ticket.type_code || 'General' }}</span>
+            </div>
+            
+            <!-- Fecha de creación -->
+            <div class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formatKanbanDate(ticket.datec) }}</span>
+            </div>
+            
+            <!-- Usuario asignado -->
+            <div class="flex items-center">
+              <div 
+                v-if="ticket.fk_user_assign && ticket.fk_user_assign != '0'"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
+                :title="getKanbanUserName(ticket.fk_user_assign)"
+              >
+                {{ getKanbanUserInitials(ticket.fk_user_assign) }}
+              </div>
+              <div v-else class="w-6 h-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna: Asignado -->
+      <div v-if="visibleKanbanColumns.assigned" class="rounded-xl border p-4" :class="isDark ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-200'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm" :class="isDark ? 'text-yellow-300' : 'text-yellow-700'">
+            Asignado
+          </h3>
+          <span class="text-xs px-2 py-1 rounded-full" :class="isDark ? 'bg-yellow-800 text-yellow-200' : 'bg-yellow-200 text-yellow-800'">
+            {{ kanbanColumns.assigned.length }}
+          </span>
+        </div>
+        <div 
+          class="space-y-3 min-h-[200px]"
+          @drop="handleKanbanDrop($event, 2)"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div
+            v-for="ticket in kanbanColumns.assigned"
+            :key="ticket.id"
+            draggable="true"
+            @dragstart="handleKanbanDragStart($event, ticket)"
+            @dragend="handleKanbanDragEnd"
+            @click="viewTicketDetails(ticket)"
+            class="p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md"
+            :class="isDark ? 'bg-gray-800 border-gray-700 hover:border-blue-500' : 'bg-white border-gray-200 hover:border-blue-400'"
+          >
+            <!-- Referencia -->
+            <div class="text-xs font-mono mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+              {{ ticket.ref }}
+            </div>
+            
+            <!-- Título -->
+            <div class="text-sm font-medium mb-2 line-clamp-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ ticket.subject }}
+            </div>
+            
+            <!-- Tercero -->
+            <div v-if="ticket.thirdparty_name" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-green-400' : 'text-green-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span class="truncate">{{ ticket.thirdparty_name }}</span>
+            </div>
+            
+            <!-- Grupo/Categoría -->
+            <div v-if="ticket.category_code || ticket.type_code" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{{ ticket.category_code || ticket.type_code || 'General' }}</span>
+            </div>
+            
+            <!-- Fecha de creación -->
+            <div class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formatKanbanDate(ticket.datec) }}</span>
+            </div>
+            
+            <!-- Usuario asignado -->
+            <div class="flex items-center">
+              <div 
+                v-if="ticket.fk_user_assign && ticket.fk_user_assign != '0'"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
+                :title="getKanbanUserName(ticket.fk_user_assign)"
+              >
+                {{ getKanbanUserInitials(ticket.fk_user_assign) }}
+              </div>
+              <div v-else class="w-6 h-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna: En progreso -->
+      <div v-if="visibleKanbanColumns.inProgress" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            En progreso
+          </h3>
+          <span class="text-xs px-2 py-1 rounded-full" :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'">
+            {{ kanbanColumns.inProgress.length }}
+          </span>
+        </div>
+        <div 
+          class="space-y-3 min-h-[200px]"
+          @drop="handleKanbanDrop($event, 3)"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div
+            v-for="ticket in kanbanColumns.inProgress"
+            :key="ticket.id"
+            draggable="true"
+            @dragstart="handleKanbanDragStart($event, ticket)"
+            @dragend="handleKanbanDragEnd"
+            @click="viewTicketDetails(ticket)"
+            class="p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md"
+            :class="isDark ? 'bg-gray-800 border-gray-700 hover:border-blue-500' : 'bg-white border-gray-200 hover:border-blue-400'"
+          >
+            <!-- Referencia -->
+            <div class="text-xs font-mono mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+              {{ ticket.ref }}
+            </div>
+            
+            <!-- Título -->
+            <div class="text-sm font-medium mb-2 line-clamp-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ ticket.subject }}
+            </div>
+            
+            <!-- Tercero -->
+            <div v-if="ticket.thirdparty_name" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-green-400' : 'text-green-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span class="truncate">{{ ticket.thirdparty_name }}</span>
+            </div>
+            
+            <!-- Grupo/Categoría -->
+            <div v-if="ticket.category_code || ticket.type_code" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{{ ticket.category_code || ticket.type_code || 'General' }}</span>
+            </div>
+            
+            <!-- Fecha de creación -->
+            <div class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formatKanbanDate(ticket.datec) }}</span>
+            </div>
+            
+            <!-- Usuario asignado -->
+            <div class="flex items-center">
+              <div 
+                v-if="ticket.fk_user_assign && ticket.fk_user_assign != '0'"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
+                :title="getKanbanUserName(ticket.fk_user_assign)"
+              >
+                {{ getKanbanUserInitials(ticket.fk_user_assign) }}
+              </div>
+              <div v-else class="w-6 h-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna: Necesita más info -->
+      <div v-if="visibleKanbanColumns.needMoreInfo" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Necesita más info
+          </h3>
+          <span class="text-xs px-2 py-1 rounded-full" :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'">
+            {{ kanbanColumns.needMoreInfo.length }}
+          </span>
+        </div>
+        <div 
+          class="space-y-3 min-h-[200px]"
+          @drop="handleKanbanDrop($event, 5)"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div
+            v-for="ticket in kanbanColumns.needMoreInfo"
+            :key="ticket.id"
+            draggable="true"
+            @dragstart="handleKanbanDragStart($event, ticket)"
+            @dragend="handleKanbanDragEnd"
+            @click="viewTicketDetails(ticket)"
+            class="p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md"
+            :class="isDark ? 'bg-gray-800 border-gray-700 hover:border-blue-500' : 'bg-white border-gray-200 hover:border-blue-400'"
+          >
+            <!-- Referencia -->
+            <div class="text-xs font-mono mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+              {{ ticket.ref }}
+            </div>
+            
+            <!-- Título -->
+            <div class="text-sm font-medium mb-2 line-clamp-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ ticket.subject }}
+            </div>
+            
+            <!-- Tercero -->
+            <div v-if="ticket.thirdparty_name" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-green-400' : 'text-green-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span class="truncate">{{ ticket.thirdparty_name }}</span>
+            </div>
+            
+            <!-- Grupo/Categoría -->
+            <div v-if="ticket.category_code || ticket.type_code" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{{ ticket.category_code || ticket.type_code || 'General' }}</span>
+            </div>
+            
+            <!-- Fecha de creación -->
+            <div class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formatKanbanDate(ticket.datec) }}</span>
+            </div>
+            
+            <!-- Usuario asignado -->
+            <div class="flex items-center">
+              <div 
+                v-if="ticket.fk_user_assign && ticket.fk_user_assign != '0'"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
+                :title="getKanbanUserName(ticket.fk_user_assign)"
+              >
+                {{ getKanbanUserInitials(ticket.fk_user_assign) }}
+              </div>
+              <div v-else class="w-6 h-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna: En espera -->
+      <div v-if="visibleKanbanColumns.waiting" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            En espera
+          </h3>
+          <span class="text-xs px-2 py-1 rounded-full" :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'">
+            {{ kanbanColumns.waiting.length }}
+          </span>
+        </div>
+        <div 
+          class="space-y-3 min-h-[200px]"
+          @drop="handleKanbanDrop($event, 7)"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div
+            v-for="ticket in kanbanColumns.waiting"
+            :key="ticket.id"
+            draggable="true"
+            @dragstart="handleKanbanDragStart($event, ticket)"
+            @dragend="handleKanbanDragEnd"
+            @click="viewTicketDetails(ticket)"
+            class="p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md"
+            :class="isDark ? 'bg-gray-800 border-gray-700 hover:border-blue-500' : 'bg-white border-gray-200 hover:border-blue-400'"
+          >
+            <!-- Referencia -->
+            <div class="text-xs font-mono mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+              {{ ticket.ref }}
+            </div>
+            
+            <!-- Título -->
+            <div class="text-sm font-medium mb-2 line-clamp-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ ticket.subject }}
+            </div>
+            
+            <!-- Tercero -->
+            <div v-if="ticket.thirdparty_name" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-green-400' : 'text-green-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span class="truncate">{{ ticket.thirdparty_name }}</span>
+            </div>
+            
+            <!-- Grupo/Categoría -->
+            <div v-if="ticket.category_code || ticket.type_code" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{{ ticket.category_code || ticket.type_code || 'General' }}</span>
+            </div>
+            
+            <!-- Fecha de creación -->
+            <div class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formatKanbanDate(ticket.datec) }}</span>
+            </div>
+            
+            <!-- Usuario asignado -->
+            <div class="flex items-center">
+              <div 
+                v-if="ticket.fk_user_assign && ticket.fk_user_assign != '0'"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
+                :title="getKanbanUserName(ticket.fk_user_assign)"
+              >
+                {{ getKanbanUserInitials(ticket.fk_user_assign) }}
+              </div>
+              <div v-else class="w-6 h-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna: Cerrado -->
+      <div v-if="visibleKanbanColumns.closed" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Cerrado
+          </h3>
+          <span class="text-xs px-2 py-1 rounded-full" :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'">
+            {{ kanbanColumns.closed.length }}
+          </span>
+        </div>
+        <div 
+          class="space-y-3 min-h-[200px]"
+          @drop="handleKanbanDrop($event, 8)"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div
+            v-for="ticket in kanbanColumns.closed"
+            :key="ticket.id"
+            draggable="true"
+            @dragstart="handleKanbanDragStart($event, ticket)"
+            @dragend="handleKanbanDragEnd"
+            @click="viewTicketDetails(ticket)"
+            class="p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md"
+            :class="isDark ? 'bg-gray-800 border-gray-700 hover:border-blue-500' : 'bg-white border-gray-200 hover:border-blue-400'"
+          >
+            <!-- Referencia -->
+            <div class="text-xs font-mono mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+              {{ ticket.ref }}
+            </div>
+            
+            <!-- Título -->
+            <div class="text-sm font-medium mb-2 line-clamp-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ ticket.subject }}
+            </div>
+            
+            <!-- Tercero -->
+            <div v-if="ticket.thirdparty_name" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-green-400' : 'text-green-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span class="truncate">{{ ticket.thirdparty_name }}</span>
+            </div>
+            
+            <!-- Grupo/Categoría -->
+            <div v-if="ticket.category_code || ticket.type_code" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{{ ticket.category_code || ticket.type_code || 'General' }}</span>
+            </div>
+            
+            <!-- Fecha de creación -->
+            <div class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formatKanbanDate(ticket.datec) }}</span>
+            </div>
+            
+            <!-- Usuario asignado -->
+            <div class="flex items-center">
+              <div 
+                v-if="ticket.fk_user_assign && ticket.fk_user_assign != '0'"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
+                :title="getKanbanUserName(ticket.fk_user_assign)"
+              >
+                {{ getKanbanUserInitials(ticket.fk_user_assign) }}
+              </div>
+              <div v-else class="w-6 h-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna: Cancelado -->
+      <div v-if="visibleKanbanColumns.canceled" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Cancelado
+          </h3>
+          <span class="text-xs px-2 py-1 rounded-full" :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'">
+            {{ kanbanColumns.canceled.length }}
+          </span>
+        </div>
+        <div 
+          class="space-y-3 min-h-[200px]"
+          @drop="handleKanbanDrop($event, 9)"
+          @dragover.prevent
+          @dragenter.prevent
+        >
+          <div
+            v-for="ticket in kanbanColumns.canceled"
+            :key="ticket.id"
+            draggable="true"
+            @dragstart="handleKanbanDragStart($event, ticket)"
+            @dragend="handleKanbanDragEnd"
+            @click="viewTicketDetails(ticket)"
+            class="p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md"
+            :class="isDark ? 'bg-gray-800 border-gray-700 hover:border-blue-500' : 'bg-white border-gray-200 hover:border-blue-400'"
+          >
+            <!-- Referencia -->
+            <div class="text-xs font-mono mb-2" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+              {{ ticket.ref }}
+            </div>
+            
+            <!-- Título -->
+            <div class="text-sm font-medium mb-2 line-clamp-2" :class="isDark ? 'text-white' : 'text-gray-900'">
+              {{ ticket.subject }}
+            </div>
+            
+            <!-- Tercero -->
+            <div v-if="ticket.thirdparty_name" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-green-400' : 'text-green-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <span class="truncate">{{ ticket.thirdparty_name }}</span>
+            </div>
+            
+            <!-- Grupo/Categoría -->
+            <div v-if="ticket.category_code || ticket.type_code" class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <span>{{ ticket.category_code || ticket.type_code || 'General' }}</span>
+            </div>
+            
+            <!-- Fecha de creación -->
+            <div class="text-xs mb-2 flex items-center space-x-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{{ formatKanbanDate(ticket.datec) }}</span>
+            </div>
+            
+            <!-- Usuario asignado -->
+            <div class="flex items-center">
+              <div 
+                v-if="ticket.fk_user_assign && ticket.fk_user_assign != '0'"
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
+                :class="isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'"
+                :title="getKanbanUserName(ticket.fk_user_assign)"
+              >
+                {{ getKanbanUserInitials(ticket.fk_user_assign) }}
+              </div>
+              <div v-else class="w-6 h-6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Table -->
-    <div class="rounded-xl border overflow-hidden" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+    <div v-if="currentView === 'table'" class="rounded-xl border overflow-hidden" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto min-w-0">
         <table class="min-w-full table-auto">
           <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-100'">
@@ -2686,12 +3397,62 @@
     </div>
   </div>
 
+  <!-- Sistema de Notificaciones -->
+  <div class="fixed top-4 right-4 z-50 space-y-2">
+    <div
+      v-for="notification in notifications"
+      :key="notification.id"
+      class="min-w-80 px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 animate-slide-in"
+      :class="{
+        'bg-green-500 text-white': notification.type === 'success',
+        'bg-red-500 text-white': notification.type === 'error',
+        'bg-yellow-500 text-white': notification.type === 'warning',
+        'bg-blue-500 text-white': notification.type === 'info'
+      }"
+    >
+      <!-- Icono -->
+      <svg v-if="notification.type === 'success'" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <svg v-else-if="notification.type === 'error'" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      <svg v-else-if="notification.type === 'warning'" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <svg v-else class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      
+      <!-- Mensaje -->
+      <span class="flex-1 text-sm font-medium">{{ notification.message }}</span>
+    </div>
+  </div>
+
   </div>
 </template>
+
+<style scoped>
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+</style>
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useTheme } from '../composables/useTheme'
+import { useProjects } from '../composables/useProjects'
 import http from '../utils/http'
 import axios from 'axios'
 import { useTicketsCounter } from '../composables/useTicketsCounter'
@@ -2705,6 +3466,7 @@ import ThirdpartySearchInput from '@/components/ThirdpartySearchInput.vue'
 const { isDark } = useTheme()
 const authStore = useAuthStore()
 const { refreshCounter: updateTicketsCounter } = useTicketsCounter()
+const { getProjectName, preloadProjectsFromItems } = useProjects()
 
 // Inicializar composable de referencias de tickets
 const {
@@ -4779,6 +5541,75 @@ const sendComment = async () => {
 const tickets = ref([])
 const loading = ref(false)
 
+// Vista actual (table o kanban) - cargar desde localStorage
+const loadViewPreference = () => {
+  const saved = localStorage.getItem('tickets_view_preference')
+  return saved || 'table' // Por defecto: tabla
+}
+
+const currentView = ref(loadViewPreference())
+
+// Drag and drop state
+const draggedTicket = ref(null)
+
+// Columnas visibles del Kanban - cargar desde localStorage o usar valores por defecto
+const loadKanbanColumnsPreferences = () => {
+  const saved = localStorage.getItem('kanban_columns_preferences')
+  if (saved) {
+    try {
+      return JSON.parse(saved)
+    } catch (e) {
+      console.error('Error cargando preferencias de columnas:', e)
+    }
+  }
+  // Valores por defecto
+  return {
+    notRead: true,
+    read: true,
+    assigned: true,
+    inProgress: true,
+    needMoreInfo: true,
+    waiting: true,
+    closed: true,
+    canceled: true
+  }
+}
+
+const visibleKanbanColumns = ref(loadKanbanColumnsPreferences())
+
+// Mostrar selector de columnas
+const showColumnSelector = ref(false)
+
+// Sistema de notificaciones
+const notifications = ref([])
+let notificationId = 0
+
+const showNotification = (message, type = 'success') => {
+  const id = notificationId++
+  notifications.value.push({
+    id,
+    message,
+    type // 'success', 'error', 'warning', 'info'
+  })
+  
+  // Auto-remover después de 3 segundos
+  setTimeout(() => {
+    notifications.value = notifications.value.filter(n => n.id !== id)
+  }, 3000)
+}
+
+// Guardar preferencia de vista cuando cambie
+watch(currentView, (newValue) => {
+  localStorage.setItem('tickets_view_preference', newValue)
+  console.log('💾 Preferencia de vista guardada:', newValue)
+})
+
+// Guardar preferencias de columnas cuando cambien
+watch(visibleKanbanColumns, (newValue) => {
+  localStorage.setItem('kanban_columns_preferences', JSON.stringify(newValue))
+  console.log('💾 Preferencias de columnas guardadas:', newValue)
+}, { deep: true })
+
 // Ticket metrics
 const ticketMetrics = ref({
   unassigned: 0,
@@ -5133,6 +5964,7 @@ const fetchTickets = async () => {
     // Enrich tickets with tercero names and assigned user names using cached data
      console.log('🔄 Enriching tickets - Users available:', users.value.length, 'Terceros available:', terceros.value.length)
     
+    // Enriquecer tickets con datos disponibles (sin proyectos aún)
     tickets.value = ticketsData.map(ticket => {
       // Enrich with tercero name
       if (ticket.fk_soc && terceros.value.length > 0) {
@@ -5443,6 +6275,56 @@ const paginatedTickets = computed(() => {
   return filteredTickets.value.slice(start, end)
 })
 
+// Columnas del Kanban organizadas por estado
+const kanbanColumns = computed(() => {
+  const columns = {
+    notRead: [],      // Estado 0
+    read: [],         // Estado 1
+    assigned: [],     // Estado 2
+    inProgress: [],   // Estado 3
+    needMoreInfo: [], // Estado 5
+    waiting: [],      // Estado 7
+    closed: [],       // Estado 8 (solo últimos 10)
+    canceled: []      // Estado 9
+  }
+  
+  filteredTickets.value.forEach(ticket => {
+    const status = parseInt(ticket.fk_statut)
+    
+    switch(status) {
+      case 0:
+        columns.notRead.push(ticket)
+        break
+      case 1:
+        columns.read.push(ticket)
+        break
+      case 2:
+        columns.assigned.push(ticket)
+        break
+      case 3:
+        columns.inProgress.push(ticket)
+        break
+      case 5:
+        columns.needMoreInfo.push(ticket)
+        break
+      case 7:
+        columns.waiting.push(ticket)
+        break
+      case 8:
+        columns.closed.push(ticket)
+        break
+      case 9:
+        columns.canceled.push(ticket)
+        break
+    }
+  })
+  
+  // Limitar columna cerrado a los últimos 10
+  columns.closed = columns.closed.slice(-10)
+  
+  return columns
+})
+
 const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage.value)
 const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage.value, filteredTickets.value.length))
 
@@ -5570,6 +6452,141 @@ const applyFilters = () => {
   currentPage.value = 1
 }
 
+// Funciones auxiliares para Kanban
+const getKanbanThirdpartyInitials = (ticket) => {
+  if (!ticket.thirdparty_name) return '?'
+  const names = ticket.thirdparty_name.split(' ')
+  if (names.length >= 2) {
+    return (names[0][0] + names[1][0]).toUpperCase()
+  }
+  return ticket.thirdparty_name.substring(0, 2).toUpperCase()
+}
+
+const getKanbanUserInitials = (userId) => {
+  const user = users.value.find(u => u.id == userId)
+  if (!user) return '?'
+  if (user.firstname && user.lastname) {
+    return (user.firstname[0] + user.lastname[0]).toUpperCase()
+  }
+  return user.login?.substring(0, 2).toUpperCase() || '?'
+}
+
+const getKanbanUserName = (userId) => {
+  const user = users.value.find(u => u.id == userId)
+  if (!user) return 'Usuario desconocido'
+  return `${user.firstname || ''} ${user.lastname || ''}`.trim() || user.login
+}
+
+// Drag and Drop functions para Kanban
+const handleKanbanDragStart = (event, ticket) => {
+  draggedTicket.value = ticket
+  event.dataTransfer.effectAllowed = 'move'
+  
+  // Agregar clase visual al elemento arrastrado
+  event.target.style.opacity = '0.5'
+  event.target.style.transform = 'rotate(3deg)'
+  
+  console.log('🎯 Arrastrando ticket:', ticket.ref)
+}
+
+const handleKanbanDragEnd = (event) => {
+  // Restaurar estilos
+  event.target.style.opacity = '1'
+  event.target.style.transform = 'rotate(0deg)'
+  draggedTicket.value = null
+}
+
+const handleKanbanDrop = async (event, newStatus) => {
+  event.preventDefault()
+  
+  if (!draggedTicket.value) return
+  
+  const ticket = draggedTicket.value
+  const oldStatus = parseInt(ticket.fk_statut)
+  
+  if (oldStatus === newStatus) {
+    console.log('⚠️ Mismo estado, no se actualiza')
+    draggedTicket.value = null
+    return
+  }
+  
+  console.log(`🔄 Moviendo ticket ${ticket.ref} de estado ${oldStatus} a ${newStatus}`)
+  
+  // 1. ACTUALIZACIÓN OPTIMISTA - Actualizar UI inmediatamente
+  ticket.fk_statut = String(newStatus)
+  
+  const index = tickets.value.findIndex(t => t.id === ticket.id)
+  if (index !== -1) {
+    tickets.value[index].fk_statut = String(newStatus)
+  }
+  
+  // Actualizar métricas inmediatamente
+  calculateTicketMetrics()
+  
+  // Limpiar estado de drag
+  draggedTicket.value = null
+  
+  // 2. ACTUALIZAR EN SERVIDOR (en segundo plano)
+  try {
+    const response = await http.put(`/api/doli/tickets/${ticket.id}`, {
+      fk_statut: newStatus
+    })
+    
+    console.log('✅ Estado confirmado en servidor:', response.data)
+    
+    // Mostrar notificación de éxito
+    showNotification(`Ticket ${ticket.ref} movido a ${getStatusName(newStatus)}`, 'success')
+    
+  } catch (error) {
+    console.error('❌ Error actualizando estado en servidor:', error)
+    
+    // 3. REVERTIR CAMBIOS si hay error
+    console.log(`🔙 Revirtiendo ticket ${ticket.ref} a estado ${oldStatus}`)
+    
+    ticket.fk_statut = String(oldStatus)
+    
+    if (index !== -1) {
+      tickets.value[index].fk_statut = String(oldStatus)
+    }
+    
+    // Recalcular métricas con estado original
+    calculateTicketMetrics()
+    
+    // Mostrar notificación de error
+    showNotification('Error al actualizar. Cambio revertido', 'error')
+  }
+}
+
+const getStatusName = (status) => {
+  const statusMap = {
+    0: 'No leído',
+    1: 'Leído',
+    2: 'Asignado',
+    3: 'En progreso',
+    5: 'Necesita más info',
+    7: 'En espera',
+    8: 'Cerrado',
+    9: 'Cancelado'
+  }
+  return statusMap[status] || 'Desconocido'
+}
+
+// Formatear fecha para tarjetas Kanban
+const formatKanbanDate = (timestamp) => {
+  if (!timestamp) return ''
+  const date = new Date(parseInt(timestamp) * 1000)
+  const now = new Date()
+  const diffTime = now - date
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 0) return 'Hoy'
+  if (diffDays === 1) return 'Ayer'
+  if (diffDays < 7) return `Hace ${diffDays} días`
+  if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`
+  
+  return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+}
+
 const sortBy = (field) => {
   if (sortField.value === field) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
@@ -5619,6 +6636,12 @@ const viewTicketDetails = async (ticket) => {
     const response = await http.get(`/api/doli/tickets/${ticket.id}`)
      console.log('✅ Ticket details response:', response)
     ticketDetails.value = response.data
+    
+    // Enriquecer con nombre del proyecto si existe
+    if (ticketDetails.value.fk_project) {
+      ticketDetails.value.project_name = await getProjectName(ticketDetails.value.fk_project)
+      console.log(`📁 Proyecto del ticket: ${ticketDetails.value.project_name}`)
+    }
     
     // Cargar todas las intervenciones del ticket
     await fetchAllTicketInterventions(ticket.id)
