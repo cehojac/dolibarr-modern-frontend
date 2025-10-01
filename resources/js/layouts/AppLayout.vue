@@ -250,7 +250,7 @@ const authStore = useAuthStore()
 const { isDark, toggleTheme, initTheme } = useTheme()
 const { assignedTicketsCount, fetchAssignedTicketsCount, startAutoRefresh: startTicketsAutoRefresh } = useTicketsCounter()
 const { assignedTasksCount, fetchAssignedTasksCount, startAutoRefresh: startTasksAutoRefresh } = useTasksCounter()
-const { todayEventsCount, fetchTodayEventsCount, startAutoRefresh: startAgendaAutoRefresh } = useAgendaCounter()
+const { overdueEventsCount, fetchOverdueEventsCount, startAutoRefresh: startAgendaAutoRefresh } = useAgendaCounter()
 const { hasAnyPermission } = usePermissions()
 
 // Configuración de permisos por módulo del menú
@@ -313,8 +313,8 @@ watch(assignedTasksCount, (newValue) => {
    // console.log('📋 Assigned tasks count changed:', newValue)
 }, { immediate: true })
 
-watch(todayEventsCount, (newValue) => {
-   // console.log('📅 Today events count changed:', newValue)
+watch(overdueEventsCount, (newValue) => {
+   // console.log('⏰ Overdue events count changed:', newValue)
 }, { immediate: true })
 
 // Debug navigation computed (movido después de la definición de navigation)
@@ -342,7 +342,7 @@ const userInitials = computed(() => {
 })
 
 const navigation = computed(() => {
-   // console.log('🔄 Navigation computed - Tasks count:', assignedTasksCount.value, 'Tickets count:', assignedTicketsCount.value, 'Today events count:', todayEventsCount.value)
+   // console.log('🔄 Navigation computed - Tasks count:', assignedTasksCount.value, 'Tickets count:', assignedTicketsCount.value, 'Overdue events count:', overdueEventsCount.value)
   const allMenuItems = [
     { name: 'Dashboard', href: '/', iconPath: 'M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z' },
     { 
@@ -381,7 +381,7 @@ const navigation = computed(() => {
     { name: 'Productos / Servicios', href: '/productos', iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
     { name: 'Proyectos', href: '/proyectos', iconPath: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' },
     { name: 'Documentos', href: '/documentos', iconPath: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
-    { name: 'Agenda', href: '/agenda', iconPath: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', count: todayEventsCount.value },
+    { name: 'Agenda', href: '/agenda', iconPath: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z', count: overdueEventsCount.value },
     { name: 'Tickets', href: '/tickets', iconPath: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z', count: assignedTicketsCount.value },
     { name: 'Tareas', href: '/tareas', iconPath: 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', count: assignedTasksCount.value }
   ]
@@ -439,7 +439,7 @@ onMounted(async () => {
   initTheme()
   await fetchAssignedTicketsCount()
   await fetchAssignedTasksCount()
-  await fetchTodayEventsCount()
+  await fetchOverdueEventsCount()
   stopTicketsAutoRefresh = startTicketsAutoRefresh()
   stopTasksAutoRefresh = startTasksAutoRefresh()
   stopAgendaAutoRefresh = startAgendaAutoRefresh()
