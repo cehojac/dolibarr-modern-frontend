@@ -368,15 +368,9 @@
     </div>
 
     <!-- Vista Kanban -->
-    <div v-if="currentView === 'kanban'" class="grid gap-4" :class="{
-      'grid-cols-1': true,
-      'md:grid-cols-2': true,
-      'lg:grid-cols-3': Object.values(visibleKanbanColumns).filter(v => v).length <= 4,
-      'lg:grid-cols-4': Object.values(visibleKanbanColumns).filter(v => v).length > 4 && Object.values(visibleKanbanColumns).filter(v => v).length <= 6,
-      'xl:grid-cols-6': Object.values(visibleKanbanColumns).filter(v => v).length > 6
-    }">
+    <div v-if="currentView === 'kanban'" class="flex gap-4 overflow-x-auto pb-4 kanban-container">
       <!-- Columna: No leído -->
-      <div v-if="visibleKanbanColumns.notRead" class="rounded-xl border p-4" :class="isDark ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-200'">
+      <div v-if="visibleKanbanColumns.notRead" class="w-[75vw] md:w-[calc(25vw-1rem)] flex-shrink-0 rounded-xl border p-4" :class="isDark ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-200'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-sm" :class="isDark ? 'text-red-300' : 'text-red-700'">
             No leído
@@ -455,7 +449,7 @@
       </div>
 
       <!-- Columna: Leído -->
-      <div v-if="visibleKanbanColumns.read" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div v-if="visibleKanbanColumns.read" class="w-[75vw] md:w-[calc(25vw-1rem)] flex-shrink-0 rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
             Leído
@@ -531,7 +525,7 @@
       </div>
 
       <!-- Columna: Asignado -->
-      <div v-if="visibleKanbanColumns.assigned" class="rounded-xl border p-4" :class="isDark ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-200'">
+      <div v-if="visibleKanbanColumns.assigned" class="w-[75vw] md:w-[calc(25vw-1rem)] flex-shrink-0 rounded-xl border p-4" :class="isDark ? 'bg-yellow-900/20 border-yellow-700' : 'bg-yellow-50 border-yellow-200'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-sm" :class="isDark ? 'text-yellow-300' : 'text-yellow-700'">
             Asignado
@@ -607,7 +601,7 @@
       </div>
 
       <!-- Columna: En progreso -->
-      <div v-if="visibleKanbanColumns.inProgress" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div v-if="visibleKanbanColumns.inProgress" class="w-[75vw] md:w-[calc(25vw-1rem)] flex-shrink-0 rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
             En progreso
@@ -683,7 +677,7 @@
       </div>
 
       <!-- Columna: Necesita más info -->
-      <div v-if="visibleKanbanColumns.needMoreInfo" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div v-if="visibleKanbanColumns.needMoreInfo" class="w-[75vw] md:w-[calc(25vw-1rem)] flex-shrink-0 rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
             Necesita más info
@@ -759,7 +753,7 @@
       </div>
 
       <!-- Columna: En espera -->
-      <div v-if="visibleKanbanColumns.waiting" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div v-if="visibleKanbanColumns.waiting" class="w-[75vw] md:w-[calc(25vw-1rem)] flex-shrink-0 rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
             En espera
@@ -835,7 +829,7 @@
       </div>
 
       <!-- Columna: Cerrado -->
-      <div v-if="visibleKanbanColumns.closed" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div v-if="visibleKanbanColumns.closed" class="w-[75vw] md:w-[calc(25vw-1rem)] flex-shrink-0 rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
             Cerrado
@@ -911,7 +905,7 @@
       </div>
 
       <!-- Columna: Cancelado -->
-      <div v-if="visibleKanbanColumns.canceled" class="rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div v-if="visibleKanbanColumns.canceled" class="w-[75vw] md:w-[calc(25vw-1rem)] flex-shrink-0 rounded-xl border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
             Cancelado
@@ -7770,5 +7764,29 @@ onUnmounted(cleanup)
 .drag-over {
   border-color: #3B82F6 !important;
   background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Estilos personalizados para el scrollbar del kanban estilo Trello */
+.kanban-container {
+  scroll-behavior: smooth;
+}
+
+.kanban-container::-webkit-scrollbar {
+  height: 12px;
+}
+
+.kanban-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.kanban-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.kanban-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(107, 114, 128, 0.7);
 }
 </style>
