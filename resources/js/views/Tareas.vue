@@ -82,6 +82,7 @@
 
         <!-- Tareas Vencidas -->
         <div 
+          @click="filterByOverdue"
           class="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-all duration-200" 
           :class="overdueTasks.length > 0 
             ? (isDark ? 'bg-red-900/20 border-red-700 hover:bg-red-900/30' : 'bg-red-50 border-red-200 hover:bg-red-100')
@@ -163,7 +164,7 @@
         >
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ filteredTasks.length }}</p>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ tasks.length }}</p>
               <p class="text-sm font-medium text-gray-500">Total</p>
               <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Todas las tareas</p>
             </div>
@@ -205,9 +206,11 @@
         :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
       >
         <option value="">Todos los estados</option>
-        <option value="pending">Pendiente</option>
-        <option value="in_progress">En progreso</option>
-        <option value="completed">Completada</option>
+        <option value="0">Borrador</option>
+        <option value="1">Validada</option>
+        <option value="2">En curso</option>
+        <option value="3">Terminada</option>
+        <option value="4">Cancelada</option>
       </select>
 
       <!-- Priority Filter -->
@@ -217,11 +220,10 @@
         :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
       >
         <option value="">Todas las prioridades</option>
-        <option value="LOW">Baja</option>
-        <option value="NORMAL">Normal</option>
-        <option value="HIGH">Alta</option>
-        <option value="URGENT">Urgente</option>
-        <option value="CRITICAL">Crítica</option>
+        <option value="0">Baja</option>
+        <option value="1">Media</option>
+        <option value="2">Alta</option>
+        <option value="3">Muy alta</option>
       </select>
 
       <!-- Project Filter -->
@@ -293,7 +295,6 @@
           <thead :class="isDark ? 'bg-gray-800' : 'bg-gray-50'">
             <tr>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tarea</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Prioridad</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tercero</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Progreso</th>
@@ -340,13 +341,6 @@
                 </div>
               </td>
 
-              <!-- Estado -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(task.status)">
-                  {{ getStatusText(task.status) }}
-                </span>
-              </td>
-
               <!-- Prioridad -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getPriorityClass(task.priority)">
@@ -387,9 +381,9 @@
               <!-- Fechas -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-xs" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                  <div v-if="task.dateo">Inicio: {{ formatDate(task.dateo) }}</div>
-                  <div v-if="task.datee" class="mt-1">Fin: {{ formatDate(task.datee) }}</div>
-                  <div v-if="!task.dateo && !task.datee" class="text-gray-400">-</div>
+                  <div v-if="task.date_start">Inicio: {{ formatDate(task.date_start) }}</div>
+                  <div v-if="task.date_end" class="mt-1">Fin: {{ formatDate(task.date_end) }}</div>
+                  <div v-if="!task.date_start && !task.date_end" class="text-gray-400">-</div>
                 </div>
               </td>
 
@@ -411,7 +405,7 @@
                     :entity-id="task.id"
                     size="md"
                     variant="table"
-                    :show-time="false"
+                    :show-time="true"
                     :custom-is-running="(taskId) => taskTimers[taskId]?.isRunning || false"
                     :custom-format-time="(taskId) => formatTime(taskTimers[taskId]?.elapsed || 0)"
                     @started="handleTaskTimerStarted"
@@ -523,6 +517,20 @@
               <div class="flex-1 p-6 overflow-y-auto min-w-0">
                 <!-- Action Buttons -->
                 <div class="flex items-center space-x-3 mb-6">
+                  <!-- Botón Marcar completo -->
+                  <button 
+                    @click="markTaskAsComplete"
+                    :disabled="completingTask || taskDetails?.progress >= 100"
+                    class="flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors" 
+                    :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-sm">{{ completingTask ? 'Completando...' : 'Marcar completo' }}</span>
+                  </button>
+                  
+                  <!-- Timer Button in Modal -->
                   <TimerButton 
                     v-if="selectedTask?.id"
                     :entity-id="selectedTask.id"
@@ -533,6 +541,17 @@
                     @started="handleTaskTimerStarted"
                     @stopped="handleTaskTimerStopped"
                   />
+                  
+                  <!-- Manual Timesheet Button -->
+                  <button 
+                    @click="openManualTimesheetModal"
+                    class="flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors text-blue-500 hover:text-blue-400 bg-blue-50 hover:bg-blue-100 border-blue-200"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span class="text-sm">Add Timesheet</span>
+                  </button>
                 </div>
 
                 <!-- Description Section -->
@@ -1135,6 +1154,59 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal para guardar tiempo registrado -->
+  <div v-if="showTimeEntryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="rounded-lg p-6 w-full max-w-md mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <h3 class="text-lg font-semibold mb-4" :class="isDark ? 'text-white' : 'text-gray-900'">
+        Guardar Tiempo Registrado
+      </h3>
+      
+      <div class="mb-4">
+        <p class="text-sm mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+          Tiempo registrado: <span class="font-mono font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ formatDuration(recordedTime) }}</span>
+        </p>
+        <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+          ({{ recordedTime }} segundos)
+        </p>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+          Nota (opcional)
+        </label>
+        <textarea
+          v-model="timeEntryNote"
+          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+          :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+          rows="3"
+          placeholder="Descripción del tiempo trabajado..."
+        ></textarea>
+      </div>
+      
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="cancelTimeEntry"
+          class="px-4 py-2 text-sm font-medium rounded-md transition-colors"
+          :class="isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="saveTimeEntry"
+          :disabled="isSavingTimeEntry"
+          class="px-4 py-2 text-sm font-medium text-white rounded-md transition-colors flex items-center"
+          :class="isSavingTimeEntry ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'"
+        >
+          <svg v-if="isSavingTimeEntry" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ isSavingTimeEntry ? 'Guardando...' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -1158,6 +1230,9 @@ const loading = ref(false)
 
 // User filter - show only user's tasks by default
 const showOnlyMyTasks = ref(true)
+
+// Special filters
+const filterOnlyOverdue = ref(false)
 
 // Filters
 const searchQuery = ref('')
@@ -1185,6 +1260,13 @@ const showTaskModal = ref(false)
 const selectedTask = ref(null)
 const taskDetails = ref(null)
 const loadingTaskDetails = ref(false)
+const completingTask = ref(false)
+
+// Timer time entry modal
+const showTimeEntryModal = ref(false)
+const timeEntryNote = ref('')
+const recordedTime = ref(0)
+const isSavingTimeEntry = ref(false)
 
 // Notes and files
 const privateNote = ref('')
@@ -1257,6 +1339,30 @@ const filteredFollowerContacts = computed(() => {
 const filteredTasks = computed(() => {
   let filtered = tasks.value
 
+  // Filter by overdue status if active
+  if (filterOnlyOverdue.value) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    filtered = filtered.filter(task => {
+      if (!task.date_end) return false
+      
+      // Convertir timestamp Unix a Date
+      let endDate
+      if (typeof task.date_end === 'number' || !isNaN(task.date_end)) {
+        const timestamp = parseInt(task.date_end)
+        const milliseconds = timestamp < 10000000000 ? timestamp * 1000 : timestamp
+        endDate = new Date(milliseconds)
+      } else {
+        endDate = new Date(task.date_end)
+      }
+      endDate.setHours(0, 0, 0, 0)
+      
+      const status = parseInt(task.fk_statut || task.status)
+      return endDate < today && status !== 3 && status !== 4
+    })
+  }
+
   // Filter by user assignment - show only tasks assigned to current user
   if (showOnlyMyTasks.value && authStore.user) {
     filtered = filtered.filter(task => 
@@ -1276,13 +1382,16 @@ const filteredTasks = computed(() => {
   }
 
   // Filter by status
-  if (statusFilter.value) {
-    filtered = filtered.filter(task => task.status === statusFilter.value)
+  if (statusFilter.value !== '') {
+    filtered = filtered.filter(task => {
+      const taskStatus = parseInt(task.fk_statut || task.status)
+      return taskStatus === parseInt(statusFilter.value)
+    })
   }
 
   // Filter by priority
-  if (priorityFilter.value) {
-    filtered = filtered.filter(task => task.priority === priorityFilter.value)
+  if (priorityFilter.value !== '') {
+    filtered = filtered.filter(task => parseInt(task.priority) === parseInt(priorityFilter.value))
   }
 
   // Filter by selected project
@@ -1321,258 +1430,314 @@ const visiblePages = computed(() => {
   return pages
 })
 
-// Métricas de tareas
+// Métricas de tareas - SIEMPRE sobre el total de tareas (no filtradas por usuario)
 const pendingTasks = computed(() => {
-  return filteredTasks.value.filter(task => task.status === 'pending' || task.status === '0')
+  return tasks.value.filter(task => {
+    const status = parseInt(task.fk_statut || task.status)
+    // 0 = Borrador, 1 = Validada (ambas son "pendientes" de iniciar)
+    return status === 0 || status === 1
+  })
 })
 
 const inProgressTasks = computed(() => {
-  return filteredTasks.value.filter(task => task.status === 'in_progress' || task.status === '1')
+  return tasks.value.filter(task => {
+    const status = parseInt(task.fk_statut || task.status)
+    // 2 = En curso
+    return status === 2
+  })
 })
 
 const completedTasks = computed(() => {
-  return filteredTasks.value.filter(task => task.status === 'completed' || task.status === '2')
+  return tasks.value.filter(task => {
+    const status = parseInt(task.fk_statut || task.status)
+    // 3 = Terminada
+    return status === 3
+  })
 })
 
 const overdueTasks = computed(() => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   
-  return filteredTasks.value.filter(task => {
-    if (!task.datee) return false // Sin fecha de fin
+  return tasks.value.filter(task => {
+    if (!task.date_end) return false // Sin fecha de fin
     
-    const endDate = new Date(task.datee)
+    // Convertir timestamp Unix a Date
+    let endDate
+    if (typeof task.date_end === 'number' || !isNaN(task.date_end)) {
+      const timestamp = parseInt(task.date_end)
+      const milliseconds = timestamp < 10000000000 ? timestamp * 1000 : timestamp
+      endDate = new Date(milliseconds)
+    } else {
+      endDate = new Date(task.date_end)
+    }
     endDate.setHours(0, 0, 0, 0)
     
-    // Vencida si la fecha de fin es anterior a hoy y no está completada
-    return endDate < today && task.status !== 'completed' && task.status !== '2'
+    // Vencida si la fecha de fin es anterior a hoy y no está terminada
+    const status = parseInt(task.fk_statut || task.status)
+    return endDate < today && status !== 3 && status !== 4
   })
 })
 
 const highPriorityTasks = computed(() => {
-  return filteredTasks.value.filter(task => 
-    task.priority === 'HIGH' || 
-    task.priority === 'URGENT' || 
-    task.priority === 'CRITICAL' ||
-    task.priority === '3' ||
-    task.priority === '4' ||
-    task.priority === '5'
-  )
+  return tasks.value.filter(task => {
+    const priority = parseInt(task.priority)
+    // Prioridades 2 (Alta) y 3 (Muy alta) se consideran de alta prioridad
+    return priority === 2 || priority === 3
+  })
 })
 
 // Methods
 const loadTasks = async () => {
   loading.value = true
   try {
-    const enrichedTasks = []
+    console.log('⚡ PASO 1: Cargando tareas primero...')
     
-    // Try to load tasks first
+    // PASO 1: Cargar solo tareas (lo más importante)
+    const tasksResponse = await http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
+    
+    if (!tasksResponse.data || !Array.isArray(tasksResponse.data)) {
+      tasks.value = []
+      loading.value = false
+      return
+    }
+    
+    console.log('✅ Tareas cargadas:', tasksResponse.data.length)
+    
+    // Debug: Ver los campos de fecha disponibles en la primera tarea
+    if (tasksResponse.data.length > 0) {
+      const firstTask = tasksResponse.data[0]
+      console.log('📅 Campos de fecha en tarea:', {
+        dateo: firstTask.dateo,
+        datec: firstTask.datec,
+        date_start: firstTask.date_start,
+        date_creation: firstTask.date_creation,
+        datee: firstTask.datee,
+        date_end: firstTask.date_end,
+        date_valid: firstTask.date_valid
+      })
+      console.log('🔍 Tipos de campos:', {
+        datec_type: typeof firstTask.datec,
+        datec_value: firstTask.datec,
+        datee_type: typeof firstTask.datee,
+        datee_value: firstTask.datee
+      })
+    }
+    
+    // PASO 2: Procesar tareas básicas SIN ENRIQUECIMIENTO para mostrar rápido
+    const basicTasks = tasksResponse.data.map(task => ({
+      ...task,
+      status: task.fk_statut || 0, // Usar el estado real de Dolibarr
+      assigned_to: null, // Se enriquecerá después
+      project_name: null, // Se enriquecerá después
+      tercero_name: null, // Se enriquecerá después
+      priority: task.priority || 1,
+      isUserAssigned: false
+    }))
+    
+    // PASO 3: Mostrar datos básicos inmediatamente
+    tasks.value = basicTasks
+    loading.value = false
+    console.log('⚡ Datos básicos mostrados, cargando enriquecimiento...')
+    
+    // PASO 4: Cargar datos adicionales para enriquecimiento en background
     try {
-      const tasksResponse = await http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
+      const [projectsResponse, usersResponse, tercerosResponse] = await Promise.all([
+        http.get('/api/doli/projects?limit=1000').catch(() => ({ data: [] })),
+        http.get('/api/doli/users').catch(() => ({ data: [] })),
+        http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] }))
+      ])
       
-      if (tasksResponse.data && Array.isArray(tasksResponse.data)) {
-        // Load supporting data only if tasks loaded successfully
-        const [projectsResponse, usersResponse, tercerosResponse] = await Promise.all([
-          http.get('/api/doli/projects?limit=1000').catch(() => ({ data: [] })),
-          http.get('/api/doli/users').catch(() => ({ data: [] })),
-          http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] }))
-        ])
+      console.log('✅ Datos adicionales cargados:', {
+        projects: projectsResponse.data?.length || 0,
+        users: usersResponse.data?.length || 0,
+        terceros: tercerosResponse.data?.length || 0
+      })
+      
+      // Debug: Mostrar algunos usuarios para verificar que Joel Huamán esté
+      if (usersResponse.data?.length > 0) {
+        console.log('👥 Primeros 5 usuarios cargados:', usersResponse.data.slice(0, 5).map(u => ({
+          id: u.id,
+          firstname: u.firstname,
+          lastname: u.lastname,
+          login: u.login
+        })))
+        
+        // Buscar específicamente a Joel Huamán
+        const joelUser = usersResponse.data.find(u => 
+          (u.firstname && u.firstname.toLowerCase().includes('joel')) ||
+          (u.lastname && u.lastname.toLowerCase().includes('huaman')) ||
+          (u.login && u.login.toLowerCase().includes('joel'))
+        )
+        if (joelUser) {
+          console.log('✅ Joel Huamán encontrado:', {
+            id: joelUser.id,
+            rowid: joelUser.rowid,
+            firstname: joelUser.firstname,
+            lastname: joelUser.lastname,
+            login: joelUser.login
+          })
+        } else {
+          console.log('❌ Joel Huamán NO encontrado en la lista de usuarios')
+        }
+      }
 
-        // Store reference data
-        projects.value = projectsResponse.data || []
-        users.value = usersResponse.data || []
-        terceros.value = tercerosResponse.data || []
+      // PASO 5: Store reference data
+      projects.value = projectsResponse.data || []
+      users.value = usersResponse.data || []
+      terceros.value = tercerosResponse.data || []
 
-        // Create lookup maps for enrichment with multiple key types
-        const projectsMap = {}
-        const usersMap = {}
-        const tercerosMap = {}
+      // Crear mapas de búsqueda con múltiples tipos de claves
+      const projectsMap = {}
+      const usersMap = {}
+      const tercerosMap = {}
 
-        // Store projects with multiple key types for flexible matching
-        projects.value.forEach(project => {
-          if (project.id) {
-            projectsMap[project.id] = project
-            projectsMap[String(project.id)] = project
-          }
-          if (project.rowid && project.rowid !== project.id) {
-            projectsMap[project.rowid] = project
-            projectsMap[String(project.rowid)] = project
-          }
-        })
+      projects.value.forEach(project => {
+        if (project.id) {
+          projectsMap[project.id] = project
+          projectsMap[String(project.id)] = project
+        }
+        if (project.rowid && project.rowid !== project.id) {
+          projectsMap[project.rowid] = project
+          projectsMap[String(project.rowid)] = project
+        }
+      })
 
-        // Store users with multiple key types
-        users.value.forEach(user => {
-          if (user.id) {
-            usersMap[user.id] = user
-            usersMap[String(user.id)] = user
-          }
-          if (user.rowid && user.rowid !== user.id) {
-            usersMap[user.rowid] = user
-            usersMap[String(user.rowid)] = user
-          }
-        })
+      users.value.forEach(user => {
+        if (user.id) {
+          usersMap[user.id] = user
+          usersMap[String(user.id)] = user
+        }
+        if (user.rowid && user.rowid !== user.id) {
+          usersMap[user.rowid] = user
+          usersMap[String(user.rowid)] = user
+        }
+      })
 
-        // Store terceros with multiple key types for flexible matching
-        terceros.value.forEach(tercero => {
-          if (tercero.id) {
-            tercerosMap[tercero.id] = tercero
-            tercerosMap[String(tercero.id)] = tercero
-          }
-          if (tercero.rowid && tercero.rowid !== tercero.id) {
-            tercerosMap[tercero.rowid] = tercero
-            tercerosMap[String(tercero.rowid)] = tercero
-          }
-        })
+      terceros.value.forEach(tercero => {
+        if (tercero.id) {
+          tercerosMap[tercero.id] = tercero
+          tercerosMap[String(tercero.id)] = tercero
+        }
+        if (tercero.rowid && tercero.rowid !== tercero.id) {
+          tercerosMap[tercero.rowid] = tercero
+          tercerosMap[String(tercero.rowid)] = tercero
+        }
+      })
 
-         console.log('Tareas - Projects loaded:', projects.value.length)
-         console.log('Tareas - Terceros loaded:', terceros.value.length)
-         console.log('Tareas - Users loaded:', users.value.length)
-         console.log('Tareas - Sample project:', projects.value[0])
-         console.log('Tareas - Sample tercero:', terceros.value[0])
-         console.log('Tareas - Projects map keys:', Object.keys(projectsMap).slice(0, 10))
-         console.log('Tareas - Terceros map keys:', Object.keys(tercerosMap).slice(0, 10))
-         console.log('Tareas - Users map keys:', Object.keys(usersMap).slice(0, 10))
+      console.log('📊 Mapas creados - Projects:', Object.keys(projectsMap).length, 'Users:', Object.keys(usersMap).length, 'Terceros:', Object.keys(tercerosMap).length)
 
-        // Process tasks with enrichment (including role-based assignment)
-        const taskPromises = tasksResponse.data.map(async (task, index) => {
-          if (index < 3) {
-             console.log(`Sample task ${index}:`, task)
+      // PASO 6: Enriquecer las tareas ya mostradas
+      const enrichedTasks = await Promise.all(tasks.value.map(async (task, index) => {
+        // Try multiple possible project ID fields
+        let project = null
+        const projectIds = [task.fk_project, task.fk_projet, task.project_id, task.projectid]
+        
+        for (const projectId of projectIds) {
+          if (projectId && projectsMap[projectId]) {
+            project = projectsMap[projectId]
+            break
           }
-          
-          // Try multiple possible project ID fields
-          let project = null
-          const projectIds = [task.fk_project, task.fk_projet, task.project_id, task.projectid]
-          
-          if (index < 3) {
-             console.log(`Task ${task.ref} project IDs to try:`, projectIds)
-             console.log(`Looking for project ID '${projectIds[0]}' in map:`, !!projectsMap[projectIds[0]])
-            if (projectIds[0]) {
-               console.log(`Available project IDs near '${projectIds[0]}':`, Object.keys(projectsMap).filter(key => key.includes(projectIds[0].toString().slice(-2))))
+        }
+
+        // Check if current user has a role in this task
+        let assignedUser = null
+        let isUserAssigned = false
+        
+        if (task.id && currentUser.value?.id) {
+          try {
+            const roleResponse = await http.get(`/api/doli/tasks/${task.id}/roles?userid=${currentUser.value.id}`)
+            if (roleResponse.data && roleResponse.data.length > 0) {
+              isUserAssigned = true
+              assignedUser = currentUser.value
             }
+          } catch (error) {
+            // No role found, continue with fallback
+          }
+        }
+
+        // Fallback: Try multiple possible user ID fields if no role found
+        if (!assignedUser) {
+          const userIds = [task.fk_user_assign, task.fk_user, task.user_id, task.userid]
+          
+          // Debug para primera tarea con asignación
+          if (index === 0 && task.fk_user_assign) {
+            console.log('🔍 DEBUG Tarea con asignación:', {
+              taskId: task.id,
+              taskRef: task.ref,
+              fk_user_assign: task.fk_user_assign,
+              fk_user_assign_type: typeof task.fk_user_assign,
+              userIds: userIds,
+              usersMapKeys: Object.keys(usersMap).slice(0, 10),
+              foundInMap: usersMap[task.fk_user_assign],
+              usersAvailable: users.value.length
+            })
           }
           
-          for (const projectId of projectIds) {
-            if (projectId && projectsMap[projectId]) {
-              project = projectsMap[projectId]
-              if (index < 3) {
-                 console.log(`Found project for task ${task.ref}:`, project)
+          for (const userId of userIds) {
+            if (userId && usersMap[userId]) {
+              assignedUser = usersMap[userId]
+              if (index === 0) {
+                console.log('✅ Usuario encontrado:', {
+                  userId: userId,
+                  user: assignedUser
+                })
               }
               break
             }
           }
-
-          // Check if current user has a role in this task
-          let assignedUser = null
-          let isUserAssigned = false
           
-          if (task.id && currentUser.value?.id) {
-            try {
-              const roleResponse = await http.get(`/api/doli/tasks/${task.id}/roles?userid=${currentUser.value.id}`)
-              if (roleResponse.data && roleResponse.data.length > 0) {
-                isUserAssigned = true
-                assignedUser = currentUser.value
-                 console.log(`User ${currentUser.value.id} is assigned to task ${task.ref}`)
-              }
-            } catch (error) {
-              // No role found or API error - continue with fallback logic
-               console.log(`No role found for user ${currentUser.value.id} in task ${task.ref}`)
-            }
+          if (!assignedUser && task.fk_user_assign && index === 0) {
+            console.log('❌ No se encontró usuario con ID:', task.fk_user_assign, 'en mapa de', Object.keys(usersMap).length, 'usuarios')
           }
+        }
 
-          // Fallback: Try multiple possible user ID fields if no role found
-          if (!assignedUser) {
-            const userIds = [task.fk_user_assign, task.fk_user, task.user_id, task.userid]
-            for (const userId of userIds) {
-              if (userId && usersMap[userId]) {
-                assignedUser = usersMap[userId]
-                break
-              }
+        // Try to get tercero from project or task directly
+        let tercero = null
+        
+        if (project) {
+          const terceroIds = [project.fk_soc, project.fk_societe, project.socid, project.client_id, project.fk_thirdparty]
+          for (const terceroId of terceroIds) {
+            if (terceroId && tercerosMap[terceroId]) {
+              tercero = tercerosMap[terceroId]
+              break
             }
           }
+        }
+        
+        // If no tercero from project, try task direct fields
+        if (!tercero) {
+          const taskTerceroIds = [task.fk_soc, task.fk_societe, task.socid, task.client_id, task.fk_thirdparty]
+          for (const terceroId of taskTerceroIds) {
+            if (terceroId && tercerosMap[terceroId]) {
+              tercero = tercerosMap[terceroId]
+              break
+            }
+          }
+        }
+        
+        return {
+          ...task,
+          status: task.fk_statut || 0, // Usar el estado real de Dolibarr
+          assigned_to: assignedUser ? `${assignedUser.firstname} ${assignedUser.lastname}`.trim() : null,
+          project_name: project ? (project.title || project.ref) : null,
+          tercero_name: tercero ? tercero.name : null,
+          priority: task.priority || 1,
+          isUserAssigned: isUserAssigned
+        }
+      }))
 
-          // Try to get tercero from project or task directly
-          let tercero = null
-          
-          if (index < 3) {
-            console.log(`🔍 Task ${task.ref} - Searching for tercero...`)
-            console.log(`Task fields:`, {
-              fk_soc: task.fk_soc,
-              fk_societe: task.fk_societe,
-              socid: task.socid,
-              client_id: task.client_id
-            })
-            if (project) {
-              console.log(`Project fields:`, {
-                fk_soc: project.fk_soc,
-                fk_societe: project.fk_societe,
-                socid: project.socid,
-                client_id: project.client_id
-              })
-            }
-          }
-          
-          if (project) {
-            // Try multiple possible tercero ID fields from project
-            const terceroIds = [project.fk_soc, project.fk_societe, project.socid, project.client_id, project.fk_thirdparty]
-            for (const terceroId of terceroIds) {
-              if (terceroId && tercerosMap[terceroId]) {
-                tercero = tercerosMap[terceroId]
-                if (index < 3) {
-                  console.log(`✅ Found tercero from project: ${tercero.name} (ID: ${terceroId})`)
-                }
-                break
-              }
-            }
-          }
-          
-          // If no tercero from project, try task direct fields
-          if (!tercero) {
-            const taskTerceroIds = [task.fk_soc, task.fk_societe, task.socid, task.client_id, task.fk_thirdparty]
-            for (const terceroId of taskTerceroIds) {
-              if (terceroId && tercerosMap[terceroId]) {
-                tercero = tercerosMap[terceroId]
-                if (index < 3) {
-                  console.log(`✅ Found tercero from task: ${tercero.name} (ID: ${terceroId})`)
-                }
-                break
-              }
-            }
-          }
-
-          if (index < 3) {
-            console.log(`Task ${task.ref}: project=${project?.title || project?.ref || 'none'}, tercero=${tercero?.name || 'none'}`)
-            if (!tercero) {
-              console.log(`❌ No tercero found for task ${task.ref}`)
-            }
-          }
-          
-          return {
-            ...task,
-            status: task.progress >= 100 ? 'completed' : (task.progress > 0 ? 'in_progress' : 'pending'),
-            assigned_to: assignedUser ? `${assignedUser.firstname} ${assignedUser.lastname}`.trim() : null,
-            project_name: project ? (project.title || project.ref) : null,
-            tercero_name: tercero ? tercero.name : null,
-            priority: task.priority || 'NORMAL',
-            isUserAssigned: isUserAssigned
-          }
-        })
-
-        // Wait for all task processing to complete
-        const processedTasks = await Promise.all(taskPromises)
-        enrichedTasks.push(...processedTasks)
-      }
+      tasks.value = enrichedTasks
+      console.log('✅ Datos enriquecidos')
     } catch (err) {
-      // Tasks API failed, show empty state
-      projects.value = []
-      users.value = []
-      terceros.value = []
+      console.error('❌ Error al enriquecer tareas:', err)
+      // Mantener las tareas básicas aunque falle el enriquecimiento
     }
-
-    tasks.value = enrichedTasks
   } catch (error) {
-    // Silent error handling - show empty state
+    console.error('❌ Error al cargar tareas:', error)
+    tasks.value = []
   } finally {
-    loading.value = false
+    // loading ya se puso en false en el paso 3
   }
 }
 
@@ -1600,6 +1765,23 @@ const filterUsers = () => {
   }
 }
 
+const filterByOverdue = () => {
+  // Limpiar otros filtros
+  searchQuery.value = ''
+  statusFilter.value = ''
+  priorityFilter.value = ''
+  selectedProject.value = null
+  selectedUser.value = null
+  
+  // Activar filtro de vencidas y mostrar todas las tareas (no solo las del usuario)
+  filterOnlyOverdue.value = true
+  showOnlyMyTasks.value = false
+  
+  currentPage.value = 1
+  
+  console.log('🔴 Filtrando por tareas vencidas de todos los usuarios')
+}
+
 const clearFilters = () => {
   searchQuery.value = ''
   statusFilter.value = ''
@@ -1608,6 +1790,7 @@ const clearFilters = () => {
   userSearchQuery.value = ''
   selectedProject.value = null
   selectedUser.value = null
+  filterOnlyOverdue.value = false
   // Keep showOnlyMyTasks as true by default
   showOnlyMyTasks.value = true
   currentPage.value = 1
@@ -1628,8 +1811,8 @@ const viewTaskDetails = async (task) => {
       ...task,
       description: task.note || 'Sin descripción disponible',
       created_by: task.assigned_to || 'Sistema',
-      created_date: task.dateo || new Date().toISOString(),
-      due_date: task.datee,
+      created_date: task.date_start || task.date_creation || new Date().toISOString(),
+      due_date: task.date_end,
       priority_text: getPriorityText(task.priority),
       status_text: getStatusText(task.status),
       total_time: taskTimers.value[task.id]?.elapsed || 0
@@ -1659,6 +1842,7 @@ const closeTaskModal = () => {
   showTaskModal.value = false
   selectedTask.value = null
   taskDetails.value = null
+  completingTask.value = false
   // Clear notes and files
   privateNote.value = ''
   publicNote.value = ''
@@ -1684,6 +1868,44 @@ const closeTaskModal = () => {
   followerSearchTerm.value = ''
   showFollowerDropdown.value = false
   availableContacts.value = []
+}
+
+// Marcar tarea como completa
+const markTaskAsComplete = async () => {
+  if (!taskDetails.value?.id) return
+  
+  completingTask.value = true
+  try {
+    console.log('🎯 Marcando tarea como completa:', taskDetails.value.id)
+    
+    // Actualizar progreso a 100%
+    const updateData = {
+      progress: 100
+    }
+    
+    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    console.log('✅ Tarea completada:', response.data)
+    
+    // Actualizar el taskDetails localmente
+    taskDetails.value.progress = 100
+    
+    // Recargar la lista de tareas
+    await loadTasks()
+    
+    alert('Tarea marcada como completa')
+  } catch (error) {
+    console.error('❌ Error al completar tarea:', error)
+    alert('Error al marcar la tarea como completa')
+  } finally {
+    completingTask.value = false
+  }
+}
+
+// Abrir modal de timesheet manual
+const openManualTimesheetModal = () => {
+  console.log('📋 Abriendo modal de timesheet manual para tarea:', taskDetails.value?.id)
+  // TODO: Implementar modal de timesheet manual
+  alert('Función de Add Timesheet manual próximamente disponible')
 }
 
 // Notes functions
@@ -2042,25 +2264,127 @@ const handleTaskTimerStarted = ({ entityId }) => {
   console.log(`▶️ Timer started for task ${entityId}`)
 }
 
-const handleTaskTimerStopped = ({ entityId, isRunning }) => {
+const handleTaskTimerStopped = ({ entityId, elapsedSeconds }) => {
   // Find the task by ID
   const task = filteredTasks.value.find(t => t.id == entityId)
   if (!task) return
   
-  // Use the existing toggleTimer logic to stop
+  // Obtener el tiempo transcurrido del timer local
   const timer = taskTimers.value[entityId]
+  let timeInSeconds = elapsedSeconds
+  
+  // Si no viene elapsedSeconds (cuando usa custom functions), calcularlo del timer
+  if (!timeInSeconds && timer && timer.elapsed) {
+    timeInSeconds = Math.floor(timer.elapsed / 1000)
+  }
+  
+  console.log('⏱️ Timer stopped for task', entityId)
+  console.log('   elapsedSeconds param:', elapsedSeconds)
+  console.log('   timer.elapsed:', timer?.elapsed)
+  console.log('   calculated seconds:', timeInSeconds)
+  
+  // Detener el timer localmente
   if (timer && timer.isRunning) {
     timer.isRunning = false
     if (timerIntervals.value[entityId]) {
       clearInterval(timerIntervals.value[entityId])
       delete timerIntervals.value[entityId]
     }
+  }
+  
+  // Set up the time entry modal
+  recordedTime.value = timeInSeconds
+  selectedTask.value = task
+  showTimeEntryModal.value = true
+}
+
+const saveTimeEntry = async () => {
+  if (isSavingTimeEntry.value) return // Prevenir doble click
+  
+  isSavingTimeEntry.value = true
+  
+  try {
+    console.log('🚀 GUARDANDO TIEMPO EN TAREA')
+    console.log('='.repeat(60))
     
-    const elapsedSeconds = Math.floor(timer.elapsed / 1000)
-    console.log(`⏱️ Timer stopped for task ${entityId}:`, elapsedSeconds, 'seconds')
+    const taskId = selectedTask.value?.id || taskDetails.value?.id
+    if (!taskId) {
+      throw new Error('No se encontró ID de tarea')
+    }
     
-    // Show confirmation with time
-    alert(`Timer parado: ${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s registrados para la tarea "${task.label}"`);
+    // Validar que hay tiempo registrado
+    if (!recordedTime.value || recordedTime.value <= 0) {
+      throw new Error('No hay tiempo registrado para guardar')
+    }
+    
+    // Si el tiempo es menor a 1 minuto, redondear a 1 minuto
+    let durationInSeconds = parseInt(recordedTime.value)
+    if (durationInSeconds < 60) {
+      console.log(`⏱️ Tiempo menor a 1 minuto (${durationInSeconds}s), redondeando a 60s`)
+      durationInSeconds = 60
+    }
+    
+    // Preparar datos para el endpoint /tasks/{id}/addtimespent
+    const now = new Date()
+    const dateStr = now.toISOString().slice(0, 19).replace('T', ' ') // Formato: "YYYY-MM-DD HH:MI:SS"
+    
+    const timeSpentData = {
+      date: dateStr,
+      duration: durationInSeconds, // Asegurar que sea número entero (mínimo 60s)
+      user_id: parseInt(authStore.user?.id) || 0, // 0 para usuario conectado
+      note: timeEntryNote.value || 'Tiempo registrado desde cronómetro'
+    }
+    
+    console.log('📋 Datos de tiempo:', timeSpentData)
+    console.log('🕐 Fecha:', dateStr)
+    console.log('⏱️ Duración:', recordedTime.value, 'segundos (tipo:', typeof recordedTime.value, ')')
+    console.log('👤 Usuario:', authStore.user?.id)
+    console.log('📝 Nota:', timeSpentData.note)
+    console.log('📦 Payload completo:', JSON.stringify(timeSpentData, null, 2))
+    
+    // Llamar al endpoint POST /tasks/{id}/addtimespent
+    const response = await http.post(`/api/doli/tasks/${taskId}/addtimespent`, timeSpentData)
+    
+    console.log('✅ TIEMPO GUARDADO EXITOSAMENTE')
+    console.log('📊 Respuesta:', response.data)
+    console.log('='.repeat(60))
+    
+    // Reset modal state
+    showTimeEntryModal.value = false
+    timeEntryNote.value = ''
+    recordedTime.value = 0
+    
+    // Refresh tasks
+    await loadTasks()
+    
+    alert('✅ Tiempo guardado exitosamente')
+  } catch (error) {
+    console.error('❌ ERROR AL GUARDAR TIEMPO:', error)
+    console.error('Detalles:', error.response?.data)
+    
+    alert('Error al guardar el tiempo: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    isSavingTimeEntry.value = false
+  }
+}
+
+const cancelTimeEntry = () => {
+  showTimeEntryModal.value = false
+  timeEntryNote.value = ''
+  recordedTime.value = 0
+}
+
+const formatDuration = (seconds) => {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${secs}s`
+  } else if (minutes > 0) {
+    return `${minutes}m ${secs}s`
+  } else {
+    return `${secs}s`
   }
 }
 
@@ -2080,47 +2404,63 @@ const formatTime = (milliseconds) => {
 // Utility functions
 const formatDate = (date) => {
   if (!date) return '-'
+  
+  // Si es un timestamp Unix (número), convertir a milisegundos
+  if (typeof date === 'number' || !isNaN(date)) {
+    const timestamp = parseInt(date)
+    // Si es menor a 10000000000, es timestamp en segundos, convertir a milisegundos
+    const milliseconds = timestamp < 10000000000 ? timestamp * 1000 : timestamp
+    return new Date(milliseconds).toLocaleDateString('es-ES')
+  }
+  
+  // Si es string o Date, usar directamente
   return new Date(date).toLocaleDateString('es-ES')
 }
 
 const getStatusClass = (status) => {
-  switch (status) {
-    case 'pending': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-    case 'in_progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-    case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+  const statusNum = parseInt(status)
+  switch (statusNum) {
+    case 0: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' // Borrador
+    case 1: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' // Validada
+    case 2: return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' // En curso
+    case 3: return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' // Terminada
+    case 4: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' // Cancelada
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
   }
 }
 
 const getStatusText = (status) => {
-  switch (status) {
-    case 'pending': return 'Pendiente'
-    case 'in_progress': return 'En progreso'
-    case 'completed': return 'Completada'
+  const statusNum = parseInt(status)
+  switch (statusNum) {
+    case 0: return 'Borrador'
+    case 1: return 'Validada'
+    case 2: return 'En curso'
+    case 3: return 'Terminada'
+    case 4: return 'Cancelada'
     default: return 'Desconocido'
   }
 }
 
 const getPriorityText = (priority) => {
+  const priorityNum = parseInt(priority)
   const priorities = {
-    'LOW': 'Baja',
-    'NORMAL': 'Normal',
-    'HIGH': 'Alta',
-    'URGENT': 'Urgente',
-    'CRITICAL': 'Crítica'
+    0: 'Baja',
+    1: 'Media',
+    2: 'Alta',
+    3: 'Muy alta'
   }
-  return priorities[priority] || 'Normal'
+  return priorities[priorityNum] !== undefined ? priorities[priorityNum] : 'Media'
 }
 
 const getPriorityClass = (priority) => {
+  const priorityNum = parseInt(priority)
   const classes = {
-    'LOW': 'bg-green-600 text-green-100',
-    'NORMAL': 'bg-blue-600 text-blue-100',
-    'HIGH': 'bg-yellow-600 text-yellow-100',
-    'URGENT': 'bg-red-600 text-red-100',
-    'CRITICAL': 'bg-red-800 text-red-100'
+    0: 'bg-green-600 text-green-100',    // Baja
+    1: 'bg-blue-600 text-blue-100',      // Media
+    2: 'bg-orange-600 text-orange-100',  // Alta
+    3: 'bg-red-600 text-red-100'         // Muy alta
   }
-  return classes[priority] || 'bg-blue-600 text-blue-100'
+  return classes[priorityNum] !== undefined ? classes[priorityNum] : 'bg-blue-600 text-blue-100'
 }
 
 // Pagination methods
@@ -2141,7 +2481,7 @@ const goToPage = (page) => {
 }
 
 // Watch for filter changes to reset pagination
-watch([searchQuery, statusFilter, priorityFilter], () => {
+watch([searchQuery, statusFilter, priorityFilter, filterOnlyOverdue], () => {
   currentPage.value = 1
 })
 

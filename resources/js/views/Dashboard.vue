@@ -209,14 +209,21 @@
                 </div>
               </td>
             </tr>
-            <tr v-else v-for="todo in paginatedTodos" :key="`${todo.type}-${todo.id}`" class="transition-colors" :class="isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50'">
+            <tr 
+              v-else 
+              v-for="todo in paginatedTodos" 
+              :key="`${todo.type}-${todo.id}`" 
+              @click="viewDetails(todo)"
+              class="transition-colors cursor-pointer" 
+              :class="[
+                isDark ? 'hover:bg-gray-800' : 'hover:bg-gray-50',
+                todo.type === 'ticket' ? 'hover:ring-2 hover:ring-blue-500' : ''
+              ]"
+            >
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <button 
-                  @click="viewDetails(todo)"
-                  class="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer font-medium"
-                >
+                <span class="text-blue-400 hover:text-blue-300 transition-colors font-medium">
                   {{ todo.ref }}
-                </button>
+                </span>
               </td>
               <td class="px-6 py-4 text-sm max-w-xs truncate" :class="isDark ? 'text-white' : 'text-gray-900'">
                 {{ todo.title }}
@@ -320,6 +327,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de detalles del ticket -->
+    <TicketDetailModal
+      :show="showTicketModal"
+      :ticket-details="ticketDetails"
+      :loading="loadingTicketDetails"
+      @close="closeTicketDetails"
+    />
   </div>
 </template>
 
@@ -330,7 +345,9 @@ import { useAuthStore } from '../stores/auth'
 import { useTicketsCounter } from '../composables/useTicketsCounter'
 import { useTasksCounter } from '../composables/useTasksCounter'
 import { usePermissions } from '../composables/usePermissions'
+import { useTicketDetails } from '../composables/useTicketDetails'
 import PermissionGuard from '../components/PermissionGuard.vue'
+import TicketDetailModal from '../components/TicketDetailModal.vue'
 import http from '../utils/http'
 
 const { isDark } = useTheme()
@@ -338,6 +355,15 @@ const authStore = useAuthStore()
 const { assignedTicketsCount: ticketsCountComposable, fetchAssignedTicketsCount } = useTicketsCounter()
 const { assignedTasksCount: tasksCountComposable, fetchAssignedTasksCount } = useTasksCounter()
 const { canAccess, hasPermission, permissions } = usePermissions()
+
+// Composable de detalles de ticket
+const {
+  showModal: showTicketModal,
+  ticketDetails,
+  loadingDetails: loadingTicketDetails,
+  openTicketDetails,
+  closeTicketDetails
+} = useTicketDetails()
 
 // Reactive data - módulos que no requieren permisos específicos
 const otherModules = computed(() => [
@@ -451,12 +477,9 @@ const loadTodos = async () => {
 
     // Build projects map
     if (projectsResponse.data && Array.isArray(projectsResponse.data)) {
-     // console.log('🏗️ Projects loaded:', projectsResponse.data.length)
       projectsResponse.data.forEach(project => {
-       // console.log('📋 Project mapping:', { id: project.id, title: project.title, ref: project.ref })
         projectsMap[project.id] = project
       })
-    //  console.log('🗺️ Projects map keys:', Object.keys(projectsMap))
     }
 
     // Build users map
@@ -531,20 +554,6 @@ const loadTodos = async () => {
             assignedTasksCounter++
           }
           
-       /*   console.log('🔍 Task data for Dashboard:', {
-            taskId: task.id,
-            projectId: task.fk_project,
-            projectIdType: typeof task.fk_project,
-            projectsMapHasKey: projectsMap.hasOwnProperty(task.fk_project),
-            projectsMapHasStringKey: projectsMap.hasOwnProperty(String(task.fk_project)),
-            project: project,
-            tercero: tercero,
-            tercero_name: tercero ? tercero.name : null,
-            project_name: project ? project.title || project.ref : null,
-            project_tags: project ? project.category : null
-          })
-            */
-          
           todoItems.push({
             id: task.id,
             type: 'task',
@@ -609,10 +618,10 @@ const goToPage = (page) => {
   currentPage.value = page
 }
 
-const viewDetails = (todo) => {
+const viewDetails = async (todo) => {
   if (todo.type === 'ticket') {
-    // Navigate to tickets view with specific ticket
-    window.open(`/tickets?id=${todo.id}`, '_blank')
+    // Abrir modal de detalles del ticket usando el composable
+    await openTicketDetails(todo)
   } else if (todo.type === 'task') {
     // Navigate to projects view
     window.open('/proyectos', '_blank')

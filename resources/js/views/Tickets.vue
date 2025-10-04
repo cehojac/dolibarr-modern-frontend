@@ -3454,11 +3454,26 @@ import { useInterventions } from '@/composables/useInterventions'
 import { useTicketTimer } from '@/composables/useTicketTimer'
 import { useAuthStore } from '../stores/auth'
 import { useTicketReferences } from '@/composables/useTicketReferences'
+import { useTicketDetails } from '@/composables/useTicketDetails'
 import TimerButton from '@/components/TimerButton.vue'
 import ThirdpartySearchInput from '@/components/ThirdpartySearchInput.vue'
+import TicketDetailModal from '@/components/TicketDetailModal.vue'
 
 const { isDark } = useTheme()
 const authStore = useAuthStore()
+
+// Usar composable de detalles de ticket
+const {
+  showModal,
+  selectedTicket,
+  ticketDetails,
+  loadingDetails,
+  openTicketDetails,
+  closeTicketDetails,
+  refreshTicketDetails,
+  updateTicketStatus,
+  updateTicketField
+} = useTicketDetails()
 const { refreshCounter: updateTicketsCounter } = useTicketsCounter()
 const { getProjectName, preloadProjectsFromItems } = useProjects()
 
@@ -5683,11 +5698,6 @@ const itemsPerPage = ref(50)
 const sortField = ref('')
 const sortDirection = ref('asc')
 
-// Modal state
-const showModal = ref(false)
-const selectedTicket = ref(null)
-const ticketDetails = ref(null)
-
 // Computed property for available followers (users + contacts)
 const availableFollowersCount = computed(() => {
   const usersCount = availableUsers.value?.length || 0
@@ -5944,8 +5954,6 @@ const getUserDisplayName = (intervention) => {
   
   return 'Usuario desconocido'
 }
-
-const loadingDetails = ref(false)
 
 const fetchTickets = async () => {
    console.log('🎫 Fetching tickets...')
@@ -6762,10 +6770,11 @@ const viewTicketDetails = async (ticket) => {
 const closeModal = async () => {
   try {
      console.log('🔒 Closing ticket modal...')
-    showModal.value = false
-    selectedTicket.value = null
-    ticketDetails.value = null
-    loadingDetails.value = false
+    
+    // Usar composable para cerrar el modal
+    closeTicketDetails()
+    
+    // Lógica adicional específica de la página Tickets
     allTicketInterventions.value = [] // Limpiar intervenciones
     
     // Force refresh tickets after closing modal
