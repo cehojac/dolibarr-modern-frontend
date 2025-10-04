@@ -2,8 +2,22 @@
   <div class="min-h-screen p-6" :class="isDark ? 'bg-black' : 'bg-gray-50'">
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Gestión de Tareas</h1>
-      <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Administra y supervisa todas las tareas del sistema</p>
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Gestión de Tareas</h1>
+          <p class="mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Administra y supervisa todas las tareas del sistema</p>
+        </div>
+        <button
+          @click="showCreateTaskModal = true"
+          class="flex items-center space-x-2 px-4 py-2 rounded-lg text-white transition-colors shadow-lg"
+          :class="isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span class="font-medium">Crear Tarea</span>
+        </button>
+      </div>
     </div>
 
     <!-- Tareas Overview -->
@@ -164,9 +178,9 @@
         >
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ tasks.length }}</p>
+              <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ activeTasks.length }}</p>
               <p class="text-sm font-medium text-gray-500">Total</p>
-              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Todas las tareas</p>
+              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tareas activas</p>
             </div>
           </div>
         </div>
@@ -220,10 +234,10 @@
         :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'"
       >
         <option value="">Todas las prioridades</option>
-        <option value="0">Baja</option>
-        <option value="1">Media</option>
-        <option value="2">Alta</option>
-        <option value="3">Muy alta</option>
+        <option value="bajo">Bajo</option>
+        <option value="normal">Normal</option>
+        <option value="alto">Alto</option>
+        <option value="crítico">Crítico</option>
       </select>
 
       <!-- Project Filter -->
@@ -390,9 +404,24 @@
               <!-- Asignado -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex justify-center">
-                  <div v-if="task.assigned_to" class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
-                    <span class="text-xs font-medium text-white">
-                      {{ task.assigned_to.charAt(0).toUpperCase() }}
+                  <div 
+                    v-if="task.assigned_to" 
+                    class="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-transform hover:scale-110" 
+                    :class="isDark ? 'bg-blue-600' : 'bg-blue-500'"
+                    :title="task.assigned_to"
+                  >
+                    <span class="text-xs font-semibold text-white">
+                      {{ getUserInitials(task.assigned_to) }}
+                    </span>
+                  </div>
+                  <div 
+                    v-else 
+                    class="w-8 h-8 rounded-full flex items-center justify-center" 
+                    :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"
+                    title="Sin asignar"
+                  >
+                    <span class="text-xs font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                      --
                     </span>
                   </div>
                 </div>
@@ -519,8 +548,8 @@
                 <div class="flex items-center space-x-3 mb-6">
                   <!-- Botón Marcar completo -->
                   <button 
-                    @click="markTaskAsComplete"
-                    :disabled="completingTask || taskDetails?.progress >= 100"
+                    @click="showCompleteTaskModal = true"
+                    :disabled="completingTask || taskDetails?.progress >= 100 || taskDetails?.status === 3"
                     class="flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors" 
                     :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed'"
                   >
@@ -556,15 +585,63 @@
 
                 <!-- Description Section -->
                 <div class="mb-8">
-                  <div class="flex items-center space-x-2 mb-4">
-                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-                    </svg>
-                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Descripción</h3>
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Descripción</h3>
+                    </div>
+                    <button
+                      v-if="!isEditingDescription"
+                      @click="isEditingDescription = true"
+                      class="p-2 rounded-lg transition-colors"
+                      :class="isDark ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'"
+                      title="Editar descripción"
+                    >
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
                   </div>
-                  <div class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
+                  
+                  <!-- View Mode -->
+                  <div v-if="!isEditingDescription" class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
                     <div class="text-sm p-4 rounded-lg" :class="isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-700'">
                       {{ taskDetails.description }}
+                    </div>
+                  </div>
+                  
+                  <!-- Edit Mode -->
+                  <div v-else class="space-y-3">
+                    <textarea
+                      v-model="taskDescription"
+                      rows="6"
+                      class="w-full p-4 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                      placeholder="Descripción de la tarea..."
+                    ></textarea>
+                    <div class="flex space-x-2">
+                      <button
+                        @click="saveDescription"
+                        :disabled="isSavingDescription"
+                        class="flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                      >
+                        <svg v-if="isSavingDescription" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {{ isSavingDescription ? 'Guardando...' : 'Guardar' }}
+                      </button>
+                      <button
+                        @click="cancelEditDescription"
+                        :disabled="isSavingDescription"
+                        class="px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
+                      >
+                        Cancelar
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -586,6 +663,92 @@
                     </span>
                   </div>
                 </div>
+
+                <!-- Time Spent Section -->
+                <div v-if="taskDetails?.timespent_lines && taskDetails.timespent_lines.length > 0" class="mb-8">
+                  <div class="flex items-center space-x-2 mb-4">
+                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Tiempo Dedicado</h3>
+                  </div>
+                  
+                  <!-- Time Spent List -->
+                  <div class="space-y-3">
+                    <div
+                      v-for="(line, index) in taskDetails.timespent_lines"
+                      :key="index"
+                      class="p-4 rounded-lg border"
+                      :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'"
+                    >
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-3">
+                          <!-- User Avatar -->
+                          <div class="w-8 h-8 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+                            <span class="text-xs font-semibold text-white">
+                              {{ getUserNameById(line.timespent_line_fk_user) ? getUserInitials(getUserNameById(line.timespent_line_fk_user)) : 'U' }}
+                            </span>
+                          </div>
+                          <div>
+                            <p class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                              {{ getUserNameById(line.timespent_line_fk_user) || 'Usuario' }}
+                            </p>
+                            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                              {{ formatDate(line.timespent_line_date) }}
+                            </p>
+                          </div>
+                        </div>
+                        <!-- Time Duration -->
+                        <div class="text-right">
+                          <p class="text-lg font-bold" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+                            {{ formatDuration(parseInt(line.timespent_line_duration)) }}
+                          </p>
+                          <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                            {{ Math.round(parseInt(line.timespent_line_duration) / 3600 * 100) / 100 }}h
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <!-- Note/Description -->
+                      <div v-if="line.timespent_line_note" class="mt-2 pt-2 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          <svg class="w-4 h-4 inline mr-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                          </svg>
+                          {{ line.timespent_line_note }}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <!-- Total Time -->
+                    <div class="pt-3 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          Tiempo total dedicado:
+                        </span>
+                        <span class="text-lg font-bold" :class="isDark ? 'text-blue-400' : 'text-blue-600'">
+                          {{ formatDuration(calculateTotalTimeSpent(taskDetails.timespent_lines)) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- No time spent message -->
+                <div v-else class="mb-8">
+                  <div class="flex items-center space-x-2 mb-4">
+                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Tiempo Dedicado</h3>
+                  </div>
+                  <div class="text-sm text-center py-6 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-500'">
+                    <svg class="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p>No hay tiempo dedicado registrado para esta tarea</p>
+                  </div>
+                </div>
               </div>
 
               <!-- Right Panel - Task Info -->
@@ -601,18 +764,267 @@
                     </div>
                     
                     <div class="space-y-4">
+                      <!-- Cliente -->
                       <div>
-                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Estado:</label>
-                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getStatusClass(taskDetails.status)">
-                          {{ taskDetails.status_text }}
-                        </span>
+                        <div class="flex items-center justify-between mb-1">
+                          <label class="block text-xs font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Cliente:</label>
+                          <button
+                            v-if="!editingTaskClient"
+                            @click="startEditTaskClient"
+                            class="p-1 rounded hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-200 text-gray-600'"
+                            title="Editar cliente"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        <!-- View Mode -->
+                        <div v-if="!editingTaskClient">
+                          <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                            {{ taskDetails.tercero_name || 'Sin cliente asignado' }}
+                          </p>
+                        </div>
+                        
+                        <!-- Edit Mode -->
+                        <div v-else class="space-y-2">
+                          <input
+                            v-model="thirdpartySearch.searchTerm.value"
+                            @input="handleThirdpartySearch"
+                            type="text"
+                            placeholder="Buscar cliente (min. 3 caracteres)..."
+                            class="w-full p-2 border rounded-lg text-sm"
+                            :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                          />
+                          
+                          <!-- Results Dropdown -->
+                          <div v-if="thirdpartySearch.searchResults.value.length > 0" class="max-h-40 overflow-y-auto border rounded-lg" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'">
+                            <button
+                              v-for="thirdparty in thirdpartySearch.searchResults.value"
+                              :key="thirdparty.id"
+                              @click="selectTaskClient(thirdparty)"
+                              class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors border-b last:border-0"
+                              :class="isDark ? 'hover:bg-gray-600 border-gray-600' : 'hover:bg-gray-100 border-gray-200'"
+                            >
+                              <div class="font-medium">{{ thirdparty.name }}</div>
+                              <div class="text-xs opacity-75">{{ thirdparty.email || 'Sin email' }}</div>
+                            </button>
+                          </div>
+                          
+                          <!-- Loading -->
+                          <div v-if="thirdpartySearch.isSearching.value" class="text-xs text-center py-2" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                            Buscando...
+                          </div>
+                          
+                          <div class="flex space-x-2">
+                            <button
+                              @click="saveTaskClient"
+                              :disabled="isSavingTaskClient || !selectedTaskClient"
+                              class="flex-1 px-3 py-1 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                              :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                            >
+                              {{ isSavingTaskClient ? 'Guardando...' : 'Guardar' }}
+                            </button>
+                            <button
+                              @click="cancelEditTaskClient"
+                              :disabled="isSavingTaskClient"
+                              class="px-3 py-1 text-xs font-medium rounded-lg transition-colors"
+                              :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
                       </div>
                       
+                      <!-- Proyecto -->
                       <div>
-                        <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Prioridad:</label>
-                        <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getPriorityClass(taskDetails.priority)">
-                          {{ taskDetails.priority_text }}
-                        </span>
+                        <div class="flex items-center justify-between mb-1">
+                          <label class="block text-xs font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Proyecto:</label>
+                          <button
+                            v-if="!editingTaskProject"
+                            @click="startEditTaskProject"
+                            class="p-1 rounded hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-200 text-gray-600'"
+                            title="Editar proyecto"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        <!-- View Mode -->
+                        <div v-if="!editingTaskProject">
+                          <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                            {{ taskDetails.project_name || 'Sin proyecto asignado' }}
+                          </p>
+                        </div>
+                        
+                        <!-- Edit Mode -->
+                        <div v-else class="space-y-2">
+                          <div class="relative">
+                            <input
+                              v-model="taskProjectSearchTerm"
+                              @focus="showTaskProjectDropdown = true"
+                              @input="filterProjectsForTask"
+                              type="text"
+                              placeholder="Buscar proyecto..."
+                              class="w-full p-2 border rounded-lg text-sm"
+                              :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                            />
+                            
+                            <!-- Project Dropdown -->
+                            <div v-if="showTaskProjectDropdown && filteredTaskProjects.length > 0" class="absolute z-10 w-full mt-1 max-h-40 overflow-auto border rounded-lg shadow-lg" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'">
+                              <button
+                                v-for="project in filteredTaskProjects"
+                                :key="project.id"
+                                @click="selectTaskProject(project)"
+                                class="w-full text-left px-3 py-2 text-sm hover:bg-opacity-50 transition-colors border-b last:border-0"
+                                :class="isDark ? 'hover:bg-gray-600 text-white border-gray-600' : 'hover:bg-gray-100 text-gray-900 border-gray-200'"
+                              >
+                                <div class="font-medium">{{ project.title || project.ref }}</div>
+                                <div class="text-xs opacity-75">{{ project.ref }}</div>
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div class="flex space-x-2">
+                            <button
+                              @click="saveTaskProject"
+                              :disabled="isSavingTaskProject || !selectedTaskProject"
+                              class="flex-1 px-3 py-1 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                              :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                            >
+                              {{ isSavingTaskProject ? 'Guardando...' : 'Guardar' }}
+                            </button>
+                            <button
+                              @click="cancelEditTaskProject"
+                              :disabled="isSavingTaskProject"
+                              class="px-3 py-1 text-xs font-medium rounded-lg transition-colors"
+                              :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Estado -->
+                      <div>
+                        <div class="flex items-center justify-between mb-1">
+                          <label class="block text-xs font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Estado:</label>
+                          <button
+                            v-if="!editingTaskStatus"
+                            @click="startEditTaskStatus"
+                            class="p-1 rounded hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-200 text-gray-600'"
+                            title="Editar estado"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        <!-- View Mode -->
+                        <div v-if="!editingTaskStatus">
+                          <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getStatusClass(taskDetails.status)">
+                            {{ taskDetails.status_text }}
+                          </span>
+                        </div>
+                        
+                        <!-- Edit Mode -->
+                        <div v-else class="space-y-2">
+                          <select
+                            v-model="selectedTaskStatus"
+                            class="w-full p-2 border rounded-lg text-sm"
+                            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                          >
+                            <option value="0">Borrador</option>
+                            <option value="1">Validada</option>
+                            <option value="2">En curso</option>
+                            <option value="3">Terminada</option>
+                            <option value="4">Cancelada</option>
+                          </select>
+                          <div class="flex space-x-2">
+                            <button
+                              @click="saveTaskStatus"
+                              :disabled="isSavingTaskStatus"
+                              class="flex-1 px-3 py-1 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                              :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                            >
+                              {{ isSavingTaskStatus ? 'Guardando...' : 'Guardar' }}
+                            </button>
+                            <button
+                              @click="cancelEditTaskStatus"
+                              :disabled="isSavingTaskStatus"
+                              class="px-3 py-1 text-xs font-medium rounded-lg transition-colors"
+                              :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Prioridad -->
+                      <div>
+                        <div class="flex items-center justify-between mb-1">
+                          <label class="block text-xs font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Prioridad:</label>
+                          <button
+                            v-if="!editingTaskPriority"
+                            @click="startEditTaskPriority"
+                            class="p-1 rounded hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-200 text-gray-600'"
+                            title="Editar prioridad"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        <!-- View Mode -->
+                        <div v-if="!editingTaskPriority">
+                          <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getPriorityClass(taskDetails.priority)">
+                            {{ taskDetails.priority_text }}
+                          </span>
+                        </div>
+                        
+                        <!-- Edit Mode -->
+                        <div v-else class="space-y-2">
+                          <select
+                            v-model="selectedTaskPriority"
+                            class="w-full p-2 border rounded-lg text-sm"
+                            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                          >
+                            <option value="Bajo">Bajo</option>
+                            <option value="Normal">Normal</option>
+                            <option value="Alto">Alto</option>
+                            <option value="Crítico">Crítico</option>
+                          </select>
+                          <div class="flex space-x-2">
+                            <button
+                              @click="saveTaskPriority"
+                              :disabled="isSavingTaskPriority"
+                              class="flex-1 px-3 py-1 text-xs font-medium rounded-lg transition-colors disabled:opacity-50"
+                              :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                            >
+                              {{ isSavingTaskPriority ? 'Guardando...' : 'Guardar' }}
+                            </button>
+                            <button
+                              @click="cancelEditTaskPriority"
+                              :disabled="isSavingTaskPriority"
+                              class="px-3 py-1 text-xs font-medium rounded-lg transition-colors"
+                              :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
                       </div>
                       
                       <div v-if="taskDetails.created_date">
@@ -820,14 +1232,33 @@
 
                   <!-- Private Notes -->
                   <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Notas Privadas</h3>
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Notas Privadas</h3>
+                      </div>
+                      <button 
+                        v-if="!isEditingPrivateNote"
+                        @click="isEditingPrivateNote = true"
+                        class="p-2 rounded-lg transition-colors"
+                        :class="isDark ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'"
+                      >
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
                     </div>
                     
-                    <div class="space-y-3">
+                    <!-- View Mode -->
+                    <div v-if="!isEditingPrivateNote" class="p-3 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
+                      <p v-if="taskDetails.note_private" class="text-sm whitespace-pre-wrap" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ taskDetails.note_private }}</p>
+                      <p v-else class="text-sm italic" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Sin notas privadas</p>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div v-else class="space-y-3">
                       <textarea
                         v-model="privateNote"
                         placeholder="Agregar nota privada..."
@@ -835,27 +1266,60 @@
                         class="w-full p-3 border rounded-lg text-sm resize-none"
                         :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
                       ></textarea>
-                      <button 
-                        @click="savePrivateNote"
-                        :disabled="!privateNote.trim()"
-                        class="w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600' : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-300'"
-                      >
-                        Guardar Nota Privada
-                      </button>
+                      <div class="flex space-x-2">
+                        <button 
+                          @click="savePrivateNote"
+                          :disabled="isSavingPrivateNote"
+                          class="flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                          :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+                        >
+                          <svg v-if="isSavingPrivateNote" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          {{ isSavingPrivateNote ? 'Guardando...' : 'Guardar' }}
+                        </button>
+                        <button 
+                          @click="isEditingPrivateNote = false"
+                          :disabled="isSavingPrivateNote"
+                          class="px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
                   </div>
 
                   <!-- Public Notes -->
                   <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                      </svg>
-                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Notas Públicas</h3>
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        </svg>
+                        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Notas Públicas</h3>
+                      </div>
+                      <button 
+                        v-if="!isEditingPublicNote"
+                        @click="isEditingPublicNote = true"
+                        class="p-2 rounded-lg transition-colors"
+                        :class="isDark ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'"
+                      >
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
                     </div>
                     
-                    <div class="space-y-3">
+                    <!-- View Mode -->
+                    <div v-if="!isEditingPublicNote" class="p-3 rounded-lg border" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
+                      <p v-if="taskDetails.note_public" class="text-sm whitespace-pre-wrap" :class="isDark ? 'text-gray-300' : 'text-gray-700'">{{ taskDetails.note_public }}</p>
+                      <p v-else class="text-sm italic" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Sin notas públicas</p>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div v-else class="space-y-3">
                       <textarea
                         v-model="publicNote"
                         placeholder="Agregar nota pública..."
@@ -863,189 +1327,28 @@
                         class="w-full p-3 border rounded-lg text-sm resize-none"
                         :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
                       ></textarea>
-                      <button 
-                        @click="savePublicNote"
-                        :disabled="!publicNote.trim()"
-                        class="w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        :class="isDark ? 'bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-600' : 'bg-green-500 hover:bg-green-600 text-white disabled:bg-gray-300'"
-                      >
-                        Guardar Nota Pública
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- File Upload -->
-                  <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
-                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Archivos</h3>
-                    </div>
-                    
-                    <div class="space-y-3">
-                      <!-- File Drop Zone -->
-                      <div 
-                        @drop="handleFileDrop"
-                        @dragover.prevent
-                        @dragenter.prevent
-                        class="border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer"
-                        :class="isDark ? 'border-gray-600 hover:border-gray-500 bg-gray-800' : 'border-gray-300 hover:border-gray-400 bg-gray-50'"
-                        @click="$refs.fileInput?.click()"
-                      >
-                        <svg class="mx-auto h-8 w-8 mb-2" :class="isDark ? 'text-gray-400' : 'text-gray-400'" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                          Arrastra archivos aquí o haz click para seleccionar
-                        </p>
-                        <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                          PNG, JPG, PDF hasta 10MB
-                        </p>
-                      </div>
-                      
-                      <!-- Hidden File Input -->
-                      <input
-                        ref="fileInput"
-                        type="file"
-                        multiple
-                        accept=".png,.jpg,.jpeg,.pdf,.doc,.docx"
-                        @change="handleFileSelect"
-                        class="hidden"
-                      />
-                      
-                      <!-- Uploaded Files List -->
-                      <div v-if="uploadedFiles.length > 0" class="space-y-2">
-                        <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                          Archivos subidos ({{ uploadedFiles.length }})
-                        </h4>
-                        <div 
-                          v-for="file in uploadedFiles" 
-                          :key="file.id"
-                          class="flex items-center justify-between p-2 rounded border"
-                          :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
-                        >
-                          <div class="flex items-center space-x-2 flex-1 min-w-0">
-                            <svg class="w-4 h-4 flex-shrink-0" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <span class="text-sm truncate" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                              {{ file.name }}
-                            </span>
-                          </div>
-                          <button 
-                            @click="removeFile(file.id)"
-                            class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
-                            :class="isDark ? 'text-red-400 hover:bg-red-900' : 'text-red-600 hover:bg-red-100'"
-                            title="Eliminar archivo"
-                          >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Reminders -->
-                  <div>
-                    <div class="flex items-center justify-between mb-4">
-                      <div class="flex items-center space-x-2">
-                        <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Recordatorios</h3>
-                      </div>
-                      <button 
-                        @click="showAddReminder = !showAddReminder"
-                        class="p-1 rounded hover:bg-opacity-50 transition-colors"
-                        :class="isDark ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-100'"
-                        title="Agregar recordatorio"
-                      >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                      </button>
-                    </div>
-                    
-                    <!-- Add Reminder Form -->
-                    <div v-if="showAddReminder" class="space-y-3 mb-4 p-3 rounded-lg" :class="isDark ? 'bg-gray-800' : 'bg-gray-50'">
-                      <div class="grid grid-cols-2 gap-2">
-                        <input
-                          v-model="newReminderDate"
-                          type="date"
-                          class="p-2 border rounded text-xs"
-                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
-                        />
-                        <input
-                          v-model="newReminderTime"
-                          type="time"
-                          class="p-2 border rounded text-xs"
-                          :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
-                        />
-                      </div>
-                      <input
-                        v-model="newReminderNote"
-                        type="text"
-                        placeholder="Nota del recordatorio (opcional)"
-                        class="w-full p-2 border rounded text-xs"
-                        :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-                      />
                       <div class="flex space-x-2">
                         <button 
-                          @click="addReminder"
-                          :disabled="!newReminderDate || !newReminderTime"
-                          class="px-3 py-1 text-xs rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600' : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-300'"
+                          @click="savePublicNote"
+                          :disabled="isSavingPublicNote"
+                          class="flex-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                          :class="isDark ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-green-500 hover:bg-green-600 text-white'"
                         >
-                          Agregar
+                          <svg v-if="isSavingPublicNote" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          {{ isSavingPublicNote ? 'Guardando...' : 'Guardar' }}
                         </button>
                         <button 
-                          @click="showAddReminder = false"
-                          class="px-3 py-1 text-xs rounded transition-colors"
-                          :class="isDark ? 'bg-gray-600 hover:bg-gray-700 text-white' : 'bg-gray-500 hover:bg-gray-600 text-white'"
+                          @click="isEditingPublicNote = false"
+                          :disabled="isSavingPublicNote"
+                          class="px-3 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
                         >
                           Cancelar
                         </button>
                       </div>
-                    </div>
-                    
-                    <!-- Reminders List -->
-                    <div v-if="taskReminders.length > 0" class="space-y-2">
-                      <div 
-                        v-for="reminder in taskReminders" 
-                        :key="reminder.id"
-                        class="flex items-center justify-between p-2 rounded border"
-                        :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
-                      >
-                        <div class="flex-1 min-w-0">
-                          <div class="flex items-center space-x-2">
-                            <svg class="w-3 h-3 flex-shrink-0" :class="isDark ? 'text-yellow-400' : 'text-yellow-500'" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                            </svg>
-                            <span class="text-xs font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
-                              {{ reminder.date }} {{ reminder.time }}
-                            </span>
-                          </div>
-                          <p v-if="reminder.note" class="text-xs mt-1 truncate" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                            {{ reminder.note }}
-                          </p>
-                        </div>
-                        <button 
-                          @click="removeReminder(reminder.id)"
-                          class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
-                          :class="isDark ? 'text-red-400 hover:bg-red-900' : 'text-red-600 hover:bg-red-100'"
-                          title="Eliminar recordatorio"
-                        >
-                          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    <div v-else class="text-xs text-center py-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                      No hay recordatorios para esta tarea
                     </div>
                   </div>
 
@@ -1146,7 +1449,80 @@
                       {{ availableContacts.length > 0 ? 'No hay seguidores para esta tarea' : 'Selecciona una empresa para ver contactos disponibles' }}
                     </div>
                   </div>
-                </div>
+
+                  <!-- File Upload -->
+                  <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Archivos</h3>
+                    </div>
+                    
+                    <div class="space-y-3">
+                      <!-- File Drop Zone -->
+                      <div 
+                        @drop="handleFileDrop"
+                        @dragover.prevent
+                        @dragenter.prevent
+                        class="border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer"
+                        :class="isDark ? 'border-gray-600 hover:border-gray-500 bg-gray-800' : 'border-gray-300 hover:border-gray-400 bg-gray-50'"
+                        @click="$refs.fileInput?.click()"
+                      >
+                        <svg class="mx-auto h-8 w-8 mb-2" :class="isDark ? 'text-gray-400' : 'text-gray-400'" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <p class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                          Arrastra archivos aquí o haz click para seleccionar
+                        </p>
+                        <p class="text-xs mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                          PNG, JPG, PDF hasta 10MB
+                        </p>
+                      </div>
+                      
+                      <!-- Hidden File Input -->
+                      <input
+                        ref="fileInput"
+                        type="file"
+                        multiple
+                        accept=".png,.jpg,.jpeg,.pdf,.doc,.docx"
+                        @change="handleFileSelect"
+                        class="hidden"
+                      />
+                      
+                      <!-- Uploaded Files List -->
+                      <div v-if="uploadedFiles.length > 0" class="space-y-2">
+                        <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          Archivos subidos ({{ uploadedFiles.length }})
+                        </h4>
+                        <div 
+                          v-for="file in uploadedFiles" 
+                          :key="file.id"
+                          class="flex items-center justify-between p-2 rounded border"
+                          :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
+                        >
+                          <div class="flex items-center space-x-2 flex-1 min-w-0">
+                            <svg class="w-4 h-4 flex-shrink-0" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span class="text-sm truncate" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                              {{ file.name }}
+                            </span>
+                          </div>
+                          <button 
+                            @click="removeFile(file.id)"
+                            class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
+                            :class="isDark ? 'text-red-400 hover:bg-red-900' : 'text-red-600 hover:bg-red-100'"
+                            title="Eliminar archivo"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
               </div>
             </div>
           </div>
@@ -1207,6 +1583,384 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal de confirmación para completar tarea -->
+  <div v-if="showCompleteTaskModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="rounded-lg p-6 w-full max-w-md mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+          Completar Tarea
+        </h3>
+      </div>
+      
+      <p class="text-sm mb-6" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+        ¿Estás seguro de que deseas marcar esta tarea como completada? Esta acción cambiará el progreso al 100% y el estado a "Terminada".
+      </p>
+      
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-6">
+        <div class="flex items-start space-x-2">
+          <svg class="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <div>
+            <p class="text-xs font-medium text-yellow-800">Información importante</p>
+            <p class="text-xs text-yellow-700 mt-1">Una vez completada, la tarea se marcará como terminada y ya no aparecerá en la lista de tareas activas.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Modal Actions -->
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="showCompleteTaskModal = false"
+          :disabled="completingTask"
+          class="px-4 py-2 text-sm font-medium border rounded-md transition-colors"
+          :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700 disabled:opacity-50' : 'text-gray-700 border-gray-300 hover:bg-gray-50 disabled:opacity-50'"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="markTaskAsComplete"
+          :disabled="completingTask"
+          class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center space-x-2"
+        >
+          <svg v-if="completingTask" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ completingTask ? 'Completando...' : 'Sí, completar tarea' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de crear tarea -->
+  <div v-if="showCreateTaskModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <!-- Header -->
+      <div class="sticky top-0 px-6 py-4 border-b" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center" :class="isDark ? 'bg-blue-600' : 'bg-blue-500'">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Crear Nueva Tarea</h3>
+              <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Completa la información de la tarea</p>
+            </div>
+          </div>
+          <button
+            @click="closeCreateTaskModal"
+            class="p-2 rounded-lg transition-colors"
+            :class="isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-600'"
+          >
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="p-6 space-y-6">
+        <!-- Etiqueta -->
+        <div>
+          <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Etiqueta <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="newTask.label"
+            type="text"
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            placeholder="Nombre de la tarea"
+          />
+        </div>
+
+        <!-- Proyecto -->
+        <div class="relative">
+          <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Proyecto <span class="text-red-500">*</span>
+          </label>
+          <div class="relative">
+            <input
+              v-model="projectSearchTerm"
+              @input="filterProjectsForNewTask"
+              @focus="showProjectDropdown = true"
+              type="text"
+              class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+              placeholder="Buscar proyecto..."
+            />
+            <svg class="w-5 h-5 absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          
+          <!-- Dropdown de proyectos -->
+          <div
+            v-if="showProjectDropdown && filteredProjectsForNewTask.length > 0"
+            class="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto"
+            :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'"
+          >
+            <div
+              v-for="project in filteredProjectsForNewTask"
+              :key="project.id"
+              @click="selectProjectForNewTask(project)"
+              class="px-3 py-2 cursor-pointer transition-colors"
+              :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'"
+            >
+              <div class="flex items-center space-x-2">
+                <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                <div>
+                  <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                    {{ project.title || project.ref }}
+                  </div>
+                  <div v-if="project.ref" class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    Ref: {{ project.ref }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mensaje cuando no hay resultados -->
+          <div
+            v-if="showProjectDropdown && projectSearchTerm && filteredProjectsForNewTask.length === 0"
+            class="absolute z-10 w-full mt-1 p-3 border rounded-lg shadow-lg"
+            :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-400' : 'bg-white border-gray-300 text-gray-500'"
+          >
+            <p class="text-sm">No se encontraron proyectos</p>
+          </div>
+          
+          <!-- Instrucciones cuando no se ha escrito nada -->
+          <div
+            v-if="showProjectDropdown && !projectSearchTerm && projects.length > 0"
+            class="absolute z-10 w-full mt-1 p-3 border rounded-lg shadow-lg"
+            :class="isDark ? 'bg-gray-800 border-gray-700 text-gray-400' : 'bg-white border-gray-300 text-gray-500'"
+          >
+            <p class="text-sm">Escribe para buscar un proyecto...</p>
+          </div>
+        </div>
+
+        <!-- Fecha de inicio y fin -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Fecha de inicio
+            </label>
+            <input
+              v-model="newTask.date_start"
+              type="datetime-local"
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Fecha límite
+            </label>
+            <input
+              v-model="newTask.date_end"
+              type="datetime-local"
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            />
+          </div>
+        </div>
+
+        <!-- Carga de trabajo y Progreso -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Carga de trabajo prevista (horas)
+            </label>
+            <input
+              v-model.number="newTask.planned_workload"
+              type="number"
+              step="0.5"
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              placeholder="0"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Progreso (%)
+            </label>
+            <input
+              v-model.number="newTask.progress"
+              type="number"
+              min="0"
+              max="100"
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        <!-- Facturable y Presupuesto -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Facturable
+            </label>
+            <select
+              v-model="newTask.billable"
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            >
+              <option value="1">Sí</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+              Presupuesto
+            </label>
+            <input
+              v-model.number="newTask.budget_amount"
+              type="number"
+              step="0.01"
+              class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <!-- Prioridad -->
+        <div>
+          <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Prioridad
+          </label>
+          <select
+            v-model="newTask.priority"
+            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+          >
+            <option value="Bajo">Bajo</option>
+            <option value="Normal">Normal</option>
+            <option value="Alto">Alto</option>
+            <option value="Crítico">Crítico</option>
+          </select>
+        </div>
+
+        <!-- Descripción -->
+        <div>
+          <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+            Descripción
+          </label>
+          <div class="border rounded-lg" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
+            <!-- Barra de herramientas del editor -->
+            <div class="flex items-center space-x-2 p-2 border-b" :class="isDark ? 'border-gray-600 bg-gray-700' : 'border-gray-300 bg-gray-50'">
+              <button
+                type="button"
+                @click="formatTaskDescription('bold')"
+                class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                title="Negrita"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6 4v12h4.5c2.5 0 4.5-2 4.5-4.5 0-1.5-.8-2.8-2-3.5 1.2-.7 2-2 2-3.5C15 2 13 0 10.5 0H6v4zm2-2h2.5C11.3 2 12 2.7 12 3.5S11.3 5 10.5 5H8V2zm0 5h3c.8 0 1.5.7 1.5 1.5S11.8 10 11 10H8V7z"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                @click="formatTaskDescription('italic')"
+                class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                title="Cursiva"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M8 1h6v2H8V1zm2 2h2l-2 12H8l2-12z"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                @click="formatTaskDescription('underline')"
+                class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                title="Subrayado"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 18H4v-2h12v2H10zM10 2C7.8 2 6 3.8 6 6v4c0 2.2 1.8 4 4 4s4-1.8 4-4V6c0-2.2-1.8-4-4-4z"/>
+                </svg>
+              </button>
+              <div class="w-px h-4" :class="isDark ? 'bg-gray-600' : 'bg-gray-300'"></div>
+              <button
+                type="button"
+                @click="insertTaskDescriptionList('ul')"
+                class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                title="Lista con viñetas"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M3 4a1 1 0 100 2 1 1 0 000-2zM6 5h11a1 1 0 110 2H6a1 1 0 110-2zM3 9a1 1 0 100 2 1 1 0 000-2zM6 10h11a1 1 0 110 2H6a1 1 0 110-2zM3 14a1 1 0 100 2 1 1 0 000-2zM6 15h11a1 1 0 110 2H6a1 1 0 110-2z"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                @click="insertTaskDescriptionList('ol')"
+                class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                :class="isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200'"
+                title="Lista numerada"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M3 4h1v1H3V4zM3 7h1v1H3V7zM3 10h1v1H3v-1zM6 5h11a1 1 0 110 2H6a1 1 0 110-2zM6 10h11a1 1 0 110 2H6a1 1 0 110-2zM6 15h11a1 1 0 110 2H6a1 1 0 110-2z"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Área de contenido editable -->
+            <div
+              ref="taskDescriptionEditor"
+              contenteditable="true"
+              @input="updateTaskDescriptionContent"
+              class="p-3 min-h-[120px] focus:outline-none"
+              :class="isDark ? 'bg-gray-700 text-white' : 'bg-white text-gray-900'"
+              style="white-space: pre-wrap;"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="sticky bottom-0 px-6 py-4 border-t flex justify-end space-x-3" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'">
+        <button
+          @click="closeCreateTaskModal"
+          :disabled="creatingTask"
+          class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+          :class="isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600 disabled:opacity-50' : 'bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50'"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="createTask"
+          :disabled="creatingTask || !newTask.label || !newTask.fk_project"
+          class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          :class="isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'"
+        >
+          <svg v-if="creatingTask" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ creatingTask ? 'Creando...' : 'Crear Tarea' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </template>
 
 <script setup>
@@ -1215,11 +1969,17 @@ import http from '../utils/http'
 import { useTheme } from '../composables/useTheme'
 import { useAuth } from '../composables/useAuth'
 import { useAuthStore } from '../stores/auth'
+import { useThirdpartySearch } from '../composables/useThirdpartySearch'
+import { useProjects } from '../composables/useProjects'
 import TimerButton from '@/components/TimerButton.vue'
 
 const { isDark } = useTheme()
 const { currentUser } = useAuth()
 const authStore = useAuthStore()
+
+// Composables
+const thirdpartySearch = useThirdpartySearch()
+const projectsComposable = useProjects()
 
 // Reactive data
 const tasks = ref([])
@@ -1261,6 +2021,26 @@ const selectedTask = ref(null)
 const taskDetails = ref(null)
 const loadingTaskDetails = ref(false)
 const completingTask = ref(false)
+const showCompleteTaskModal = ref(false)
+
+// Create task modal
+const showCreateTaskModal = ref(false)
+const creatingTask = ref(false)
+const taskDescriptionEditor = ref(null)
+const projectSearchTerm = ref('')
+const filteredProjectsForNewTask = ref([])
+const newTask = ref({
+  label: '',
+  description: '',
+  fk_project: null,
+  date_start: null,
+  date_end: null,
+  planned_workload: null,
+  progress: 0,
+  billable: '1',
+  budget_amount: null,
+  priority: 'Normal'
+})
 
 // Timer time entry modal
 const showTimeEntryModal = ref(false)
@@ -1271,6 +2051,10 @@ const isSavingTimeEntry = ref(false)
 // Notes and files
 const privateNote = ref('')
 const publicNote = ref('')
+const isEditingPrivateNote = ref(false)
+const isEditingPublicNote = ref(false)
+const isSavingPrivateNote = ref(false)
+const isSavingPublicNote = ref(false)
 const uploadedFiles = ref([])
 const fileInput = ref(null)
 
@@ -1286,6 +2070,31 @@ const selectedTaskAssignedUserId = ref('')
 const taskAssignmentSearchTerm = ref('')
 const showTaskAssignmentDropdown = ref(false)
 const currentTaskAssignedUser = ref(null)
+
+// Task status and priority editing
+const editingTaskStatus = ref(false)
+const selectedTaskStatus = ref('')
+const isSavingTaskStatus = ref(false)
+
+const editingTaskPriority = ref(false)
+const selectedTaskPriority = ref('')
+const isSavingTaskPriority = ref(false)
+
+// Task description editing
+const isEditingDescription = ref(false)
+const taskDescription = ref('')
+const isSavingDescription = ref(false)
+
+// Task client and project editing
+const editingTaskClient = ref(false)
+const selectedTaskClient = ref(null)
+const isSavingTaskClient = ref(false)
+
+const editingTaskProject = ref(false)
+const selectedTaskProject = ref(null)
+const taskProjectSearchTerm = ref('')
+const showTaskProjectDropdown = ref(false)
+const isSavingTaskProject = ref(false)
 
 // Reminders and followers
 const taskReminders = ref([])
@@ -1336,8 +2145,31 @@ const filteredFollowerContacts = computed(() => {
   ).slice(0, 10)
 })
 
+// Filtrar proyectos para edición de tarea
+const filteredTaskProjects = computed(() => {
+  if (!taskProjectSearchTerm.value) return projects.value.slice(0, 10)
+  return projects.value.filter(project => {
+    const searchTerm = taskProjectSearchTerm.value.toLowerCase()
+    return (
+      (project.title && project.title.toLowerCase().includes(searchTerm)) ||
+      (project.ref && project.ref.toLowerCase().includes(searchTerm)) ||
+      (project.label && project.label.toLowerCase().includes(searchTerm))
+    )
+  }).slice(0, 10)
+})
+
 const filteredTasks = computed(() => {
   let filtered = tasks.value
+
+  // Excluir tareas completadas por defecto (a menos que se filtre específicamente por estado 3)
+  if (statusFilter.value !== '3') {
+    filtered = filtered.filter(task => {
+      const status = parseInt(task.fk_statut || task.status)
+      const progress = parseInt(task.progress) || 0
+      // Excluir: Estado 3 (Terminada) O progreso 100%
+      return status !== 3 && progress !== 100
+    })
+  }
 
   // Filter by overdue status if active
   if (filterOnlyOverdue.value) {
@@ -1365,9 +2197,10 @@ const filteredTasks = computed(() => {
 
   // Filter by user assignment - show only tasks assigned to current user
   if (showOnlyMyTasks.value && authStore.user) {
-    filtered = filtered.filter(task => 
-      task.fk_user_assign == authStore.user.id || task.isUserAssigned
-    )
+    filtered = filtered.filter(task => {
+      const matches = task.fk_user_assign == authStore.user.id || task.isUserAssigned
+      return matches
+    })
   }
 
   // Filter by search query
@@ -1391,7 +2224,10 @@ const filteredTasks = computed(() => {
 
   // Filter by priority
   if (priorityFilter.value !== '') {
-    filtered = filtered.filter(task => parseInt(task.priority) === parseInt(priorityFilter.value))
+    filtered = filtered.filter(task => {
+      const taskPriority = typeof task.priority === 'string' ? task.priority.toLowerCase() : ''
+      return taskPriority === priorityFilter.value.toLowerCase()
+    })
   }
 
   // Filter by selected project
@@ -1403,7 +2239,7 @@ const filteredTasks = computed(() => {
   if (selectedUser.value) {
     filtered = filtered.filter(task => task.fk_user_assign === selectedUser.value.id)
   }
-
+  
   return filtered
 })
 
@@ -1429,13 +2265,14 @@ const visiblePages = computed(() => {
   
   return pages
 })
-
 // Métricas de tareas - SIEMPRE sobre el total de tareas (no filtradas por usuario)
 const pendingTasks = computed(() => {
   return tasks.value.filter(task => {
     const status = parseInt(task.fk_statut || task.status)
-    // 0 = Borrador, 1 = Validada (ambas son "pendientes" de iniciar)
-    return status === 0 || status === 1
+    const progress = parseInt(task.progress) || 0
+    // 0 = Borrador, 1 = Validada (pendiente de iniciar)
+    // Excluir completadas (estado 3 o progreso 100%)
+    return (status === 0 || status === 1) && status !== 3 && progress !== 100
   })
 })
 
@@ -1450,8 +2287,9 @@ const inProgressTasks = computed(() => {
 const completedTasks = computed(() => {
   return tasks.value.filter(task => {
     const status = parseInt(task.fk_statut || task.status)
-    // 3 = Terminada
-    return status === 3
+    const progress = parseInt(task.progress) || 0
+    // 3 = Terminada O progreso al 100%
+    return status === 3 || progress === 100
   })
 })
 
@@ -1473,28 +2311,92 @@ const overdueTasks = computed(() => {
     }
     endDate.setHours(0, 0, 0, 0)
     
-    // Vencida si la fecha de fin es anterior a hoy y no está terminada
     const status = parseInt(task.fk_statut || task.status)
-    return endDate < today && status !== 3 && status !== 4
+    const progress = parseInt(task.progress) || 0
+    // Vencidas: fecha fin pasada Y no completadas (3 o 100%) ni canceladas (4)
+    return endDate < today && status !== 3 && status !== 4 && progress !== 100
   })
 })
 
 const highPriorityTasks = computed(() => {
   return tasks.value.filter(task => {
-    const priority = parseInt(task.priority)
-    // Prioridades 2 (Alta) y 3 (Muy alta) se consideran de alta prioridad
-    return priority === 2 || priority === 3
+    const status = parseInt(task.fk_statut || task.status)
+    const progress = parseInt(task.progress) || 0
+    const priority = typeof task.priority === 'string' ? task.priority.toLowerCase() : ''
+    // Prioridades "alto" y "crítico" se consideran de alta prioridad
+    // Excluir completadas (estado 3 o progreso 100%)
+    return (priority === 'alto' || priority === 'crítico' || priority === 'critico') && status !== 3 && progress !== 100
   })
 })
 
+// Total de tareas activas (sin completadas)
+const activeTasks = computed(() => {
+  return tasks.value.filter(task => {
+    const status = parseInt(task.fk_statut || task.status)
+    const progress = parseInt(task.progress) || 0
+    // Excluir completadas (estado 3 o progreso 100%)
+    return status !== 3 && progress !== 100
+  })
+})
+
+// Cache configuration
+const CACHE_KEY = 'dolibarr_tasks_cache'
+const CACHE_TIMESTAMP_KEY = 'dolibarr_tasks_cache_timestamp'
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos en milisegundos
+
 // Methods
-const loadTasks = async () => {
+const loadTasks = async (forceRefresh = false) => {
   loading.value = true
   try {
-    console.log('⚡ PASO 1: Cargando tareas primero...')
+    console.log('⚡ PASO 1: Verificando caché de tareas...')
     
-    // PASO 1: Cargar solo tareas (lo más importante)
-    const tasksResponse = await http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
+    // Verificar si hay datos en caché y son válidos
+    if (!forceRefresh) {
+      const cachedData = localStorage.getItem(CACHE_KEY)
+      const cachedTimestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY)
+      
+      if (cachedData && cachedTimestamp) {
+        const age = Date.now() - parseInt(cachedTimestamp)
+        if (age < CACHE_DURATION) {
+          console.log('✅ Usando tareas desde caché (edad:', Math.floor(age / 1000), 'segundos)')
+          const parsedData = JSON.parse(cachedData)
+          
+          // Procesar tareas básicas desde caché con enriquecimiento de usuario
+          const basicTasks = parsedData.map(task => {
+            const isMyTask = task.fk_user_assign && authStore.user && task.fk_user_assign == authStore.user.id
+            
+            // Usar status si fk_statut es null
+            const taskStatus = task.fk_statut !== null && task.fk_statut !== undefined 
+              ? parseInt(task.fk_statut) 
+              : parseInt(task.status || 0)
+            
+            return {
+              ...task,
+              status: taskStatus,
+              assigned_to: task.assigned_to || null,
+              project_name: task.project_name || null,
+              tercero_name: task.tercero_name || null,
+              priority: task.array_options?.options_prioridad || task.priority || 'Normal',
+              isUserAssigned: isMyTask
+            }
+          })
+          
+          tasks.value = basicTasks
+          loading.value = false
+          console.log('📋 Tareas desde caché:', basicTasks.length)
+          
+          // Cargar datos adicionales en background
+          loadAdditionalDataInBackground()
+          return
+        } else {
+          console.log('⏱️ Caché expirada, recargando...')
+        }
+      }
+    }
+    
+    // PASO 1: Cargar TODAS las tareas (sin filtro de progreso, límite 1000)
+    console.log('📡 Llamando API de tareas (límite 1000)...')
+    const tasksResponse = await http.get('/api/doli/tasks?limit=1000')
     
     if (!tasksResponse.data || !Array.isArray(tasksResponse.data)) {
       tasks.value = []
@@ -1502,133 +2404,182 @@ const loadTasks = async () => {
       return
     }
     
-    console.log('✅ Tareas cargadas:', tasksResponse.data.length)
+    console.log('✅ Tareas cargadas desde API:', tasksResponse.data.length)
     
-    // Debug: Ver los campos de fecha disponibles en la primera tarea
-    if (tasksResponse.data.length > 0) {
-      const firstTask = tasksResponse.data[0]
-      console.log('📅 Campos de fecha en tarea:', {
-        dateo: firstTask.dateo,
-        datec: firstTask.datec,
-        date_start: firstTask.date_start,
-        date_creation: firstTask.date_creation,
-        datee: firstTask.datee,
-        date_end: firstTask.date_end,
-        date_valid: firstTask.date_valid
-      })
-      console.log('🔍 Tipos de campos:', {
-        datec_type: typeof firstTask.datec,
-        datec_value: firstTask.datec,
-        datee_type: typeof firstTask.datee,
-        datee_value: firstTask.datee
-      })
-    }
+    // Guardar en caché
+    localStorage.setItem(CACHE_KEY, JSON.stringify(tasksResponse.data))
+    localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString())
+    console.log('💾 Tareas guardadas en caché')
     
-    // PASO 2: Procesar tareas básicas SIN ENRIQUECIMIENTO para mostrar rápido
-    const basicTasks = tasksResponse.data.map(task => ({
-      ...task,
-      status: task.fk_statut || 0, // Usar el estado real de Dolibarr
-      assigned_to: null, // Se enriquecerá después
-      project_name: null, // Se enriquecerá después
-      tercero_name: null, // Se enriquecerá después
-      priority: task.priority || 1,
-      isUserAssigned: false
-    }))
+    
+    // PASO 2: Procesar tareas básicas CON enriquecimiento básico de usuario
+    const basicTasks = tasksResponse.data.map(task => {
+      // Verificar si la tarea está asignada al usuario actual (pre-enriquecimiento básico)
+      const isMyTask = task.fk_user_assign && authStore.user && task.fk_user_assign == authStore.user.id
+      
+      // Usar status si fk_statut es null
+      const taskStatus = task.fk_statut !== null && task.fk_statut !== undefined 
+        ? parseInt(task.fk_statut) 
+        : parseInt(task.status || 0)
+      
+      return {
+        ...task,
+        status: taskStatus, // Usar el estado real de Dolibarr
+        assigned_to: null, // Se enriquecerá después
+        project_name: null, // Se enriquecerá después
+        tercero_name: null, // Se enriquecerá después
+        priority: task.array_options?.options_prioridad || task.priority || 'Normal',
+        isUserAssigned: isMyTask
+      }
+    })
     
     // PASO 3: Mostrar datos básicos inmediatamente
     tasks.value = basicTasks
     loading.value = false
-    console.log('⚡ Datos básicos mostrados, cargando enriquecimiento...')
+    console.log('⚡ Datos básicos mostrados -', basicTasks.length, 'tareas cargadas')
     
-    // PASO 4: Cargar datos adicionales para enriquecimiento en background
-    try {
-      const [projectsResponse, usersResponse, tercerosResponse] = await Promise.all([
-        http.get('/api/doli/projects?limit=1000').catch(() => ({ data: [] })),
-        http.get('/api/doli/users').catch(() => ({ data: [] })),
-        http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] }))
-      ])
+    // PASO 4: Enriquecer en background
+    await loadAdditionalDataInBackground()
+    
+  } catch (error) {
+    console.error('Error loading tasks:', error)
+    tasks.value = []
+    loading.value = false
+  }
+}
+
+// Función para cargar roles de usuario en tareas
+const loadTaskRoles = async () => {
+  if (!authStore.user?.id || tasks.value.length === 0) {
+    console.log('⚠️ No se pueden cargar roles:', {
+      hasUser: !!authStore.user?.id,
+      userId: authStore.user?.id,
+      tasksCount: tasks.value.length
+    })
+    return
+  }
+  
+  console.log('👤 Cargando roles de usuario en tareas...')
+  
+  try {
+    // Cargar roles de TODAS las tareas en paralelo
+    const rolePromises = tasks.value.map(task => 
+      http.get(`/api/doli/tasks/${task.id}/roles?userid=${authStore.user.id}`)
+        .then(response => {
+          const roles = response.data || []
+          // La API devuelve un array de strings: ["TASKEXECUTIVE"]
+          const isExecutive = roles.includes('TASKEXECUTIVE')
+          
+          return {
+            taskId: task.id,
+            roles: roles,
+            isExecutive: isExecutive
+          }
+        })
+        .catch(() => ({
+          taskId: task.id,
+          roles: [],
+          isExecutive: false
+        }))
+    )
+    
+    const rolesResults = await Promise.all(rolePromises)
+    
+    // Crear mapa de taskId -> isExecutive
+    const rolesMap = {}
+    rolesResults.forEach(result => {
+      rolesMap[result.taskId] = result.isExecutive
+    })
+    
+    // Actualizar tareas con información de roles y nombre de usuario
+    tasks.value = tasks.value.map(task => {
+      const isAssigned = rolesMap[task.id] || false
       
-      console.log('✅ Datos adicionales cargados:', {
-        projects: projectsResponse.data?.length || 0,
-        users: usersResponse.data?.length || 0,
-        terceros: tercerosResponse.data?.length || 0
-      })
-      
-      // Debug: Mostrar algunos usuarios para verificar que Joel Huamán esté
-      if (usersResponse.data?.length > 0) {
-        console.log('👥 Primeros 5 usuarios cargados:', usersResponse.data.slice(0, 5).map(u => ({
-          id: u.id,
-          firstname: u.firstname,
-          lastname: u.lastname,
-          login: u.login
-        })))
-        
-        // Buscar específicamente a Joel Huamán
-        const joelUser = usersResponse.data.find(u => 
-          (u.firstname && u.firstname.toLowerCase().includes('joel')) ||
-          (u.lastname && u.lastname.toLowerCase().includes('huaman')) ||
-          (u.login && u.login.toLowerCase().includes('joel'))
-        )
-        if (joelUser) {
-          console.log('✅ Joel Huamán encontrado:', {
-            id: joelUser.id,
-            rowid: joelUser.rowid,
-            firstname: joelUser.firstname,
-            lastname: joelUser.lastname,
-            login: joelUser.login
-          })
-        } else {
-          console.log('❌ Joel Huamán NO encontrado en la lista de usuarios')
-        }
+      // Si la tarea está asignada al usuario actual y no tiene assigned_to, agregarlo
+      let assignedTo = task.assigned_to
+      if (isAssigned && !assignedTo && authStore.user) {
+        assignedTo = `${authStore.user.firstname || ''} ${authStore.user.lastname || ''}`.trim() || authStore.user.login
       }
+      
+      return {
+        ...task,
+        isUserAssigned: isAssigned,
+        assigned_to: assignedTo
+      }
+    })
+    
+    const assignedCount = rolesResults.filter(r => r.isExecutive).length
+    console.log('✅ Roles cargados:', assignedCount, 'de', tasks.value.length, 'tareas asignadas al usuario')
+  } catch (error) {
+    console.error('❌ Error cargando roles:', error)
+  }
+}
 
-      // PASO 5: Store reference data
-      projects.value = projectsResponse.data || []
-      users.value = usersResponse.data || []
-      terceros.value = tercerosResponse.data || []
+// Función para cargar y enriquecer datos adicionales
+const loadAdditionalDataInBackground = async () => {
+  try {
+    console.log('🔄 Cargando datos adicionales...')
+    
+    // Cargar datos adicionales para enriquecimiento en background
+    const [projectsResponse, usersResponse, tercerosResponse] = await Promise.all([
+      http.get('/api/doli/projects?limit=1000').catch(() => ({ data: [] })),
+      http.get('/api/doli/users').catch(() => ({ data: [] })),
+      http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] }))
+    ])
+    
+    console.log('✅ Datos adicionales cargados:', {
+      projects: projectsResponse.data?.length || 0,
+      users: usersResponse.data?.length || 0,
+      terceros: tercerosResponse.data?.length || 0
+    })
+    
+    // PASO 2: Store reference data
+    projects.value = projectsResponse.data || []
+    users.value = usersResponse.data || []
+    terceros.value = tercerosResponse.data || []
 
-      // Crear mapas de búsqueda con múltiples tipos de claves
-      const projectsMap = {}
-      const usersMap = {}
-      const tercerosMap = {}
+    // Crear mapas de búsqueda con múltiples tipos de claves
+    const projectsMap = {}
+    const usersMap = {}
+    const tercerosMap = {}
 
-      projects.value.forEach(project => {
-        if (project.id) {
-          projectsMap[project.id] = project
-          projectsMap[String(project.id)] = project
-        }
-        if (project.rowid && project.rowid !== project.id) {
-          projectsMap[project.rowid] = project
-          projectsMap[String(project.rowid)] = project
-        }
-      })
+    projects.value.forEach(project => {
+      if (project.id) {
+        projectsMap[project.id] = project
+        projectsMap[String(project.id)] = project
+      }
+      if (project.rowid && project.rowid !== project.id) {
+        projectsMap[project.rowid] = project
+        projectsMap[String(project.rowid)] = project
+      }
+    })
 
-      users.value.forEach(user => {
-        if (user.id) {
-          usersMap[user.id] = user
-          usersMap[String(user.id)] = user
-        }
-        if (user.rowid && user.rowid !== user.id) {
-          usersMap[user.rowid] = user
-          usersMap[String(user.rowid)] = user
-        }
-      })
+    users.value.forEach(user => {
+      if (user.id) {
+        usersMap[user.id] = user
+        usersMap[String(user.id)] = user
+      }
+      if (user.rowid && user.rowid !== user.id) {
+        usersMap[user.rowid] = user
+        usersMap[String(user.rowid)] = user
+      }
+    })
 
-      terceros.value.forEach(tercero => {
-        if (tercero.id) {
-          tercerosMap[tercero.id] = tercero
-          tercerosMap[String(tercero.id)] = tercero
-        }
-        if (tercero.rowid && tercero.rowid !== tercero.id) {
-          tercerosMap[tercero.rowid] = tercero
-          tercerosMap[String(tercero.rowid)] = tercero
-        }
-      })
+    terceros.value.forEach(tercero => {
+      if (tercero.id) {
+        tercerosMap[tercero.id] = tercero
+        tercerosMap[String(tercero.id)] = tercero
+      }
+      if (tercero.rowid && tercero.rowid !== tercero.id) {
+        tercerosMap[tercero.rowid] = tercero
+        tercerosMap[String(tercero.rowid)] = tercero
+      }
+    })
 
-      console.log('📊 Mapas creados - Projects:', Object.keys(projectsMap).length, 'Users:', Object.keys(usersMap).length, 'Terceros:', Object.keys(tercerosMap).length)
+    console.log('📊 Mapas creados - Projects:', Object.keys(projectsMap).length, 'Users:', Object.keys(usersMap).length, 'Terceros:', Object.keys(tercerosMap).length)
 
-      // PASO 6: Enriquecer las tareas ya mostradas
-      const enrichedTasks = await Promise.all(tasks.value.map(async (task, index) => {
+    // PASO 3: Enriquecer las tareas ya mostradas (SÍNCRONO como Tickets)
+    const enrichedTasks = tasks.value.map((task) => {
         // Try multiple possible project ID fields
         let project = null
         const projectIds = [task.fk_project, task.fk_projet, task.project_id, task.projectid]
@@ -1640,55 +2591,19 @@ const loadTasks = async () => {
           }
         }
 
-        // Check if current user has a role in this task
+        // Try multiple possible user ID fields - SIMPLE como Tickets
         let assignedUser = null
         let isUserAssigned = false
+        const userIds = [task.fk_user_assign, task.fk_user, task.user_id, task.userid]
         
-        if (task.id && currentUser.value?.id) {
-          try {
-            const roleResponse = await http.get(`/api/doli/tasks/${task.id}/roles?userid=${currentUser.value.id}`)
-            if (roleResponse.data && roleResponse.data.length > 0) {
+        for (const userId of userIds) {
+          if (userId && usersMap[userId]) {
+            assignedUser = usersMap[userId]
+            // Check if is current user
+            if (currentUser.value && userId == currentUser.value.id) {
               isUserAssigned = true
-              assignedUser = currentUser.value
             }
-          } catch (error) {
-            // No role found, continue with fallback
-          }
-        }
-
-        // Fallback: Try multiple possible user ID fields if no role found
-        if (!assignedUser) {
-          const userIds = [task.fk_user_assign, task.fk_user, task.user_id, task.userid]
-          
-          // Debug para primera tarea con asignación
-          if (index === 0 && task.fk_user_assign) {
-            console.log('🔍 DEBUG Tarea con asignación:', {
-              taskId: task.id,
-              taskRef: task.ref,
-              fk_user_assign: task.fk_user_assign,
-              fk_user_assign_type: typeof task.fk_user_assign,
-              userIds: userIds,
-              usersMapKeys: Object.keys(usersMap).slice(0, 10),
-              foundInMap: usersMap[task.fk_user_assign],
-              usersAvailable: users.value.length
-            })
-          }
-          
-          for (const userId of userIds) {
-            if (userId && usersMap[userId]) {
-              assignedUser = usersMap[userId]
-              if (index === 0) {
-                console.log('✅ Usuario encontrado:', {
-                  userId: userId,
-                  user: assignedUser
-                })
-              }
-              break
-            }
-          }
-          
-          if (!assignedUser && task.fk_user_assign && index === 0) {
-            console.log('❌ No se encontró usuario con ID:', task.fk_user_assign, 'en mapa de', Object.keys(usersMap).length, 'usuarios')
+            break
           }
         }
 
@@ -1716,28 +2631,30 @@ const loadTasks = async () => {
           }
         }
         
+        // Usar status si fk_statut es null
+        const taskStatus = task.fk_statut !== null && task.fk_statut !== undefined 
+          ? parseInt(task.fk_statut) 
+          : parseInt(task.status || 0)
+        
         return {
           ...task,
-          status: task.fk_statut || 0, // Usar el estado real de Dolibarr
+          status: taskStatus, // Usar el estado real de Dolibarr
           assigned_to: assignedUser ? `${assignedUser.firstname} ${assignedUser.lastname}`.trim() : null,
           project_name: project ? (project.title || project.ref) : null,
           tercero_name: tercero ? tercero.name : null,
-          priority: task.priority || 1,
+          priority: task.array_options?.options_prioridad || task.priority || 'Normal',
           isUserAssigned: isUserAssigned
         }
-      }))
+    })
 
-      tasks.value = enrichedTasks
-      console.log('✅ Datos enriquecidos')
-    } catch (err) {
-      console.error('❌ Error al enriquecer tareas:', err)
-      // Mantener las tareas básicas aunque falle el enriquecimiento
-    }
-  } catch (error) {
-    console.error('❌ Error al cargar tareas:', error)
-    tasks.value = []
-  } finally {
-    // loading ya se puso en false en el paso 3
+    tasks.value = enrichedTasks
+    console.log('✅ Datos enriquecidos:', enrichedTasks.length, 'tareas')
+    
+    // Cargar roles de usuario en background
+    await loadTaskRoles()
+  } catch (err) {
+    console.error('❌ Error al enriquecer tareas:', err)
+    // Mantener las tareas básicas aunque falle el enriquecimiento
   }
 }
 
@@ -1802,20 +2719,69 @@ const viewTaskDetails = async (task) => {
   showTaskModal.value = true
   loadingTaskDetails.value = true
   
+  // Reset edit modes
+  isEditingPrivateNote.value = false
+  isEditingPublicNote.value = false
+  
   try {
-    // Simulate loading task details (replace with actual API call)
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Llamada real a la API para obtener detalles completos de la tarea con tiempo dedicado
+    console.log('🔍 Cargando detalles de tarea:', task.id)
+    const response = await http.get(`/api/doli/tasks/${task.id}?includetimespent=2`)
     
-    // For now, use the task data we already have
+    if (!response.data) {
+      throw new Error('No se recibieron datos de la tarea')
+    }
+    
+    const taskData = response.data
+    console.log('✅ Detalles de tarea cargados:', taskData)
+    
+    // Usar status si fk_statut es null o undefined
+    const taskStatus = taskData.fk_statut !== null && taskData.fk_statut !== undefined 
+      ? parseInt(taskData.fk_statut) 
+      : parseInt(taskData.status || 0)
+    
+    // Procesar líneas de tiempo dedicado si existen
+    const timeSpentLines = taskData.lines || []
+    console.log('⏱️ Líneas de tiempo dedicado:', timeSpentLines.length)
+    
+    // Obtener nombre del proyecto si existe
+    let projectName = task.project_name || null
+    if (taskData.fk_project) {
+      try {
+        const project = await projectsComposable.getProjectById(taskData.fk_project)
+        if (project) {
+          projectName = project.title || project.ref || project.name
+          console.log('📁 Nombre del proyecto:', projectName)
+        }
+      } catch (error) {
+        console.warn('⚠️ Error obteniendo nombre del proyecto:', error)
+      }
+    }
+    
+    // Obtener nombre del tercero si existe
+    let terceroName = task.tercero_name || null
+    if (taskData.socid || taskData.fk_soc) {
+      const terceroId = taskData.socid || taskData.fk_soc
+      const tercero = terceros.value.find(t => t.id == terceroId)
+      if (tercero) {
+        terceroName = tercero.name
+      }
+    }
+    
     taskDetails.value = {
-      ...task,
-      description: task.note || 'Sin descripción disponible',
+      ...taskData,
+      status: taskStatus, // Usar el estado real de Dolibarr
+      description: taskData.note || taskData.description || 'Sin descripción disponible',
       created_by: task.assigned_to || 'Sistema',
-      created_date: task.date_start || task.date_creation || new Date().toISOString(),
-      due_date: task.date_end,
-      priority_text: getPriorityText(task.priority),
-      status_text: getStatusText(task.status),
-      total_time: taskTimers.value[task.id]?.elapsed || 0
+      created_date: taskData.date_start || taskData.date_creation || new Date().toISOString(),
+      due_date: taskData.date_end,
+      priority: taskData.array_options?.options_prioridad || taskData.priority || 'Normal',
+      priority_text: getPriorityText(taskData.array_options?.options_prioridad || taskData.priority || 'Normal'),
+      status_text: getStatusText(taskStatus),
+      total_time: taskTimers.value[task.id]?.elapsed || 0,
+      timespent_lines: timeSpentLines, // Guardar las líneas de tiempo dedicado
+      project_name: projectName, // Nombre del proyecto
+      tercero_name: terceroName // Nombre del tercero
     }
     
     // Initialize current company and user
@@ -1831,6 +2797,14 @@ const viewTaskDetails = async (task) => {
         `${u.firstname} ${u.lastname}` === task.assigned_to
       ) || { firstname: task.assigned_to.split(' ')[0], lastname: task.assigned_to.split(' ').slice(1).join(' ') }
     }
+    
+    // Initialize notes and description with existing values
+    privateNote.value = taskDetails.value.note_private || ''
+    publicNote.value = taskDetails.value.note_public || ''
+    taskDescription.value = taskDetails.value.description || ''
+    
+    // Reset edit modes
+    isEditingDescription.value = false
   } catch (error) {
     console.error('Error loading task details:', error)
   } finally {
@@ -1848,8 +2822,8 @@ const closeTaskModal = () => {
   publicNote.value = ''
   uploadedFiles.value = []
   // Clear editing states
-  editingTaskCompany.value = false
-  editingTaskAssignment.value = false
+  isEditingPrivateNote.value = false
+  isEditingPublicNote.value = false
   selectedTaskCompanyId.value = ''
   selectedTaskAssignedUserId.value = ''
   taskCompanySearchTerm.value = ''
@@ -1876,26 +2850,45 @@ const markTaskAsComplete = async () => {
   
   completingTask.value = true
   try {
-    console.log('🎯 Marcando tarea como completa:', taskDetails.value.id)
+    console.log('🎯 Marcando tarea como completa (100% y estado Terminada):', taskDetails.value.id)
     
-    // Actualizar progreso a 100%
+    // Actualizar progreso a 100% y estado a 3 (Terminada)
     const updateData = {
-      progress: 100
+      label: taskDetails.value.label || selectedTask.value.label,
+      progress: 100,
+      status: 3  // Estado 3 = Terminada
     }
     
-    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
     console.log('✅ Tarea completada:', response.data)
     
     // Actualizar el taskDetails localmente
     taskDetails.value.progress = 100
+    taskDetails.value.status = 3
+    taskDetails.value.fk_statut = 3
+    taskDetails.value.status_text = getStatusText(3)
+    
+    // Actualizar en la lista
+    const taskInList = tasks.value.find(t => t.id === taskDetails.value.id)
+    if (taskInList) {
+      taskInList.progress = 100
+      taskInList.status = 3
+      taskInList.fk_statut = 3
+    }
+    
+    // Cerrar modal de confirmación
+    showCompleteTaskModal.value = false
+    
+    // Cerrar modal del ticket
+    closeTaskModal()
     
     // Recargar la lista de tareas
     await loadTasks()
     
-    alert('Tarea marcada como completa')
+    console.log('✅ Tarea marcada como completa exitosamente')
   } catch (error) {
     console.error('❌ Error al completar tarea:', error)
-    alert('Error al marcar la tarea como completa')
+    alert('Error al marcar la tarea como completa: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     completingTask.value = false
   }
@@ -1910,62 +2903,77 @@ const openManualTimesheetModal = () => {
 
 // Notes functions
 const savePrivateNote = async () => {
-  if (!privateNote.value.trim()) return
+  if (!privateNote.value.trim() || isSavingPrivateNote.value) return
+  
+  isSavingPrivateNote.value = true
   
   try {
     console.log('Saving private note:', privateNote.value)
     console.log('Task ID:', taskDetails.value.id)
-    console.log('Full URL:', `/api/doli/task/${taskDetails.value.id}`)
     
-    // Prepare data for API
+    // Prepare data for API - Incluir campos obligatorios
     const updateData = {
+      label: taskDetails.value.label || selectedTask.value.label,
+      priority: taskDetails.value.priority || selectedTask.value.priority || 1,
       note_private: privateNote.value.trim()
     }
     
     console.log('Update data:', updateData)
     
-    // API call to update task using http.put like in tickets
-    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    // API call to update task using http.put
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
     console.log('✅ Private note update response:', response.data)
     
     // Update local data
     taskDetails.value.note_private = privateNote.value.trim()
     
-    // Clear the note after saving
-    privateNote.value = ''
+    // Close edit mode
+    isEditingPrivateNote.value = false
     
     console.log('Private note saved successfully')
   } catch (error) {
     console.error('Error saving private note:', error)
-    alert('Error al guardar la nota privada')
+    console.error('Error details:', error.response?.data)
+    alert('Error al guardar la nota privada: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    isSavingPrivateNote.value = false
   }
 }
 
 const savePublicNote = async () => {
-  if (!publicNote.value.trim()) return
+  if (!publicNote.value.trim() || isSavingPublicNote.value) return
+  
+  isSavingPublicNote.value = true
   
   try {
     console.log('💾 Saving public note for task:', selectedTask.value.id, publicNote.value)
     
-    // Prepare data for API
+    // Prepare data for API - Incluir campos obligatorios
     const updateData = {
+      label: taskDetails.value.label || selectedTask.value.label,
+      priority: taskDetails.value.priority || selectedTask.value.priority || 1,
       note_public: publicNote.value.trim()
     }
     
-    // API call to update task using http.put like in tickets
-    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    console.log('Update data:', updateData)
+    
+    // API call to update task using http.put
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
     console.log('✅ Public note update response:', response.data)
     
     // Update local data
     taskDetails.value.note_public = publicNote.value.trim()
     
-    // Clear the note after saving
-    publicNote.value = ''
+    // Close edit mode
+    isEditingPublicNote.value = false
     
     console.log('✅ Public note saved successfully')
   } catch (error) {
     console.error('❌ Error saving public note:', error)
-    alert('Error al guardar la nota pública')
+    console.error('Error details:', error.response?.data)
+    alert('Error al guardar la nota pública: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    isSavingPublicNote.value = false
   }
 }
 
@@ -2054,7 +3062,7 @@ const saveTaskCompany = async () => {
     }
     
     // API call to update task using http.put like in tickets
-    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
     console.log('✅ Company update response:', response.data)
     
     // Update local data
@@ -2123,7 +3131,7 @@ const saveTaskAssignment = async () => {
     }
     
     // API call to update task using http.put like in tickets
-    const response = await http.put(`/api/doli/task/${taskDetails.value.id}`, updateData)
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
     console.log('✅ Assignment update response:', response.data)
     
     // Update local data
@@ -2142,6 +3150,299 @@ const saveTaskAssignment = async () => {
   } catch (error) {
     console.error('❌ Error updating task assignment:', error)
     alert('Error al actualizar el usuario asignado')
+  }
+}
+
+// Task status editing functions
+const startEditTaskStatus = () => {
+  editingTaskStatus.value = true
+  selectedTaskStatus.value = String(taskDetails.value?.status || taskDetails.value?.fk_statut || 0)
+}
+
+const cancelEditTaskStatus = () => {
+  editingTaskStatus.value = false
+  selectedTaskStatus.value = ''
+}
+
+const saveTaskStatus = async () => {
+  if (isSavingTaskStatus.value) return
+  
+  isSavingTaskStatus.value = true
+  
+  try {
+    console.log('💾 Guardando estado de tarea:', {
+      taskId: selectedTask.value.id,
+      newStatus: selectedTaskStatus.value
+    })
+    
+    // Prepare data for API
+    const updateData = {
+      label: taskDetails.value.label || selectedTask.value.label,
+      status: parseInt(selectedTaskStatus.value)
+    }
+    
+    // API call to update task
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
+    console.log('✅ Estado actualizado:', response.data)
+    
+    // Update local data
+    const newStatus = parseInt(selectedTaskStatus.value)
+    taskDetails.value.status = newStatus
+    taskDetails.value.fk_statut = newStatus
+    taskDetails.value.status_text = getStatusText(newStatus)
+    
+    // Actualizar también la tarea en la lista
+    const taskInList = tasks.value.find(t => t.id === taskDetails.value.id)
+    if (taskInList) {
+      taskInList.status = newStatus
+      taskInList.fk_statut = newStatus
+    }
+    
+    cancelEditTaskStatus()
+    console.log('✅ Estado de tarea actualizado exitosamente')
+  } catch (error) {
+    console.error('❌ Error al actualizar estado:', error)
+    alert('Error al actualizar el estado: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    isSavingTaskStatus.value = false
+  }
+}
+
+// Task description editing functions
+const cancelEditDescription = () => {
+  isEditingDescription.value = false
+  taskDescription.value = taskDetails.value?.description || ''
+}
+
+const saveDescription = async () => {
+  if (isSavingDescription.value) return
+  
+  isSavingDescription.value = true
+  
+  try {
+    console.log('💾 Guardando descripción de tarea:', {
+      taskId: selectedTask.value.id,
+      description: taskDescription.value
+    })
+    
+    const updateData = {
+      label: taskDetails.value.label || selectedTask.value.label,
+      description: taskDescription.value
+    }
+    
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
+    console.log('✅ Descripción actualizada:', response.data)
+    
+    // Update local data
+    taskDetails.value.description = taskDescription.value
+    
+    // Actualizar en la lista si es necesario
+    const taskInList = tasks.value.find(t => t.id === taskDetails.value.id)
+    if (taskInList) {
+      taskInList.description = taskDescription.value
+      taskInList.note = taskDescription.value
+    }
+    
+    isEditingDescription.value = false
+    console.log('✅ Descripción de tarea actualizada exitosamente')
+  } catch (error) {
+    console.error('❌ Error al actualizar descripción:', error)
+    alert('Error al actualizar la descripción: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    isSavingDescription.value = false
+  }
+}
+
+// Task client editing functions
+const startEditTaskClient = () => {
+  editingTaskClient.value = true
+  thirdpartySearch.clearSearch()
+  selectedTaskClient.value = null
+}
+
+const cancelEditTaskClient = () => {
+  editingTaskClient.value = false
+  thirdpartySearch.clearSearch()
+  selectedTaskClient.value = null
+}
+
+const handleThirdpartySearch = async () => {
+  if (thirdpartySearch.canSearch.value) {
+    await thirdpartySearch.searchThirdparties()
+  }
+}
+
+const selectTaskClient = (thirdparty) => {
+  selectedTaskClient.value = thirdparty
+  thirdpartySearch.searchTerm.value = thirdparty.name
+}
+
+const saveTaskClient = async () => {
+  if (isSavingTaskClient.value || !selectedTaskClient.value) return
+  
+  isSavingTaskClient.value = true
+  
+  try {
+    console.log('💾 Guardando cliente de tarea:', {
+      taskId: selectedTask.value.id,
+      clientId: selectedTaskClient.value.id
+    })
+    
+    const updateData = {
+      label: taskDetails.value.label || selectedTask.value.label,
+      socid: selectedTaskClient.value.id
+    }
+    
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
+    console.log('✅ Cliente actualizado:', response.data)
+    
+    // Update local data
+    taskDetails.value.fk_soc = selectedTaskClient.value.id
+    taskDetails.value.tercero_name = selectedTaskClient.value.name
+    
+    // Actualizar en la lista
+    const taskInList = tasks.value.find(t => t.id === taskDetails.value.id)
+    if (taskInList) {
+      taskInList.fk_soc = selectedTaskClient.value.id
+      taskInList.tercero_name = selectedTaskClient.value.name
+    }
+    
+    cancelEditTaskClient()
+    console.log('✅ Cliente de tarea actualizado exitosamente')
+  } catch (error) {
+    console.error('❌ Error al actualizar cliente:', error)
+    alert('Error al actualizar el cliente: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    isSavingTaskClient.value = false
+  }
+}
+
+// Task project editing functions
+const startEditTaskProject = () => {
+  editingTaskProject.value = true
+  taskProjectSearchTerm.value = taskDetails.value?.project_name || ''
+  selectedTaskProject.value = null
+}
+
+const cancelEditTaskProject = () => {
+  editingTaskProject.value = false
+  taskProjectSearchTerm.value = ''
+  selectedTaskProject.value = null
+  showTaskProjectDropdown.value = false
+}
+
+const filterProjectsForTask = () => {
+  // El computed filteredTaskProjects se encargará del filtrado
+}
+
+const selectTaskProject = (project) => {
+  selectedTaskProject.value = project
+  taskProjectSearchTerm.value = project.title || project.ref
+  showTaskProjectDropdown.value = false
+}
+
+const saveTaskProject = async () => {
+  if (isSavingTaskProject.value || !selectedTaskProject.value) return
+  
+  isSavingTaskProject.value = true
+  
+  try {
+    console.log('💾 Guardando proyecto de tarea:', {
+      taskId: selectedTask.value.id,
+      projectId: selectedTaskProject.value.id
+    })
+    
+    const updateData = {
+      label: taskDetails.value.label || selectedTask.value.label,
+      fk_project: selectedTaskProject.value.id
+    }
+    
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
+    console.log('✅ Proyecto actualizado:', response.data)
+    
+    // Update local data
+    taskDetails.value.fk_project = selectedTaskProject.value.id
+    taskDetails.value.project_name = selectedTaskProject.value.title || selectedTaskProject.value.ref
+    
+    // Actualizar en la lista
+    const taskInList = tasks.value.find(t => t.id === taskDetails.value.id)
+    if (taskInList) {
+      taskInList.fk_project = selectedTaskProject.value.id
+      taskInList.project_name = selectedTaskProject.value.title || selectedTaskProject.value.ref
+    }
+    
+    cancelEditTaskProject()
+    console.log('✅ Proyecto de tarea actualizado exitosamente')
+  } catch (error) {
+    console.error('❌ Error al actualizar proyecto:', error)
+    alert('Error al actualizar el proyecto: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    isSavingTaskProject.value = false
+  }
+}
+
+// Task priority editing functions
+const startEditTaskPriority = () => {
+  editingTaskPriority.value = true
+  // Obtener prioridad desde array_options o usar el valor directo
+  const priority = taskDetails.value?.array_options?.options_prioridad || taskDetails.value?.priority || 'Normal'
+  selectedTaskPriority.value = getPriorityText(priority)
+}
+
+const cancelEditTaskPriority = () => {
+  editingTaskPriority.value = false
+  selectedTaskPriority.value = ''
+}
+
+const saveTaskPriority = async () => {
+  if (isSavingTaskPriority.value) return
+  
+  isSavingTaskPriority.value = true
+  
+  try {
+    console.log('💾 Guardando prioridad de tarea:', {
+      taskId: selectedTask.value.id,
+      newPriority: selectedTaskPriority.value
+    })
+    
+    // Prepare data for API - La prioridad se guarda en array_options
+    const updateData = {
+      label: taskDetails.value.label || selectedTask.value.label,
+      array_options: {
+        options_prioridad: selectedTaskPriority.value.toLowerCase()
+      }
+    }
+    
+    // API call to update task
+    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
+    console.log('✅ Prioridad actualizada:', response.data)
+    
+    // Update local data
+    const newPriority = selectedTaskPriority.value.toLowerCase()
+    if (!taskDetails.value.array_options) {
+      taskDetails.value.array_options = {}
+    }
+    taskDetails.value.array_options.options_prioridad = newPriority
+    taskDetails.value.priority = newPriority
+    taskDetails.value.priority_text = getPriorityText(newPriority)
+    
+    // Actualizar también la tarea en la lista
+    const taskInList = tasks.value.find(t => t.id === taskDetails.value.id)
+    if (taskInList) {
+      if (!taskInList.array_options) {
+        taskInList.array_options = {}
+      }
+      taskInList.array_options.options_prioridad = newPriority
+      taskInList.priority = newPriority
+    }
+    
+    cancelEditTaskPriority()
+    console.log('✅ Prioridad de tarea actualizada exitosamente')
+  } catch (error) {
+    console.error('❌ Error al actualizar prioridad:', error)
+    alert('Error al actualizar la prioridad: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    isSavingTaskPriority.value = false
   }
 }
 
@@ -2388,6 +3689,20 @@ const formatDuration = (seconds) => {
   }
 }
 
+// Calcular tiempo total dedicado de todas las líneas
+const calculateTotalTimeSpent = (lines) => {
+  if (!lines || lines.length === 0) return 0
+  return lines.reduce((total, line) => total + (parseInt(line.timespent_line_duration) || 0), 0)
+}
+
+// Obtener nombre de usuario por ID
+const getUserNameById = (userId) => {
+  if (!userId || !users.value) return null
+  const user = users.value.find(u => u.id == userId || u.rowid == userId)
+  if (!user) return null
+  return `${user.firstname || ''} ${user.lastname || ''}`.trim() || user.login || 'Usuario'
+}
+
 const formatTime = (milliseconds) => {
   const totalSeconds = Math.floor(milliseconds / 1000)
   const hours = Math.floor(totalSeconds / 3600)
@@ -2441,26 +3756,251 @@ const getStatusText = (status) => {
   }
 }
 
+const getUserInitials = (fullName) => {
+  if (!fullName) return '--'
+  
+  const names = fullName.trim().split(' ')
+  if (names.length === 1) {
+    // Solo un nombre, tomar las primeras 2 letras
+    return names[0].substring(0, 2).toUpperCase()
+  }
+  
+  // Tomar primera letra del nombre y primera letra del apellido
+  const firstName = names[0]
+  const lastName = names[names.length - 1]
+  return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase()
+}
+
 const getPriorityText = (priority) => {
+  // Si ya es un string de texto, devolverlo directamente
+  if (typeof priority === 'string') {
+    const normalized = priority.toLowerCase()
+    if (normalized === 'bajo') return 'Bajo'
+    if (normalized === 'normal') return 'Normal'
+    if (normalized === 'alto') return 'Alto'
+    if (normalized === 'crítico' || normalized === 'critico') return 'Crítico'
+    return priority // Devolver el original si no coincide
+  }
+  
+  // Si es número (legacy), convertir a texto
   const priorityNum = parseInt(priority)
   const priorities = {
-    0: 'Baja',
-    1: 'Media',
-    2: 'Alta',
-    3: 'Muy alta'
+    0: 'Bajo',
+    1: 'Normal',
+    2: 'Alto',
+    3: 'Crítico'
   }
-  return priorities[priorityNum] !== undefined ? priorities[priorityNum] : 'Media'
+  return priorities[priorityNum] !== undefined ? priorities[priorityNum] : 'Normal'
 }
 
 const getPriorityClass = (priority) => {
-  const priorityNum = parseInt(priority)
+  // Normalizar el string
+  const priorityStr = typeof priority === 'string' ? priority.toLowerCase() : ''
+  
   const classes = {
-    0: 'bg-green-600 text-green-100',    // Baja
-    1: 'bg-blue-600 text-blue-100',      // Media
-    2: 'bg-orange-600 text-orange-100',  // Alta
-    3: 'bg-red-600 text-red-100'         // Muy alta
+    'bajo': 'bg-green-600 text-green-100',
+    'normal': 'bg-blue-600 text-blue-100',
+    'alto': 'bg-orange-600 text-orange-100',
+    'crítico': 'bg-red-600 text-red-100',
+    'critico': 'bg-red-600 text-red-100'
   }
-  return classes[priorityNum] !== undefined ? classes[priorityNum] : 'bg-blue-600 text-blue-100'
+  
+  // Si es número (legacy), convertir
+  if (!isNaN(priority)) {
+    const priorityNum = parseInt(priority)
+    const numClasses = {
+      0: 'bg-green-600 text-green-100',
+      1: 'bg-blue-600 text-blue-100',
+      2: 'bg-orange-600 text-orange-100',
+      3: 'bg-red-600 text-red-100'
+    }
+    return numClasses[priorityNum] || 'bg-blue-600 text-blue-100'
+  }
+  
+  return classes[priorityStr] || 'bg-blue-600 text-blue-100'
+}
+
+// Create task functions
+const generateTaskRef = async () => {
+  try {
+    const now = new Date()
+    const year = String(now.getFullYear()).slice(-2) // Últimos 2 dígitos del año
+    const month = String(now.getMonth() + 1).padStart(2, '0') // Mes con padding
+    const prefix = `TK${year}${month}-`
+    
+    console.log('🔢 Generando referencia con prefijo:', prefix)
+    
+    // Obtener todas las tareas del mes actual
+    const response = await http.get('/api/doli/tasks', {
+      params: {
+        limit: 1000,
+        sortfield: 't.ref',
+        sortorder: 'DESC'
+      }
+    })
+    
+    // Filtrar tareas que coincidan con el prefijo del mes actual
+    const tasksThisMonth = response.data.filter(task => 
+      task.ref && task.ref.startsWith(prefix)
+    )
+    
+    console.log('📋 Tareas encontradas del mes actual:', tasksThisMonth.length)
+    
+    // Obtener el último número
+    let lastNumber = 0
+    if (tasksThisMonth.length > 0) {
+      // Extraer el número de la última referencia
+      const lastRef = tasksThisMonth[0].ref
+      const numberPart = lastRef.split('-')[1]
+      lastNumber = parseInt(numberPart) || 0
+      console.log('🔢 Última referencia:', lastRef, 'Número:', lastNumber)
+    }
+    
+    // Generar nueva referencia
+    const newNumber = lastNumber + 1
+    const newRef = `${prefix}${String(newNumber).padStart(4, '0')}`
+    
+    console.log('✅ Nueva referencia generada:', newRef)
+    return newRef
+    
+  } catch (error) {
+    console.error('❌ Error al generar referencia:', error)
+    // Fallback: usar timestamp
+    const timestamp = Date.now().toString().slice(-4)
+    return `TK-${timestamp}`
+  }
+}
+
+const filterProjectsForNewTask = () => {
+  if (!projectSearchTerm.value) {
+    filteredProjectsForNewTask.value = []
+    return
+  }
+  
+  const searchTerm = projectSearchTerm.value.toLowerCase()
+  filteredProjectsForNewTask.value = projects.value.filter(project => {
+    const title = (project.title || '').toLowerCase()
+    const ref = (project.ref || '').toLowerCase()
+    return title.includes(searchTerm) || ref.includes(searchTerm)
+  }).slice(0, 20) // Limitar a 20 resultados
+}
+
+const selectProjectForNewTask = (project) => {
+  newTask.value.fk_project = project.id
+  projectSearchTerm.value = project.title || project.ref
+  showProjectDropdown.value = false
+}
+
+const closeCreateTaskModal = () => {
+  showCreateTaskModal.value = false
+  // Reset form
+  newTask.value = {
+    label: '',
+    description: '',
+    fk_project: null,
+    date_start: null,
+    date_end: null,
+    planned_workload: null,
+    progress: 0,
+    billable: '1',
+    budget_amount: null,
+    priority: 'Normal'
+  }
+  // Limpiar buscador de proyectos
+  projectSearchTerm.value = ''
+  filteredProjectsForNewTask.value = []
+  showProjectDropdown.value = false
+  // Limpiar editor WYSIWYG
+  if (taskDescriptionEditor.value) {
+    taskDescriptionEditor.value.innerHTML = ''
+  }
+}
+
+// Funciones del editor WYSIWYG para descripción de tarea
+const formatTaskDescription = (command) => {
+  document.execCommand(command, false, null)
+  taskDescriptionEditor.value?.focus()
+}
+
+const insertTaskDescriptionList = (type) => {
+  const command = type === 'ul' ? 'insertUnorderedList' : 'insertOrderedList'
+  document.execCommand(command, false, null)
+  taskDescriptionEditor.value?.focus()
+}
+
+const updateTaskDescriptionContent = () => {
+  if (taskDescriptionEditor.value) {
+    newTask.value.description = taskDescriptionEditor.value.innerHTML
+  }
+}
+
+const createTask = async () => {
+  if (!newTask.value.label || !newTask.value.fk_project) {
+    alert('Por favor completa los campos obligatorios: Etiqueta y Proyecto')
+    return
+  }
+  
+  creatingTask.value = true
+  
+  try {
+    console.log('📝 Creando nueva tarea:', newTask.value)
+    
+    // Generar referencia automática
+    const taskRef = await generateTaskRef()
+    console.log('🏷️ Referencia generada:', taskRef)
+    
+    // Convertir fechas a timestamp Unix si existen
+    const dateStart = newTask.value.date_start ? Math.floor(new Date(newTask.value.date_start).getTime() / 1000) : null
+    const dateEnd = newTask.value.date_end ? Math.floor(new Date(newTask.value.date_end).getTime() / 1000) : null
+    
+    // Preparar datos para la API
+    const taskData = {
+      ref: taskRef, // Referencia generada automáticamente (ej: TK2510-0010)
+      label: newTask.value.label,
+      description: newTask.value.description || '',
+      fk_project: parseInt(newTask.value.fk_project),
+      date_start: dateStart,
+      date_end: dateEnd,
+      planned_workload: newTask.value.planned_workload ? parseFloat(newTask.value.planned_workload) * 3600 : null, // Convertir horas a segundos
+      progress: newTask.value.progress || 0,
+      billable: newTask.value.billable,
+      budget_amount: newTask.value.budget_amount || null,
+      status: 1, // Estado 1 = Validada
+      array_options: {
+        options_prioridad: newTask.value.priority.toLowerCase()
+      }
+    }
+    
+    console.log('📤 Datos a enviar:', taskData)
+    console.log('📤 JSON stringified:', JSON.stringify(taskData, null, 2))
+    console.log('📤 Ref field value:', taskData.ref, 'Type:', typeof taskData.ref)
+    
+    // Verificar que ref existe antes de enviar
+    if (!('ref' in taskData)) {
+      console.error('❌ Campo ref NO existe en taskData!')
+      taskData.ref = ''
+    }
+    
+    // Llamada al API
+    const response = await http.post('/api/doli/tasks', taskData)
+    console.log('✅ Tarea creada:', response.data)
+    
+    // Cerrar modal
+    closeCreateTaskModal()
+    
+    // Recargar lista de tareas
+    await loadTasks()
+    
+    // Mensaje de éxito
+    alert('✅ Tarea creada exitosamente')
+    
+  } catch (error) {
+    console.error('❌ Error al crear tarea:', error)
+    console.error('❌ Error details:', error.response?.data)
+    alert('Error al crear la tarea: ' + (error.response?.data?.error?.message || error.message))
+  } finally {
+    creatingTask.value = false
+  }
 }
 
 // Pagination methods
@@ -2508,3 +4048,39 @@ onUnmounted(() => {
   timerIntervals.value = {}
 })
 </script>
+
+<style scoped>
+/* Estilos para el editor WYSIWYG */
+[contenteditable="true"]:empty:before {
+  content: "Escribe la descripción de la tarea aquí...";
+  color: #9CA3AF;
+  font-style: italic;
+}
+
+[contenteditable="true"]:focus {
+  outline: none;
+}
+
+/* Estilos para el contenido del editor */
+[contenteditable="true"] p {
+  margin: 0.5rem 0;
+}
+
+[contenteditable="true"] ul,
+[contenteditable="true"] ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+[contenteditable="true"] strong {
+  font-weight: bold;
+}
+
+[contenteditable="true"] em {
+  font-style: italic;
+}
+
+[contenteditable="true"] u {
+  text-decoration: underline;
+}
+</style>
