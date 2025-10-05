@@ -1490,36 +1490,65 @@
                         class="hidden"
                       />
                       
+                      <!-- Uploading Indicator -->
+                      <div v-if="uploadingFile" class="flex items-center justify-center p-4 rounded-lg border" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'">
+                        <svg class="animate-spin h-5 w-5 mr-2" :class="isDark ? 'text-blue-400' : 'text-blue-500'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Subiendo archivo...</span>
+                      </div>
+                      
                       <!-- Uploaded Files List -->
                       <div v-if="uploadedFiles.length > 0" class="space-y-2">
                         <h4 class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                           Archivos subidos ({{ uploadedFiles.length }})
                         </h4>
                         <div 
-                          v-for="file in uploadedFiles" 
-                          :key="file.id"
-                          class="flex items-center justify-between p-2 rounded border"
+                          v-for="(file, index) in uploadedFiles" 
+                          :key="`${file.name}-${file.date}-${index}`"
+                          class="flex items-center justify-between p-3 rounded border"
                           :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'"
                         >
                           <div class="flex items-center space-x-2 flex-1 min-w-0">
-                            <svg class="w-4 h-4 flex-shrink-0" :class="isDark ? 'text-gray-400' : 'text-gray-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="w-5 h-5 flex-shrink-0" :class="isDark ? 'text-blue-400' : 'text-blue-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <span class="text-sm truncate" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                              {{ file.name }}
-                            </span>
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm font-medium truncate" :class="isDark ? 'text-gray-200' : 'text-gray-800'">
+                                {{ file.name }}
+                              </p>
+                              <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                                {{ formatFileSize(file.size) }}
+                              </p>
+                            </div>
                           </div>
-                          <button 
-                            @click="removeFile(file.id)"
-                            class="ml-2 p-1 rounded hover:bg-opacity-50 transition-colors"
-                            :class="isDark ? 'text-red-400 hover:bg-red-900' : 'text-red-600 hover:bg-red-100'"
-                            title="Eliminar archivo"
-                          >
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
+                          <div class="flex items-center space-x-1">
+                            <button 
+                              @click="downloadFile(file)"
+                              class="p-1.5 rounded hover:bg-opacity-50 transition-colors"
+                              :class="isDark ? 'text-green-400 hover:bg-green-900' : 'text-green-600 hover:bg-green-100'"
+                              title="Descargar archivo"
+                            >
+                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                              </svg>
+                            </button>
+                            <button 
+                              @click="removeFile(file)"
+                              class="p-1.5 rounded hover:bg-opacity-50 transition-colors"
+                              :class="isDark ? 'text-red-400 hover:bg-red-900' : 'text-red-600 hover:bg-red-100'"
+                              title="Eliminar archivo"
+                            >
+                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
+                      </div>
+                      <div v-else-if="!uploadingFile" class="text-sm text-center py-4" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                        No hay archivos adjuntos
                       </div>
                     </div>
                   </div>
@@ -2057,6 +2086,7 @@ const isSavingPrivateNote = ref(false)
 const isSavingPublicNote = ref(false)
 const uploadedFiles = ref([])
 const fileInput = ref(null)
+const uploadingFile = ref(false)
 
 // Task editing functionality
 const editingTaskCompany = ref(false)
@@ -2803,6 +2833,9 @@ const viewTaskDetails = async (task) => {
     publicNote.value = taskDetails.value.note_public || ''
     taskDescription.value = taskDetails.value.description || ''
     
+    // Load task files from Dolibarr
+    await loadTaskFiles()
+    
     // Reset edit modes
     isEditingDescription.value = false
   } catch (error) {
@@ -2978,54 +3011,196 @@ const savePublicNote = async () => {
 }
 
 // File functions
-const handleFileSelect = (event) => {
+const handleFileSelect = async (event) => {
   const files = Array.from(event.target.files)
-  processFiles(files)
+  await processFiles(files)
+  event.target.value = '' // Reset input
 }
 
-const handleFileDrop = (event) => {
+const handleFileDrop = async (event) => {
   event.preventDefault()
   const files = Array.from(event.dataTransfer.files)
-  processFiles(files)
+  await processFiles(files)
 }
 
-const processFiles = (files) => {
-  files.forEach(file => {
+const processFiles = async (files) => {
+  for (const file of files) {
     // Validate file size (10MB limit)
     if (file.size > 10 * 1024 * 1024) {
-      console.warn('⚠️ File too large:', file.name)
-      return
+      alert(`⚠️ El archivo "${file.name}" es demasiado grande. Máximo 10MB.`)
+      continue
     }
     
     // Validate file type
     const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
     if (!allowedTypes.includes(file.type)) {
-      console.warn('⚠️ File type not allowed:', file.name)
-      return
+      alert(`⚠️ El tipo de archivo "${file.name}" no está permitido.`)
+      continue
     }
     
-    // Add file to list
-    const fileObj = {
-      id: Date.now() + Math.random(),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      file: file
-    }
-    
-    uploadedFiles.value.push(fileObj)
-    console.log('📎 File added:', file.name)
-  })
-  
-  // Clear file input
-  if (fileInput.value) {
-    fileInput.value.value = ''
+    await uploadFileToDolibarr(file)
   }
 }
 
-const removeFile = (fileId) => {
-  uploadedFiles.value = uploadedFiles.value.filter(file => file.id !== fileId)
-  console.log('🗑️ File removed')
+// Convert file to base64
+const fileToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = error => reject(error)
+  })
+}
+
+// Upload file to Dolibarr
+const uploadFileToDolibarr = async (file) => {
+  uploadingFile.value = true
+  
+  try {
+    console.log('📤 Subiendo archivo:', file.name)
+    console.log('📊 Tamaño:', file.size, 'bytes')
+    console.log('📄 Tipo:', file.type)
+    console.log('🏷️ Tarea ID:', selectedTask.value.id)
+    
+    // Convert file to base64
+    const base64Content = await fileToBase64(file)
+    const base64Data = base64Content.split(',')[1] // Remove data:xxx;base64, prefix
+    
+    // Upload to Dolibarr using custom module endpoint
+    const response = await http.post(`/api/doli/dolibarmodernfrontendapi/task/${selectedTask.value.id}/documents`, {
+      filename: file.name,
+      filecontent: base64Data,
+      fileencoding: 'base64'
+    })
+    
+    console.log('✅ Archivo subido exitosamente:', file.name, response.data)
+    
+    // Pequeño delay para asegurar que el archivo esté disponible en el servidor
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // Limpiar y recargar archivos para forzar reactividad
+    console.log('🔄 Recargando lista de archivos...')
+    uploadedFiles.value = []
+    await loadTaskFiles()
+    
+    console.log('✅ Lista actualizada. Total archivos:', uploadedFiles.value.length)
+    
+  } catch (error) {
+    console.error('❌ Error al subir archivo:', error)
+    console.error('Error details:', error.response?.data)
+    alert(`Error al subir ${file.name}: ${error.response?.data?.error?.message || error.message}`)
+  } finally {
+    uploadingFile.value = false
+  }
+}
+
+// Load task files from Dolibarr
+const loadTaskFiles = async () => {
+  if (!selectedTask.value?.id) {
+    console.warn('⚠️ No se puede cargar archivos: selectedTask.value.id no está definido')
+    return
+  }
+  
+  try {
+    console.log('📂 Cargando archivos de la tarea:', selectedTask.value.id, selectedTask.value.ref)
+    
+    const response = await http.get(`/api/doli/dolibarmodernfrontendapi/task/${selectedTask.value.id}/documents`)
+    
+    console.log('📦 Respuesta completa del API:', response.data)
+    
+    // El array de documentos está en response.data.documents
+    const documents = response.data?.documents || []
+    console.log('📄 Documentos encontrados:', documents.length)
+    
+    // Asignar con spread para forzar reactividad
+    uploadedFiles.value = [...documents]
+    
+    console.log('📎 Archivos cargados en uploadedFiles.value:', uploadedFiles.value.length)
+    
+    if (uploadedFiles.value.length > 0) {
+      console.log('🗂️ Primer archivo:', uploadedFiles.value[0])
+    } else {
+      console.log('ℹ️ No hay archivos para esta tarea')
+    }
+    
+  } catch (error) {
+    console.error('❌ Error al cargar archivos:', error)
+    console.error('Error details:', error.response?.data)
+    uploadedFiles.value = []
+  }
+}
+
+// Download file from Dolibarr
+const downloadFile = async (file) => {
+  try {
+    console.log('📥 Descargando archivo:', file.name)
+    console.log('📄 Download URL:', file.download_url)
+    console.log('📁 Relative path:', file.relativepath)
+    
+    // Usar el download_url proporcionado por el API
+    const downloadUrl = `/api/doli${file.download_url}`
+    
+    const response = await http.get(downloadUrl, {
+      responseType: 'blob'
+    })
+    
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', file.name)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+    
+    console.log('✅ Archivo descargado:', file.name)
+    
+  } catch (error) {
+    console.error('❌ Error al descargar archivo:', error)
+    console.error('Download URL:', file.download_url)
+    alert(`Error al descargar ${file.name}`)
+  }
+}
+
+// Remove file from Dolibarr
+const removeFile = async (file) => {
+  if (!confirm(`¿Eliminar el archivo "${file.name}"?`)) return
+  
+  try {
+    console.log('🗑️ Eliminando archivo:', file.name)
+    console.log('📁 Relative path:', file.relativepath)
+    
+    await http.delete('/api/doli/documents/delete', {
+      params: {
+        modulepart: 'project_task',
+        original_file: file.relativepath
+      }
+    })
+    
+    console.log('✅ Archivo eliminado:', file.name)
+    
+    // Reload task files
+    await loadTaskFiles()
+    
+  } catch (error) {
+    console.error('❌ Error al eliminar archivo:', error)
+    console.error('Error details:', error.response?.data)
+    alert(`Error al eliminar ${file.name}`)
+  }
+}
+
+// Format file size
+const formatFileSize = (bytes) => {
+  // Manejar cuando size viene como string vacío o null
+  if (!bytes || bytes === '' || bytes === '0') return 'Tamaño desconocido'
+  
+  const numBytes = parseInt(bytes)
+  if (isNaN(numBytes)) return 'Tamaño desconocido'
+  
+  if (numBytes < 1024) return numBytes + ' B'
+  if (numBytes < 1024 * 1024) return (numBytes / 1024).toFixed(1) + ' KB'
+  return (numBytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 // Task company editing functions
