@@ -155,7 +155,13 @@
                     </div>
                   </div>
                   <div class="ml-4">
-                    <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ supplier.name }}</div>
+                    <div 
+                      @click="viewSupplier(supplier)"
+                      class="text-sm font-medium cursor-pointer hover:underline transition-colors" 
+                      :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
+                    >
+                      {{ supplier.name }}
+                    </div>
                     <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ supplier.code_fournisseur || 'Sin código' }}</div>
                   </div>
                 </div>
@@ -293,9 +299,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
 import http from '../../utils/http'
 
+const router = useRouter()
 const { isDark } = useTheme()
 
 // Reactive data
@@ -453,7 +461,7 @@ const handleSearch = () => {
 }
 
 const viewSupplier = (supplier) => {
-   console.log('View supplier:', supplier)
+  router.push(`/terceros/clientes/${supplier.id}`)
 }
 
 const editSupplier = (supplier) => {
