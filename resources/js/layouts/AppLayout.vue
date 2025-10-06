@@ -282,17 +282,17 @@ const shouldShowMenuItem = (itemName) => {
   // Debug detallado para ver qué está pasando
   if (itemName !== 'Dashboard') {
     const allPermissions = usePermissions().permissions.value
-    console.log(`🔐 Verificando menú "${itemName}":`, {
-      requiredPermissions,
-      hasPermission,
-      totalPermissions: allPermissions.length,
-      samplePermissions: allPermissions.slice(0, 10),
-      // Buscar permisos específicos
-      hasSpecificPermissions: requiredPermissions.map(perm => ({
-        permission: perm,
-        found: allPermissions.includes(perm)
-      }))
-    })
+    // console.log(`🔐 Verificando menú "${itemName}":`, {
+    //   requiredPermissions,
+    //   hasPermission,
+    //   totalPermissions: allPermissions.length,
+    //   samplePermissions: allPermissions.slice(0, 10),
+    //   // Buscar permisos específicos
+    //   hasSpecificPermissions: requiredPermissions.map(perm => ({
+    //     permission: perm,
+    //     found: allPermissions.includes(perm)
+    //   }))
+    // })
   }
   
   return hasPermission
@@ -429,9 +429,9 @@ watch(route, (newRoute) => {
 }, { immediate: true })
 
 const handleLogout = async () => {
-  console.log('🔄 Iniciando proceso de logout...')
+  // console.log('🔄 Iniciando proceso de logout...')
   await authStore.logout()
-  console.log('🔄 Redirigiendo al login...')
+  // console.log('🔄 Redirigiendo al login...')
   router.push('/login')
 }
 

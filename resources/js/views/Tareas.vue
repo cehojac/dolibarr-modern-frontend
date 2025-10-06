@@ -2378,7 +2378,7 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutos en milisegundos
 const loadTasks = async (forceRefresh = false) => {
   loading.value = true
   try {
-    console.log('⚡ PASO 1: Verificando caché de tareas...')
+    // console.log('⚡ PASO 1: Verificando caché de tareas...')
     
     // Verificar si hay datos en caché y son válidos
     if (!forceRefresh) {
@@ -2388,7 +2388,7 @@ const loadTasks = async (forceRefresh = false) => {
       if (cachedData && cachedTimestamp) {
         const age = Date.now() - parseInt(cachedTimestamp)
         if (age < CACHE_DURATION) {
-          console.log('✅ Usando tareas desde caché (edad:', Math.floor(age / 1000), 'segundos)')
+          // console.log('✅ Usando tareas desde caché (edad:', Math.floor(age / 1000), 'segundos)')
           const parsedData = JSON.parse(cachedData)
           
           // Procesar tareas básicas desde caché con enriquecimiento de usuario
@@ -2413,19 +2413,19 @@ const loadTasks = async (forceRefresh = false) => {
           
           tasks.value = basicTasks
           loading.value = false
-          console.log('📋 Tareas desde caché:', basicTasks.length)
+          // console.log('📋 Tareas desde caché:', basicTasks.length)
           
           // Cargar datos adicionales en background
           loadAdditionalDataInBackground()
           return
         } else {
-          console.log('⏱️ Caché expirada, recargando...')
+          // console.log('⏱️ Caché expirada, recargando...')
         }
       }
     }
     
     // PASO 1: Cargar TODAS las tareas (sin filtro de progreso, límite 1000)
-    console.log('📡 Llamando API de tareas (límite 1000)...')
+    // console.log('📡 Llamando API de tareas (límite 1000)...')
     const tasksResponse = await http.get('/api/doli/tasks?limit=1000')
     
     if (!tasksResponse.data || !Array.isArray(tasksResponse.data)) {
@@ -2434,12 +2434,12 @@ const loadTasks = async (forceRefresh = false) => {
       return
     }
     
-    console.log('✅ Tareas cargadas desde API:', tasksResponse.data.length)
+    // console.log('✅ Tareas cargadas desde API:', tasksResponse.data.length)
     
     // Guardar en caché
     localStorage.setItem(CACHE_KEY, JSON.stringify(tasksResponse.data))
     localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString())
-    console.log('💾 Tareas guardadas en caché')
+    // console.log('💾 Tareas guardadas en caché')
     
     
     // PASO 2: Procesar tareas básicas CON enriquecimiento básico de usuario
@@ -2466,13 +2466,13 @@ const loadTasks = async (forceRefresh = false) => {
     // PASO 3: Mostrar datos básicos inmediatamente
     tasks.value = basicTasks
     loading.value = false
-    console.log('⚡ Datos básicos mostrados -', basicTasks.length, 'tareas cargadas')
+    // console.log('⚡ Datos básicos mostrados -', basicTasks.length, 'tareas cargadas')
     
     // PASO 4: Enriquecer en background
     await loadAdditionalDataInBackground()
     
   } catch (error) {
-    console.error('Error loading tasks:', error)
+    // console.error('Error loading tasks:', error)
     tasks.value = []
     loading.value = false
   }
@@ -2481,15 +2481,15 @@ const loadTasks = async (forceRefresh = false) => {
 // Función para cargar roles de usuario en tareas
 const loadTaskRoles = async () => {
   if (!authStore.user?.id || tasks.value.length === 0) {
-    console.log('⚠️ No se pueden cargar roles:', {
-      hasUser: !!authStore.user?.id,
-      userId: authStore.user?.id,
-      tasksCount: tasks.value.length
-    })
+    // console.log('⚠️ No se pueden cargar roles:', {
+    //   hasUser: !!authStore.user?.id,
+    //   userId: authStore.user?.id,
+    //   tasksCount: tasks.value.length
+    // })
     return
   }
   
-  console.log('👤 Cargando roles de usuario en tareas...')
+  // console.log('👤 Cargando roles de usuario en tareas...')
   
   try {
     // Cargar roles de TODAS las tareas en paralelo
@@ -2539,16 +2539,16 @@ const loadTaskRoles = async () => {
     })
     
     const assignedCount = rolesResults.filter(r => r.isExecutive).length
-    console.log('✅ Roles cargados:', assignedCount, 'de', tasks.value.length, 'tareas asignadas al usuario')
+    // console.log('✅ Roles cargados:', assignedCount, 'de', tasks.value.length, 'tareas asignadas al usuario')
   } catch (error) {
-    console.error('❌ Error cargando roles:', error)
+    // console.error('❌ Error cargando roles:', error)
   }
 }
 
 // Función para cargar y enriquecer datos adicionales
 const loadAdditionalDataInBackground = async () => {
   try {
-    console.log('🔄 Cargando datos adicionales...')
+    // console.log('🔄 Cargando datos adicionales...')
     
     // Cargar datos adicionales para enriquecimiento en background
     const [projectsResponse, usersResponse, tercerosResponse] = await Promise.all([
@@ -2557,11 +2557,11 @@ const loadAdditionalDataInBackground = async () => {
       http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] }))
     ])
     
-    console.log('✅ Datos adicionales cargados:', {
-      projects: projectsResponse.data?.length || 0,
-      users: usersResponse.data?.length || 0,
-      terceros: tercerosResponse.data?.length || 0
-    })
+    // console.log('✅ Datos adicionales cargados:', {
+    //   projects: projectsResponse.data?.length || 0,
+    //   users: usersResponse.data?.length || 0,
+    //   terceros: tercerosResponse.data?.length || 0
+    // })
     
     // PASO 2: Store reference data
     projects.value = projectsResponse.data || []
@@ -2606,7 +2606,7 @@ const loadAdditionalDataInBackground = async () => {
       }
     })
 
-    console.log('📊 Mapas creados - Projects:', Object.keys(projectsMap).length, 'Users:', Object.keys(usersMap).length, 'Terceros:', Object.keys(tercerosMap).length)
+    // console.log('📊 Mapas creados - Projects:', Object.keys(projectsMap).length, 'Users:', Object.keys(usersMap).length, 'Terceros:', Object.keys(tercerosMap).length)
 
     // PASO 3: Enriquecer las tareas ya mostradas (SÍNCRONO como Tickets)
     const enrichedTasks = tasks.value.map((task) => {
@@ -2678,12 +2678,12 @@ const loadAdditionalDataInBackground = async () => {
     })
 
     tasks.value = enrichedTasks
-    console.log('✅ Datos enriquecidos:', enrichedTasks.length, 'tareas')
+    // console.log('✅ Datos enriquecidos:', enrichedTasks.length, 'tareas')
     
     // Cargar roles de usuario en background
     await loadTaskRoles()
   } catch (err) {
-    console.error('❌ Error al enriquecer tareas:', err)
+    // console.error('❌ Error al enriquecer tareas:', err)
     // Mantener las tareas básicas aunque falle el enriquecimiento
   }
 }
@@ -2726,7 +2726,7 @@ const filterByOverdue = () => {
   
   currentPage.value = 1
   
-  console.log('🔴 Filtrando por tareas vencidas de todos los usuarios')
+  // console.log('🔴 Filtrando por tareas vencidas de todos los usuarios')
 }
 
 const clearFilters = () => {
@@ -2755,7 +2755,7 @@ const viewTaskDetails = async (task) => {
   
   try {
     // Llamada real a la API para obtener detalles completos de la tarea con tiempo dedicado
-    console.log('🔍 Cargando detalles de tarea:', task.id)
+    // console.log('🔍 Cargando detalles de tarea:', task.id)
     const response = await http.get(`/api/doli/tasks/${task.id}?includetimespent=2`)
     
     if (!response.data) {
@@ -2763,7 +2763,7 @@ const viewTaskDetails = async (task) => {
     }
     
     const taskData = response.data
-    console.log('✅ Detalles de tarea cargados:', taskData)
+    // console.log('✅ Detalles de tarea cargados:', taskData)
     
     // Usar status si fk_statut es null o undefined
     const taskStatus = taskData.fk_statut !== null && taskData.fk_statut !== undefined 
@@ -2772,7 +2772,7 @@ const viewTaskDetails = async (task) => {
     
     // Procesar líneas de tiempo dedicado si existen
     const timeSpentLines = taskData.lines || []
-    console.log('⏱️ Líneas de tiempo dedicado:', timeSpentLines.length)
+    // console.log('⏱️ Líneas de tiempo dedicado:', timeSpentLines.length)
     
     // Obtener nombre del proyecto si existe
     let projectName = task.project_name || null
@@ -2781,10 +2781,10 @@ const viewTaskDetails = async (task) => {
         const project = await projectsComposable.getProjectById(taskData.fk_project)
         if (project) {
           projectName = project.title || project.ref || project.name
-          console.log('📁 Nombre del proyecto:', projectName)
+          // console.log('📁 Nombre del proyecto:', projectName)
         }
       } catch (error) {
-        console.warn('⚠️ Error obteniendo nombre del proyecto:', error)
+        // console.warn('⚠️ Error obteniendo nombre del proyecto:', error)
       }
     }
     
@@ -2839,7 +2839,7 @@ const viewTaskDetails = async (task) => {
     // Reset edit modes
     isEditingDescription.value = false
   } catch (error) {
-    console.error('Error loading task details:', error)
+    // console.error('Error loading task details:', error)
   } finally {
     loadingTaskDetails.value = false
   }
@@ -2883,7 +2883,7 @@ const markTaskAsComplete = async () => {
   
   completingTask.value = true
   try {
-    console.log('🎯 Marcando tarea como completa (100% y estado Terminada):', taskDetails.value.id)
+    // console.log('🎯 Marcando tarea como completa (100% y estado Terminada):', taskDetails.value.id)
     
     // Actualizar progreso a 100% y estado a 3 (Terminada)
     const updateData = {
@@ -2893,7 +2893,7 @@ const markTaskAsComplete = async () => {
     }
     
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Tarea completada:', response.data)
+    // console.log('✅ Tarea completada:', response.data)
     
     // Actualizar el taskDetails localmente
     taskDetails.value.progress = 100
@@ -2918,9 +2918,9 @@ const markTaskAsComplete = async () => {
     // Recargar la lista de tareas
     await loadTasks()
     
-    console.log('✅ Tarea marcada como completa exitosamente')
+    // console.log('✅ Tarea marcada como completa exitosamente')
   } catch (error) {
-    console.error('❌ Error al completar tarea:', error)
+    // console.error('❌ Error al completar tarea:', error)
     alert('Error al marcar la tarea como completa: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     completingTask.value = false
@@ -2929,7 +2929,7 @@ const markTaskAsComplete = async () => {
 
 // Abrir modal de timesheet manual
 const openManualTimesheetModal = () => {
-  console.log('📋 Abriendo modal de timesheet manual para tarea:', taskDetails.value?.id)
+  // console.log('📋 Abriendo modal de timesheet manual para tarea:', taskDetails.value?.id)
   // TODO: Implementar modal de timesheet manual
   alert('Función de Add Timesheet manual próximamente disponible')
 }
@@ -2941,8 +2941,8 @@ const savePrivateNote = async () => {
   isSavingPrivateNote.value = true
   
   try {
-    console.log('Saving private note:', privateNote.value)
-    console.log('Task ID:', taskDetails.value.id)
+    // console.log('Saving private note:', privateNote.value)
+    // console.log('Task ID:', taskDetails.value.id)
     
     // Prepare data for API - Incluir campos obligatorios
     const updateData = {
@@ -2951,11 +2951,11 @@ const savePrivateNote = async () => {
       note_private: privateNote.value.trim()
     }
     
-    console.log('Update data:', updateData)
+    // console.log('Update data:', updateData)
     
     // API call to update task using http.put
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Private note update response:', response.data)
+    // console.log('✅ Private note update response:', response.data)
     
     // Update local data
     taskDetails.value.note_private = privateNote.value.trim()
@@ -2963,10 +2963,10 @@ const savePrivateNote = async () => {
     // Close edit mode
     isEditingPrivateNote.value = false
     
-    console.log('Private note saved successfully')
+    // console.log('Private note saved successfully')
   } catch (error) {
-    console.error('Error saving private note:', error)
-    console.error('Error details:', error.response?.data)
+    // console.error('Error saving private note:', error)
+    // console.error('Error details:', error.response?.data)
     alert('Error al guardar la nota privada: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     isSavingPrivateNote.value = false
@@ -2979,7 +2979,7 @@ const savePublicNote = async () => {
   isSavingPublicNote.value = true
   
   try {
-    console.log('💾 Saving public note for task:', selectedTask.value.id, publicNote.value)
+    // console.log('💾 Saving public note for task:', selectedTask.value.id, publicNote.value)
     
     // Prepare data for API - Incluir campos obligatorios
     const updateData = {
@@ -2988,11 +2988,11 @@ const savePublicNote = async () => {
       note_public: publicNote.value.trim()
     }
     
-    console.log('Update data:', updateData)
+    // console.log('Update data:', updateData)
     
     // API call to update task using http.put
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Public note update response:', response.data)
+    // console.log('✅ Public note update response:', response.data)
     
     // Update local data
     taskDetails.value.note_public = publicNote.value.trim()
@@ -3000,10 +3000,10 @@ const savePublicNote = async () => {
     // Close edit mode
     isEditingPublicNote.value = false
     
-    console.log('✅ Public note saved successfully')
+    // console.log('✅ Public note saved successfully')
   } catch (error) {
-    console.error('❌ Error saving public note:', error)
-    console.error('Error details:', error.response?.data)
+    // console.error('❌ Error saving public note:', error)
+    // console.error('Error details:', error.response?.data)
     alert('Error al guardar la nota pública: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     isSavingPublicNote.value = false
@@ -3057,10 +3057,10 @@ const uploadFileToDolibarr = async (file) => {
   uploadingFile.value = true
   
   try {
-    console.log('📤 Subiendo archivo:', file.name)
-    console.log('📊 Tamaño:', file.size, 'bytes')
-    console.log('📄 Tipo:', file.type)
-    console.log('🏷️ Tarea ID:', selectedTask.value.id)
+    // console.log('📤 Subiendo archivo:', file.name)
+    // console.log('📊 Tamaño:', file.size, 'bytes')
+    // console.log('📄 Tipo:', file.type)
+    // console.log('🏷️ Tarea ID:', selectedTask.value.id)
     
     // Convert file to base64
     const base64Content = await fileToBase64(file)
@@ -3073,21 +3073,21 @@ const uploadFileToDolibarr = async (file) => {
       fileencoding: 'base64'
     })
     
-    console.log('✅ Archivo subido exitosamente:', file.name, response.data)
+    // console.log('✅ Archivo subido exitosamente:', file.name, response.data)
     
     // Pequeño delay para asegurar que el archivo esté disponible en el servidor
     await new Promise(resolve => setTimeout(resolve, 500))
     
     // Limpiar y recargar archivos para forzar reactividad
-    console.log('🔄 Recargando lista de archivos...')
+    // console.log('🔄 Recargando lista de archivos...')
     uploadedFiles.value = []
     await loadTaskFiles()
     
-    console.log('✅ Lista actualizada. Total archivos:', uploadedFiles.value.length)
+    // console.log('✅ Lista actualizada. Total archivos:', uploadedFiles.value.length)
     
   } catch (error) {
-    console.error('❌ Error al subir archivo:', error)
-    console.error('Error details:', error.response?.data)
+    // console.error('❌ Error al subir archivo:', error)
+    // console.error('Error details:', error.response?.data)
     alert(`Error al subir ${file.name}: ${error.response?.data?.error?.message || error.message}`)
   } finally {
     uploadingFile.value = false
@@ -3097,35 +3097,35 @@ const uploadFileToDolibarr = async (file) => {
 // Load task files from Dolibarr
 const loadTaskFiles = async () => {
   if (!selectedTask.value?.id) {
-    console.warn('⚠️ No se puede cargar archivos: selectedTask.value.id no está definido')
+    // console.warn('⚠️ No se puede cargar archivos: selectedTask.value.id no está definido')
     return
   }
   
   try {
-    console.log('📂 Cargando archivos de la tarea:', selectedTask.value.id, selectedTask.value.ref)
+    // console.log('📂 Cargando archivos de la tarea:', selectedTask.value.id, selectedTask.value.ref)
     
     const response = await http.get(`/api/doli/dolibarmodernfrontendapi/task/${selectedTask.value.id}/documents`)
     
-    console.log('📦 Respuesta completa del API:', response.data)
+    // console.log('📦 Respuesta completa del API:', response.data)
     
     // El array de documentos está en response.data.documents
     const documents = response.data?.documents || []
-    console.log('📄 Documentos encontrados:', documents.length)
+    // console.log('📄 Documentos encontrados:', documents.length)
     
     // Asignar con spread para forzar reactividad
     uploadedFiles.value = [...documents]
     
-    console.log('📎 Archivos cargados en uploadedFiles.value:', uploadedFiles.value.length)
+    // console.log('📎 Archivos cargados en uploadedFiles.value:', uploadedFiles.value.length)
     
     if (uploadedFiles.value.length > 0) {
-      console.log('🗂️ Primer archivo:', uploadedFiles.value[0])
+      // console.log('🗂️ Primer archivo:', uploadedFiles.value[0])
     } else {
-      console.log('ℹ️ No hay archivos para esta tarea')
+      // console.log('ℹ️ No hay archivos para esta tarea')
     }
     
   } catch (error) {
-    console.error('❌ Error al cargar archivos:', error)
-    console.error('Error details:', error.response?.data)
+    // console.error('❌ Error al cargar archivos:', error)
+    // console.error('Error details:', error.response?.data)
     uploadedFiles.value = []
   }
 }
@@ -3133,9 +3133,9 @@ const loadTaskFiles = async () => {
 // Download file from Dolibarr
 const downloadFile = async (file) => {
   try {
-    console.log('📥 Descargando archivo:', file.name)
-    console.log('📄 Download URL:', file.download_url)
-    console.log('📁 Relative path:', file.relativepath)
+    // console.log('📥 Descargando archivo:', file.name)
+    // console.log('📄 Download URL:', file.download_url)
+    // console.log('📁 Relative path:', file.relativepath)
     
     // Usar el download_url proporcionado por el API
     const downloadUrl = `/api/doli${file.download_url}`
@@ -3154,11 +3154,11 @@ const downloadFile = async (file) => {
     link.remove()
     window.URL.revokeObjectURL(url)
     
-    console.log('✅ Archivo descargado:', file.name)
+    // console.log('✅ Archivo descargado:', file.name)
     
   } catch (error) {
-    console.error('❌ Error al descargar archivo:', error)
-    console.error('Download URL:', file.download_url)
+    // console.error('❌ Error al descargar archivo:', error)
+    // console.error('Download URL:', file.download_url)
     alert(`Error al descargar ${file.name}`)
   }
 }
@@ -3168,8 +3168,8 @@ const removeFile = async (file) => {
   if (!confirm(`¿Eliminar el archivo "${file.name}"?`)) return
   
   try {
-    console.log('🗑️ Eliminando archivo:', file.name)
-    console.log('📁 Relative path:', file.relativepath)
+    // console.log('🗑️ Eliminando archivo:', file.name)
+    // console.log('📁 Relative path:', file.relativepath)
     
     await http.delete('/api/doli/documents/delete', {
       params: {
@@ -3178,14 +3178,14 @@ const removeFile = async (file) => {
       }
     })
     
-    console.log('✅ Archivo eliminado:', file.name)
+    // console.log('✅ Archivo eliminado:', file.name)
     
     // Reload task files
     await loadTaskFiles()
     
   } catch (error) {
-    console.error('❌ Error al eliminar archivo:', error)
-    console.error('Error details:', error.response?.data)
+    // console.error('❌ Error al eliminar archivo:', error)
+    // console.error('Error details:', error.response?.data)
     alert(`Error al eliminar ${file.name}`)
   }
 }
@@ -3225,7 +3225,7 @@ const selectTaskCompany = (companyId, companyName) => {
 
 const saveTaskCompany = async () => {
   try {
-    console.log('Saving task company:', selectedTaskCompanyId.value)
+    // console.log('Saving task company:', selectedTaskCompanyId.value)
     
     const selectedCompany = terceros.value.find(t => t.id === selectedTaskCompanyId.value)
     
@@ -3238,7 +3238,7 @@ const saveTaskCompany = async () => {
     
     // API call to update task using http.put like in tickets
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Company update response:', response.data)
+    // console.log('✅ Company update response:', response.data)
     
     // Update local data
     if (selectedCompany) {
@@ -3263,9 +3263,9 @@ const saveTaskCompany = async () => {
     taskCompanySearchTerm.value = ''
     showTaskCompanyDropdown.value = false
     
-    console.log('Task company updated successfully')
+    // console.log('Task company updated successfully')
   } catch (error) {
-    console.error('Error saving task company:', error)
+    // console.error('Error saving task company:', error)
     alert('Error al actualizar la empresa de la tarea')
   }
 }
@@ -3292,10 +3292,10 @@ const selectTaskAssignedUser = (userId, displayText) => {
 
 const saveTaskAssignment = async () => {
   try {
-    console.log('💾 Saving task assignment:', {
-      taskId: selectedTask.value.id,
-      userId: selectedTaskAssignedUserId.value
-    })
+    // console.log('💾 Saving task assignment:', {
+    //   taskId: selectedTask.value.id,
+    //   userId: selectedTaskAssignedUserId.value
+    // })
     
     const selectedUser = selectedTaskAssignedUserId.value ? 
       users.value.find(u => u.id == selectedTaskAssignedUserId.value) : null
@@ -3307,7 +3307,7 @@ const saveTaskAssignment = async () => {
     
     // API call to update task using http.put like in tickets
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Assignment update response:', response.data)
+    // console.log('✅ Assignment update response:', response.data)
     
     // Update local data
     if (selectedUser) {
@@ -3321,9 +3321,9 @@ const saveTaskAssignment = async () => {
     }
     
     cancelEditTaskAssignment()
-    console.log('✅ Task assignment updated successfully')
+    // console.log('✅ Task assignment updated successfully')
   } catch (error) {
-    console.error('❌ Error updating task assignment:', error)
+    // console.error('❌ Error updating task assignment:', error)
     alert('Error al actualizar el usuario asignado')
   }
 }
@@ -3345,10 +3345,10 @@ const saveTaskStatus = async () => {
   isSavingTaskStatus.value = true
   
   try {
-    console.log('💾 Guardando estado de tarea:', {
-      taskId: selectedTask.value.id,
-      newStatus: selectedTaskStatus.value
-    })
+    // console.log('💾 Guardando estado de tarea:', {
+    //   taskId: selectedTask.value.id,
+    //   newStatus: selectedTaskStatus.value
+    // })
     
     // Prepare data for API
     const updateData = {
@@ -3358,7 +3358,7 @@ const saveTaskStatus = async () => {
     
     // API call to update task
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Estado actualizado:', response.data)
+    // console.log('✅ Estado actualizado:', response.data)
     
     // Update local data
     const newStatus = parseInt(selectedTaskStatus.value)
@@ -3374,9 +3374,9 @@ const saveTaskStatus = async () => {
     }
     
     cancelEditTaskStatus()
-    console.log('✅ Estado de tarea actualizado exitosamente')
+    // console.log('✅ Estado de tarea actualizado exitosamente')
   } catch (error) {
-    console.error('❌ Error al actualizar estado:', error)
+    // console.error('❌ Error al actualizar estado:', error)
     alert('Error al actualizar el estado: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     isSavingTaskStatus.value = false
@@ -3395,10 +3395,10 @@ const saveDescription = async () => {
   isSavingDescription.value = true
   
   try {
-    console.log('💾 Guardando descripción de tarea:', {
-      taskId: selectedTask.value.id,
-      description: taskDescription.value
-    })
+    // console.log('💾 Guardando descripción de tarea:', {
+    //   taskId: selectedTask.value.id,
+    //   description: taskDescription.value
+    // })
     
     const updateData = {
       label: taskDetails.value.label || selectedTask.value.label,
@@ -3406,7 +3406,7 @@ const saveDescription = async () => {
     }
     
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Descripción actualizada:', response.data)
+    // console.log('✅ Descripción actualizada:', response.data)
     
     // Update local data
     taskDetails.value.description = taskDescription.value
@@ -3419,9 +3419,9 @@ const saveDescription = async () => {
     }
     
     isEditingDescription.value = false
-    console.log('✅ Descripción de tarea actualizada exitosamente')
+    // console.log('✅ Descripción de tarea actualizada exitosamente')
   } catch (error) {
-    console.error('❌ Error al actualizar descripción:', error)
+    // console.error('❌ Error al actualizar descripción:', error)
     alert('Error al actualizar la descripción: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     isSavingDescription.value = false
@@ -3458,10 +3458,10 @@ const saveTaskClient = async () => {
   isSavingTaskClient.value = true
   
   try {
-    console.log('💾 Guardando cliente de tarea:', {
-      taskId: selectedTask.value.id,
-      clientId: selectedTaskClient.value.id
-    })
+    // console.log('💾 Guardando cliente de tarea:', {
+    //   taskId: selectedTask.value.id,
+    //   clientId: selectedTaskClient.value.id
+    // })
     
     const updateData = {
       label: taskDetails.value.label || selectedTask.value.label,
@@ -3469,7 +3469,7 @@ const saveTaskClient = async () => {
     }
     
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Cliente actualizado:', response.data)
+    // console.log('✅ Cliente actualizado:', response.data)
     
     // Update local data
     taskDetails.value.fk_soc = selectedTaskClient.value.id
@@ -3483,9 +3483,9 @@ const saveTaskClient = async () => {
     }
     
     cancelEditTaskClient()
-    console.log('✅ Cliente de tarea actualizado exitosamente')
+    // console.log('✅ Cliente de tarea actualizado exitosamente')
   } catch (error) {
-    console.error('❌ Error al actualizar cliente:', error)
+    // console.error('❌ Error al actualizar cliente:', error)
     alert('Error al actualizar el cliente: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     isSavingTaskClient.value = false
@@ -3522,10 +3522,10 @@ const saveTaskProject = async () => {
   isSavingTaskProject.value = true
   
   try {
-    console.log('💾 Guardando proyecto de tarea:', {
-      taskId: selectedTask.value.id,
-      projectId: selectedTaskProject.value.id
-    })
+    // console.log('💾 Guardando proyecto de tarea:', {
+    //   taskId: selectedTask.value.id,
+    //   projectId: selectedTaskProject.value.id
+    // })
     
     const updateData = {
       label: taskDetails.value.label || selectedTask.value.label,
@@ -3533,7 +3533,7 @@ const saveTaskProject = async () => {
     }
     
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Proyecto actualizado:', response.data)
+    // console.log('✅ Proyecto actualizado:', response.data)
     
     // Update local data
     taskDetails.value.fk_project = selectedTaskProject.value.id
@@ -3547,9 +3547,9 @@ const saveTaskProject = async () => {
     }
     
     cancelEditTaskProject()
-    console.log('✅ Proyecto de tarea actualizado exitosamente')
+    // console.log('✅ Proyecto de tarea actualizado exitosamente')
   } catch (error) {
-    console.error('❌ Error al actualizar proyecto:', error)
+    // console.error('❌ Error al actualizar proyecto:', error)
     alert('Error al actualizar el proyecto: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     isSavingTaskProject.value = false
@@ -3575,10 +3575,10 @@ const saveTaskPriority = async () => {
   isSavingTaskPriority.value = true
   
   try {
-    console.log('💾 Guardando prioridad de tarea:', {
-      taskId: selectedTask.value.id,
-      newPriority: selectedTaskPriority.value
-    })
+    // console.log('💾 Guardando prioridad de tarea:', {
+    //   taskId: selectedTask.value.id,
+    //   newPriority: selectedTaskPriority.value
+    // })
     
     // Prepare data for API - La prioridad se guarda en array_options
     const updateData = {
@@ -3590,7 +3590,7 @@ const saveTaskPriority = async () => {
     
     // API call to update task
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Prioridad actualizada:', response.data)
+    // console.log('✅ Prioridad actualizada:', response.data)
     
     // Update local data
     const newPriority = selectedTaskPriority.value.toLowerCase()
@@ -3612,9 +3612,9 @@ const saveTaskPriority = async () => {
     }
     
     cancelEditTaskPriority()
-    console.log('✅ Prioridad de tarea actualizada exitosamente')
+    // console.log('✅ Prioridad de tarea actualizada exitosamente')
   } catch (error) {
-    console.error('❌ Error al actualizar prioridad:', error)
+    // console.error('❌ Error al actualizar prioridad:', error)
     alert('Error al actualizar la prioridad: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     isSavingTaskPriority.value = false
@@ -3624,7 +3624,7 @@ const saveTaskPriority = async () => {
 // Load contacts for company
 const loadContactsForCompany = async (companyId) => {
   try {
-    console.log('📞 Loading contacts for company:', companyId)
+    // console.log('📞 Loading contacts for company:', companyId)
     
     // Simulate API call to load contacts
     await new Promise(resolve => setTimeout(resolve, 300))
@@ -3636,9 +3636,9 @@ const loadContactsForCompany = async (companyId) => {
       { id: 3, firstname: 'Carlos', lastname: 'López', email: 'carlos@empresa.com', fk_soc: companyId }
     ]
     
-    console.log('✅ Contacts loaded:', availableContacts.value.length)
+    // console.log('✅ Contacts loaded:', availableContacts.value.length)
   } catch (error) {
-    console.error('❌ Error loading contacts:', error)
+    // console.error('❌ Error loading contacts:', error)
   }
 }
 
@@ -3662,12 +3662,12 @@ const addReminder = () => {
   newReminderNote.value = ''
   showAddReminder.value = false
   
-  console.log('⏰ Reminder added:', reminder)
+  // console.log('⏰ Reminder added:', reminder)
 }
 
 const removeReminder = (reminderId) => {
   taskReminders.value = taskReminders.value.filter(r => r.id !== reminderId)
-  console.log('🗑️ Reminder removed')
+  // console.log('🗑️ Reminder removed')
 }
 
 // Follower functions
@@ -3678,12 +3678,12 @@ const addFollower = (contact) => {
   followerSearchTerm.value = ''
   showFollowerDropdown.value = false
   
-  console.log('👥 Follower added:', contact)
+  // console.log('👥 Follower added:', contact)
 }
 
 const removeFollower = (contactId) => {
   taskFollowers.value = taskFollowers.value.filter(f => f.id !== contactId)
-  console.log('🗑️ Follower removed')
+  // console.log('🗑️ Follower removed')
 }
 
 // Timer functions (legacy - mantener para compatibilidad con modal)
@@ -3737,7 +3737,7 @@ const handleTaskTimerStarted = ({ entityId }) => {
     }, 1000)
   }
   
-  console.log(`▶️ Timer started for task ${entityId}`)
+  // console.log(`▶️ Timer started for task ${entityId}`)
 }
 
 const handleTaskTimerStopped = ({ entityId, elapsedSeconds }) => {
@@ -3754,10 +3754,10 @@ const handleTaskTimerStopped = ({ entityId, elapsedSeconds }) => {
     timeInSeconds = Math.floor(timer.elapsed / 1000)
   }
   
-  console.log('⏱️ Timer stopped for task', entityId)
-  console.log('   elapsedSeconds param:', elapsedSeconds)
-  console.log('   timer.elapsed:', timer?.elapsed)
-  console.log('   calculated seconds:', timeInSeconds)
+  // console.log('⏱️ Timer stopped for task', entityId)
+  // console.log('   elapsedSeconds param:', elapsedSeconds)
+  // console.log('   timer.elapsed:', timer?.elapsed)
+  // console.log('   calculated seconds:', timeInSeconds)
   
   // Detener el timer localmente
   if (timer && timer.isRunning) {
@@ -3780,8 +3780,8 @@ const saveTimeEntry = async () => {
   isSavingTimeEntry.value = true
   
   try {
-    console.log('🚀 GUARDANDO TIEMPO EN TAREA')
-    console.log('='.repeat(60))
+    // console.log('🚀 GUARDANDO TIEMPO EN TAREA')
+    // console.log('='.repeat(60))
     
     const taskId = selectedTask.value?.id || taskDetails.value?.id
     if (!taskId) {
@@ -3796,7 +3796,7 @@ const saveTimeEntry = async () => {
     // Si el tiempo es menor a 1 minuto, redondear a 1 minuto
     let durationInSeconds = parseInt(recordedTime.value)
     if (durationInSeconds < 60) {
-      console.log(`⏱️ Tiempo menor a 1 minuto (${durationInSeconds}s), redondeando a 60s`)
+      // console.log(`⏱️ Tiempo menor a 1 minuto (${durationInSeconds}s), redondeando a 60s`)
       durationInSeconds = 60
     }
     
@@ -3811,19 +3811,19 @@ const saveTimeEntry = async () => {
       note: timeEntryNote.value || 'Tiempo registrado desde cronómetro'
     }
     
-    console.log('📋 Datos de tiempo:', timeSpentData)
-    console.log('🕐 Fecha:', dateStr)
-    console.log('⏱️ Duración:', recordedTime.value, 'segundos (tipo:', typeof recordedTime.value, ')')
-    console.log('👤 Usuario:', authStore.user?.id)
-    console.log('📝 Nota:', timeSpentData.note)
-    console.log('📦 Payload completo:', JSON.stringify(timeSpentData, null, 2))
+    // console.log('📋 Datos de tiempo:', timeSpentData)
+    // console.log('🕐 Fecha:', dateStr)
+    // console.log('⏱️ Duración:', recordedTime.value, 'segundos (tipo:', typeof recordedTime.value, ')')
+    // console.log('👤 Usuario:', authStore.user?.id)
+    // console.log('📝 Nota:', timeSpentData.note)
+    // console.log('📦 Payload completo:', JSON.stringify(timeSpentData, null, 2))
     
     // Llamar al endpoint POST /tasks/{id}/addtimespent
     const response = await http.post(`/api/doli/tasks/${taskId}/addtimespent`, timeSpentData)
     
-    console.log('✅ TIEMPO GUARDADO EXITOSAMENTE')
-    console.log('📊 Respuesta:', response.data)
-    console.log('='.repeat(60))
+    // console.log('✅ TIEMPO GUARDADO EXITOSAMENTE')
+    // console.log('📊 Respuesta:', response.data)
+    // console.log('='.repeat(60))
     
     // Reset modal state
     showTimeEntryModal.value = false
@@ -3835,8 +3835,8 @@ const saveTimeEntry = async () => {
     
     alert('✅ Tiempo guardado exitosamente')
   } catch (error) {
-    console.error('❌ ERROR AL GUARDAR TIEMPO:', error)
-    console.error('Detalles:', error.response?.data)
+    // console.error('❌ ERROR AL GUARDAR TIEMPO:', error)
+    // console.error('Detalles:', error.response?.data)
     
     alert('Error al guardar el tiempo: ' + (error.response?.data?.error?.message || error.message))
   } finally {
@@ -4003,7 +4003,7 @@ const generateTaskRef = async () => {
     const month = String(now.getMonth() + 1).padStart(2, '0') // Mes con padding
     const prefix = `TK${year}${month}-`
     
-    console.log('🔢 Generando referencia con prefijo:', prefix)
+    // console.log('🔢 Generando referencia con prefijo:', prefix)
     
     // Obtener todas las tareas del mes actual
     const response = await http.get('/api/doli/tasks', {
@@ -4019,7 +4019,7 @@ const generateTaskRef = async () => {
       task.ref && task.ref.startsWith(prefix)
     )
     
-    console.log('📋 Tareas encontradas del mes actual:', tasksThisMonth.length)
+    // console.log('📋 Tareas encontradas del mes actual:', tasksThisMonth.length)
     
     // Obtener el último número
     let lastNumber = 0
@@ -4028,18 +4028,18 @@ const generateTaskRef = async () => {
       const lastRef = tasksThisMonth[0].ref
       const numberPart = lastRef.split('-')[1]
       lastNumber = parseInt(numberPart) || 0
-      console.log('🔢 Última referencia:', lastRef, 'Número:', lastNumber)
+      // console.log('🔢 Última referencia:', lastRef, 'Número:', lastNumber)
     }
     
     // Generar nueva referencia
     const newNumber = lastNumber + 1
     const newRef = `${prefix}${String(newNumber).padStart(4, '0')}`
     
-    console.log('✅ Nueva referencia generada:', newRef)
+    // console.log('✅ Nueva referencia generada:', newRef)
     return newRef
     
   } catch (error) {
-    console.error('❌ Error al generar referencia:', error)
+    // console.error('❌ Error al generar referencia:', error)
     // Fallback: usar timestamp
     const timestamp = Date.now().toString().slice(-4)
     return `TK-${timestamp}`
@@ -4118,11 +4118,11 @@ const createTask = async () => {
   creatingTask.value = true
   
   try {
-    console.log('📝 Creando nueva tarea:', newTask.value)
+    // console.log('📝 Creando nueva tarea:', newTask.value)
     
     // Generar referencia automática
     const taskRef = await generateTaskRef()
-    console.log('🏷️ Referencia generada:', taskRef)
+    // console.log('🏷️ Referencia generada:', taskRef)
     
     // Convertir fechas a timestamp Unix si existen
     const dateStart = newTask.value.date_start ? Math.floor(new Date(newTask.value.date_start).getTime() / 1000) : null
@@ -4146,19 +4146,19 @@ const createTask = async () => {
       }
     }
     
-    console.log('📤 Datos a enviar:', taskData)
-    console.log('📤 JSON stringified:', JSON.stringify(taskData, null, 2))
-    console.log('📤 Ref field value:', taskData.ref, 'Type:', typeof taskData.ref)
+    // console.log('📤 Datos a enviar:', taskData)
+    // console.log('📤 JSON stringified:', JSON.stringify(taskData, null, 2))
+    // console.log('📤 Ref field value:', taskData.ref, 'Type:', typeof taskData.ref)
     
     // Verificar que ref existe antes de enviar
     if (!('ref' in taskData)) {
-      console.error('❌ Campo ref NO existe en taskData!')
+      // console.error('❌ Campo ref NO existe en taskData!')
       taskData.ref = ''
     }
     
     // Llamada al API
     const response = await http.post('/api/doli/tasks', taskData)
-    console.log('✅ Tarea creada:', response.data)
+    // console.log('✅ Tarea creada:', response.data)
     
     // Cerrar modal
     closeCreateTaskModal()
@@ -4170,8 +4170,8 @@ const createTask = async () => {
     alert('✅ Tarea creada exitosamente')
     
   } catch (error) {
-    console.error('❌ Error al crear tarea:', error)
-    console.error('❌ Error details:', error.response?.data)
+    // console.error('❌ Error al crear tarea:', error)
+    // console.error('❌ Error details:', error.response?.data)
     alert('Error al crear la tarea: ' + (error.response?.data?.error?.message || error.message))
   } finally {
     creatingTask.value = false
