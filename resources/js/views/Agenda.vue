@@ -620,21 +620,34 @@
         <div class="flex items-center justify-between p-6 border-b" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
           <div>
             <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
-              Detalle del Evento
+              {{ editingEvent ? 'Editar Evento' : 'Detalle del Evento' }}
             </h3>
             <p class="text-sm mt-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
               {{ formatEventTime(selectedEvent) }} - {{ new Date(selectedEvent.datep * 1000).toLocaleDateString('es-ES') }}
             </p>
           </div>
-          <button 
-            @click="closeEventDetail"
-            class="p-2 rounded-lg transition-colors"
-            :class="isDark ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-100'"
-          >
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div class="flex items-center space-x-2">
+            <button 
+              v-if="!editingEvent"
+              @click="startEditEvent"
+              class="p-2 rounded-lg transition-colors"
+              :class="isDark ? 'text-blue-400 hover:bg-gray-700' : 'text-blue-600 hover:bg-blue-50'"
+              title="Editar evento"
+            >
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button 
+              @click="closeEventDetail"
+              class="p-2 rounded-lg transition-colors"
+              :class="isDark ? 'text-gray-400 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-100'"
+            >
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- Contenido -->
@@ -644,18 +657,32 @@
             <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
               Título
             </label>
-            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+            <input 
+              v-if="editingEvent"
+              v-model="editableEvent.label"
+              type="text"
+              class="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+            />
+            <div v-else class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
               {{ selectedEvent.label || 'Sin título' }}
             </div>
           </div>
 
           <!-- Fecha y Hora -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                 Fecha
               </label>
-              <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+              <input 
+                v-if="editingEvent"
+                v-model="editableEvent.date"
+                type="date"
+                class="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none"
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              />
+              <div v-else class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
                 {{ new Date(selectedEvent.datep * 1000).toLocaleDateString('es-ES', { 
                   weekday: 'long', 
                   year: 'numeric', 
@@ -666,10 +693,35 @@
             </div>
             <div>
               <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
-                Hora
+                Hora Inicio
               </label>
-              <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+              <input 
+                v-if="editingEvent"
+                v-model="editableEvent.startTime"
+                type="time"
+                class="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none"
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              />
+              <div v-else class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
                 {{ formatEventTime(selectedEvent) }}
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                Hora Fin
+              </label>
+              <input 
+                v-if="editingEvent"
+                v-model="editableEvent.endTime"
+                type="time"
+                class="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none"
+                :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              />
+              <div v-else-if="selectedEvent.datef" class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+                {{ new Date(selectedEvent.datef * 1000).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) }}
+              </div>
+              <div v-else class="p-3 rounded-lg text-gray-500" :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
+                No especificada
               </div>
             </div>
           </div>
@@ -728,20 +780,36 @@
           </div>
 
           <!-- Descripción/Notas -->
-          <div v-if="selectedEvent.note">
+          <div v-if="editingEvent || selectedEvent.note">
             <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
               Descripción
             </label>
-            <div class="p-3 rounded-lg whitespace-pre-line" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'" v-html="selectedEvent.note">
+            <textarea 
+              v-if="editingEvent"
+              v-model="editableEvent.note"
+              rows="4"
+              placeholder="Descripción o notas del evento"
+              class="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'"
+            ></textarea>
+            <div v-else class="p-3 rounded-lg whitespace-pre-line" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'" v-html="selectedEvent.note">
             </div>
           </div>
 
           <!-- Ubicación -->
-          <div v-if="selectedEvent.location">
+          <div v-if="editingEvent || selectedEvent.location">
             <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
               Ubicación
             </label>
-            <div class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
+            <input 
+              v-if="editingEvent"
+              v-model="editableEvent.location"
+              type="text"
+              placeholder="Ubicación del evento"
+              class="w-full px-3 py-2 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'"
+            />
+            <div v-else class="p-3 rounded-lg" :class="isDark ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'">
               📍 {{ selectedEvent.location }}
             </div>
           </div>
@@ -822,8 +890,33 @@
 
         <!-- Footer -->
         <div class="flex justify-between p-6 border-t" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+          <!-- Botones de edición -->
+          <div v-if="editingEvent" class="flex space-x-3">
+            <button 
+              @click="saveEventChanges"
+              :disabled="updatingEvent"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center space-x-2"
+              :class="updatingEvent 
+                ? 'bg-gray-400 text-white cursor-not-allowed' 
+                : 'bg-blue-500 text-white hover:bg-blue-600'"
+            >
+              <svg v-if="updatingEvent" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{{ updatingEvent ? 'Guardando...' : 'Guardar Cambios' }}</span>
+            </button>
+            <button 
+              @click="cancelEditEvent"
+              :disabled="updatingEvent"
+              class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+              :class="isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+            >
+              Cancelar
+            </button>
+          </div>
           <!-- Botón de completar/descompletar -->
-          <div class="flex space-x-3">
+          <div v-else class="flex space-x-3">
             <button 
               v-if="selectedEvent.status !== '1'"
               @click="markEventAsCompleted"
@@ -1005,10 +1098,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useTheme } from '../composables/useTheme'
 import { useAuthStore } from '../stores/auth'
 import { useAgendaCounter } from '../composables/useAgendaCounter'
+import { useNotificationStore } from '../stores/notifications'
 import http from '../utils/http'
 
 const { isDark } = useTheme()
 const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 const { incrementTodayCount, decrementTodayCount, incrementFromCompleted } = useAgendaCounter()
 
 // Estado del calendario
@@ -1019,6 +1114,9 @@ const eventos = ref([])
 const loading = ref(true)
 const showSystemAuto = ref(false)
 
+// Cache de terceros para enriquecimiento rápido
+const terceros = ref([])
+
 // Modal de creación de eventos
 const showCreateEventModal = ref(false)
 const creating = ref(false)
@@ -1027,6 +1125,16 @@ const creating = ref(false)
 const showEventDetailModal = ref(false)
 const selectedEvent = ref(null)
 const updatingEvent = ref(false)
+const editingEvent = ref(false)
+const editableEvent = ref({
+  label: '',
+  date: '',
+  startTime: '',
+  endTime: '',
+  location: '',
+  note: '',
+  type: ''
+})
 
 // Modal de eventos vencidos
 const showOverdueEventsModal = ref(false)
@@ -1365,57 +1473,149 @@ const showEventDetail = (event) => {
 const closeEventDetail = () => {
   showEventDetailModal.value = false
   selectedEvent.value = null
+  editingEvent.value = false
+}
+
+// Funciones de edición de evento
+const startEditEvent = () => {
+  if (!selectedEvent.value) return
+  
+  // Preparar datos editables
+  const eventDate = new Date(selectedEvent.value.datep * 1000)
+  const startTime = eventDate.toTimeString().slice(0, 5)
+  
+  let endTime = ''
+  if (selectedEvent.value.datef) {
+    const endDate = new Date(selectedEvent.value.datef * 1000)
+    endTime = endDate.toTimeString().slice(0, 5)
+  }
+  
+  editableEvent.value = {
+    label: selectedEvent.value.label || '',
+    date: eventDate.toISOString().split('T')[0],
+    startTime: startTime,
+    endTime: endTime,
+    location: selectedEvent.value.location || '',
+    note: selectedEvent.value.note || '',
+    type: selectedEvent.value.type || 'AC_OTH'
+  }
+  
+  editingEvent.value = true
+}
+
+const cancelEditEvent = () => {
+  editingEvent.value = false
+}
+
+const saveEventChanges = async () => {
+  if (!selectedEvent.value?.id) return
+  
+  try {
+    updatingEvent.value = true
+    
+    // Calcular timestamps
+    const startDateTime = new Date(editableEvent.value.date + 'T' + editableEvent.value.startTime)
+    const datep = Math.floor(startDateTime.getTime() / 1000)
+    
+    let datef = datep + 3600 // Por defecto 1 hora después
+    if (editableEvent.value.endTime) {
+      const endDateTime = new Date(editableEvent.value.date + 'T' + editableEvent.value.endTime)
+      datef = Math.floor(endDateTime.getTime() / 1000)
+    }
+    
+    // Preparar datos para actualización
+    const updateData = {
+      label: editableEvent.value.label,
+      datep: datep,
+      datef: datef,
+      location: editableEvent.value.location,
+      note_private: editableEvent.value.note,
+      type_code: editableEvent.value.type
+    }
+    
+    // Realizar petición PUT
+    const response = await http.put(`/api/doli/agendaevents/${selectedEvent.value.id}`, updateData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      }
+    })
+    
+    // Actualizar evento local
+    selectedEvent.value.label = editableEvent.value.label
+    selectedEvent.value.datep = datep
+    selectedEvent.value.datef = datef
+    selectedEvent.value.location = editableEvent.value.location
+    selectedEvent.value.note = editableEvent.value.note
+    selectedEvent.value.type = editableEvent.value.type
+    
+    // Actualizar en la lista de eventos
+    const eventIndex = eventos.value.findIndex(e => e.id === selectedEvent.value.id)
+    if (eventIndex !== -1) {
+      eventos.value[eventIndex] = { ...selectedEvent.value }
+    }
+    
+    // Salir del modo edición
+    editingEvent.value = false
+    
+    // Mostrar notificación de éxito
+    notificationStore.success('El evento ha sido actualizado correctamente', 'Evento actualizado')
+    
+  } catch (error) {
+    // console.error('❌ Error actualizando evento:', error)
+    // Mostrar notificación de error
+    notificationStore.error('No se pudo actualizar el evento. Por favor, inténtalo de nuevo.', 'Error al actualizar')
+  } finally {
+    updatingEvent.value = false
+  }
+}
+
+// Cargar terceros una sola vez (cache)
+const fetchTerceros = async () => {
+  if (terceros.value.length > 0) return // Ya están cargados
+  
+  try {
+    // console.log('🏢 Cargando terceros...')
+    const response = await http.get('/api/doli/thirdparties?limit=5000&status=1')
+    terceros.value = response.data || []
+    // console.log('✅ Terceros cargados:', terceros.value.length)
+  } catch (error) {
+    // console.error('❌ Error cargando terceros:', error)
+  }
 }
 
 // Cargar eventos
 const loadEventos = async () => {
   try {
-    console.log('🔍 Cargando eventos de la agenda...')
+    // console.log('🔍 Cargando eventos de la agenda...')
     
     // Obtener el ID del usuario logueado
     const userId = authStore.user?.id || 1
-    console.log('👤 Usuario ID:', userId)
+    // console.log('👤 Usuario ID:', userId)
     
     // Llamar a la API de Dolibarr (límite ampliado a 500 eventos)
     const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=500&user_ids=${userId}`)
     
-    console.log('📦 Respuesta de la API:', response.data)
+    // console.log('📦 Respuesta de la API:', response.data)
     
-    eventos.value = response.data || []
-    console.log('✅ Eventos cargados:', eventos.value.length)
-    
-    // Obtener IDs únicos de terceros para consultar sus nombres
-    const thirdpartyIds = [...new Set(
-      eventos.value
-        .map(event => event.fk_soc || event.id_soc || event.socid)
-        .filter(id => id && id > 0)
-    )]
-    
-    console.log('🏢 IDs de terceros encontrados:', thirdpartyIds)
-    
-    // Consultar nombres y teléfonos de terceros si hay IDs
-    const thirdpartyData = {}
-    if (thirdpartyIds.length > 0) {
-      try {
-        for (const id of thirdpartyIds) {
-          const thirdpartyResponse = await http.get(`/api/doli/thirdparties/${id}`)
-          if (thirdpartyResponse.data) {
-            thirdpartyData[id] = {
-              name: thirdpartyResponse.data.name,
-              phone: thirdpartyResponse.data.phone || thirdpartyResponse.data.phone_pro || null
-            }
+    const eventosData = response.data || []
+    // console.log('✅ Eventos cargados:', eventosData.length)
+
+    // Procesar eventos para asegurar formato correcto y enriquecer con datos de terceros
+    eventos.value = eventosData.map(event => {
+      const thirdpartyId = event.fk_soc || event.id_soc || event.socid
+      
+      // Buscar tercero en cache (sin llamada API)
+      let thirdpartyInfo = null
+      if (thirdpartyId && terceros.value.length > 0) {
+        const tercero = terceros.value.find(t => t.id == thirdpartyId)
+        if (tercero) {
+          thirdpartyInfo = {
+            name: tercero.name,
+            phone: tercero.phone || tercero.phone_pro || null
           }
         }
-        console.log('🏢 Datos de terceros obtenidos:', thirdpartyData)
-      } catch (error) {
-        console.warn('⚠️ Error obteniendo datos de terceros:', error)
       }
-    }
-
-    // Procesar eventos para asegurar formato correcto
-    eventos.value = eventos.value.map(event => {
-      const thirdpartyId = event.fk_soc || event.id_soc || event.socid
-      const thirdpartyInfo = thirdpartyData[thirdpartyId]
       
       return {
         ...event,
@@ -1440,7 +1640,7 @@ const loadEventos = async () => {
       }
     })
     
-     console.log('📅 Eventos procesados:', eventos.value.slice(0, 3)) // Mostrar primeros 3 para debug
+     // console.log('📅 Eventos procesados:', eventos.value.slice(0, 3)) // Mostrar primeros 3 para debug
     
     // Contar eventos systemauto para información
     const systemautoCount = eventos.value.filter(event => {
@@ -1451,12 +1651,12 @@ const loadEventos = async () => {
     }).length
     
     if (systemautoCount > 0) {
-       console.log(`🤖 Eventos systemauto encontrados: ${systemautoCount} (ocultos por defecto)`)
+       // console.log(`🤖 Eventos systemauto encontrados: ${systemautoCount} (ocultos por defecto)`)
     }
     
     // Si no hay eventos, agregar algunos de ejemplo para mostrar funcionalidad
     if (eventos.value.length === 0) {
-       console.log('📝 No hay eventos, agregando ejemplos...')
+       // console.log('📝 No hay eventos, agregando ejemplos...')
       eventos.value = [
         {
           id: 'example-1',
@@ -1482,8 +1682,8 @@ const loadEventos = async () => {
       ]
     }
   } catch (error) {
-    console.error('❌ Error cargando eventos:', error)
-    console.error('Error details:', error.response?.data || error.message)
+    // console.error('❌ Error cargando eventos:', error)
+    // console.error('Error details:', error.response?.data || error.message)
     
     // En caso de error, mostrar eventos de ejemplo
     eventos.value = [
@@ -1520,7 +1720,7 @@ const openCreateEventModal = (date, hour = null) => {
   }
   
   showCreateEventModal.value = true
-   console.log('📅 Abriendo modal para crear evento:', { date: formattedDate, hour })
+   // console.log('📅 Abriendo modal para crear evento:', { date: formattedDate, hour })
 }
 
 const closeCreateEventModal = () => {
@@ -1588,7 +1788,7 @@ const createEvent = async () => {
   creating.value = true
   
   try {
-     console.log('🔄 Creando evento...', newEvent.value)
+     // console.log('🔄 Creando evento...', newEvent.value)
     
     // Preparar los datos del evento para la API de Dolibarr
     // Basado en la estructura de eventos existentes de Dolibarr
@@ -1607,8 +1807,8 @@ const createEvent = async () => {
       entity: "1" // Entidad por defecto
     }
     
-     console.log('📤 Datos del evento preparados:', eventData)
-     console.log('🔍 type_code específicamente:', eventData.type_code)
+     // console.log('📤 Datos del evento preparados:', eventData)
+     // console.log('🔍 type_code específicamente:', eventData.type_code)
     
     // Calcular timestamp para datep
     if (newEvent.value.allDay) {
@@ -1629,12 +1829,12 @@ const createEvent = async () => {
       }
     }
     
-     console.log('📤 Enviando datos del evento:', eventData)
+     // console.log('📤 Enviando datos del evento:', eventData)
     
     // Llamar a la API de Dolibarr para crear el evento
     const response = await http.post('/api/doli/agendaevents', eventData)
     
-     console.log('✅ Evento creado exitosamente:', response.data)
+     // console.log('✅ Evento creado exitosamente:', response.data)
     
     // Agregar el evento creado a la lista local
     const createdEvent = {
@@ -1664,14 +1864,14 @@ const createEvent = async () => {
     closeCreateEventModal()
     
     // Mostrar mensaje de éxito
-     console.log('🎉 Evento agregado al calendario')
+     // console.log('🎉 Evento agregado al calendario')
     
   } catch (error) {
-    console.error('❌ Error creando evento:', error)
-    console.error('Error details:', error.response?.data || error.message)
+    // console.error('❌ Error creando evento:', error)
+    // console.error('Error details:', error.response?.data || error.message)
     
-    // Aquí podrías mostrar un toast o notificación de error
-    alert('Error al crear el evento. Por favor, inténtalo de nuevo.')
+    // Mostrar notificación de error
+    notificationStore.error('No se pudo crear el evento. Por favor, inténtalo de nuevo.', 'Error al crear')
   } finally {
     creating.value = false
   }
@@ -1688,18 +1888,18 @@ const markEventAsPending = async () => {
 
 const updateEventStatus = async (newStatus) => {
   if (!selectedEvent.value?.id) {
-    console.error('❌ No hay evento seleccionado para actualizar')
+    // console.error('❌ No hay evento seleccionado para actualizar')
     return
   }
 
   try {
     updatingEvent.value = true
     
-    console.log('🔄 Actualizando estado del evento:', {
-      eventId: selectedEvent.value.id,
-      currentStatus: selectedEvent.value.status,
-      newStatus: newStatus
-    })
+    // console.log('🔄 Actualizando estado del evento:', {
+    //   eventId: selectedEvent.value.id,
+    //   currentStatus: selectedEvent.value.status,
+    //   newStatus: newStatus
+    // })
 
     // Preparar datos para actualización
     const updateData = {
@@ -1715,7 +1915,7 @@ const updateEventStatus = async (newStatus) => {
       }
     })
 
-    console.log('✅ Evento actualizado:', response.data)
+    // console.log('✅ Evento actualizado:', response.data)
 
     // Actualizar el evento localmente
     selectedEvent.value.status = newStatus
@@ -1745,15 +1945,15 @@ const updateEventStatus = async (newStatus) => {
 
     // Mostrar mensaje de éxito
     const statusText = newStatus === '1' ? 'completado' : 'pendiente'
-    console.log(`🎉 Evento marcado como ${statusText}`)
+    // console.log(`🎉 Evento marcado como ${statusText}`)
 
   } catch (error) {
-    console.error('❌ Error actualizando evento:', error)
-    console.error('Error details:', error.response?.data || error.message)
+    // console.error('❌ Error actualizando evento:', error)
+    // console.error('Error details:', error.response?.data || error.message)
     
     // Mostrar mensaje de error al usuario
     const statusText = newStatus === '1' ? 'completado' : 'pendiente'
-    alert(`Error al marcar el evento como ${statusText}. Por favor, inténtalo de nuevo.`)
+    notificationStore.error(`No se pudo marcar el evento como ${statusText}. Por favor, inténtalo de nuevo.`, 'Error al actualizar')
     
   } finally {
     updatingEvent.value = false
@@ -1794,8 +1994,12 @@ const openOverdueEventDetail = (event) => {
   showEventDetail(event)
 }
 
-onMounted(() => {
-  loadEventos()
+onMounted(async () => {
+  // Cargar terceros primero (en paralelo con eventos)
+  await Promise.all([
+    fetchTerceros(),
+    loadEventos()
+  ])
 })
 </script>
 
