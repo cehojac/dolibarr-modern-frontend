@@ -3736,10 +3736,10 @@ const saveTimeEntry = async () => {
       //  console.log('   Response data keys:', response.data ? Object.keys(response.data) : 'No data')
       //  console.log('   Response headers:', response.headers)
     } catch (createError) {
-      console.error('❌ ERROR AL CREAR INTERVENCIÓN:')
-      console.error('   Error status:', createError.response?.status)
-      console.error('   Error data:', createError.response?.data)
-      console.error('   Error message:', createError.message)
+      // console.error('❌ ERROR AL CREAR INTERVENCIÓN:')
+      // console.error('   Error status:', createError.response?.status)
+      // console.error('   Error data:', createError.response?.data)
+      // console.error('   Error message:', createError.message)
       
       // Si falla por falta de proyecto, intentar sin proyecto
       if (createError.response?.data?.error?.message?.includes('fk_project')) {
@@ -3751,7 +3751,7 @@ const saveTimeEntry = async () => {
           response = await http.post('/api/doli/interventions', interventionDataNoProject)
           //  console.log('✅ Intervención creada sin proyecto')
         } catch (secondError) {
-          console.error('❌ También falló sin proyecto:', secondError.response?.data)
+          // console.error('❌ También falló sin proyecto:', secondError.response?.data)
           throw createError // Lanzar el error original
         }
       } else {
@@ -3770,8 +3770,8 @@ const saveTimeEntry = async () => {
     //  console.log('-'.repeat(60))
     
     if (!interventionId || interventionId === null || interventionId === undefined) {
-      console.error('❌ NO SE PUDO EXTRAER ID DE LA RESPUESTA')
-      console.error('   Estructura de response.data:', Object.keys(response.data || {}))
+      // console.error('❌ NO SE PUDO EXTRAER ID DE LA RESPUESTA')
+      // console.error('   Estructura de response.data:', Object.keys(response.data || {}))
       throw new Error('No se obtuvo ID de la intervención creada')
     }
 
@@ -3789,22 +3789,22 @@ const saveTimeEntry = async () => {
       date: startTime
     }
     
-     console.log('📋 Datos de línea:', lineData)
-     console.log('🕐 Hora inicio:', new Date(startTime * 1000).toLocaleString())
-     console.log('🕐 Hora fin:', new Date(endTime * 1000).toLocaleString())
-     console.log('⏱️ Duración:', recordedTime.value, 'segundos')
+     // console.log('📋 Datos de línea:', lineData)
+     // console.log('🕐 Hora inicio:', new Date(startTime * 1000).toLocaleString())
+     // console.log('🕐 Hora fin:', new Date(endTime * 1000).toLocaleString())
+     // console.log('⏱️ Duración:', recordedTime.value, 'segundos')
     
     try {
       const lineResponse = await http.post(`/api/doli/interventions/${interventionId}/lines`, lineData)
-       console.log('✅ PASO 2 COMPLETADO - Línea agregada:')
-       console.log('   Line ID:', lineResponse.data)
-       console.log('   Descripción:', lineData.description)
-       console.log('   Duración:', lineData.duration)
+       // console.log('✅ PASO 2 COMPLETADO - Línea agregada:')
+       // console.log('   Line ID:', lineResponse.data)
+       // console.log('   Descripción:', lineData.description)
+       // console.log('   Duración:', lineData.duration)
     } catch (lineError) {
-      console.error('❌ PASO 2 FALLÓ - Error agregando línea:')
-      console.error('   Error status:', lineError.response?.status)
-      console.error('   Error data:', lineError.response?.data)
-      console.error('   Error message:', lineError.message)
+      // console.error('❌ PASO 2 FALLÓ - Error agregando línea:')
+      // console.error('   Error status:', lineError.response?.status)
+      // console.error('   Error data:', lineError.response?.data)
+      // console.error('   Error message:', lineError.message)
       throw lineError
     }
     //  console.log('-'.repeat(60))
@@ -3829,40 +3829,40 @@ const saveTimeEntry = async () => {
       //  console.log('   Link result:', linkResponse.data)
       
     } catch (objectLinksError) {
-      console.warn('❌ ALTERNATIVA 1 FALLÓ - Intentando módulo personalizado...')
-      console.warn('   ObjectLinks error status:', objectLinksError.response?.status)
-      console.warn('   ObjectLinks error data:', objectLinksError.response?.data)
+      // console.warn('❌ ALTERNATIVA 1 FALLÓ - Intentando módulo personalizado...')
+      // console.warn('   ObjectLinks error status:', objectLinksError.response?.status)
+      // console.warn('   ObjectLinks error data:', objectLinksError.response?.data)
       
       // ALTERNATIVA 2: Usar módulo personalizado a través del proxy
       try {
         //  console.log('🔗 ALTERNATIVA 2: Usando módulo personalizado a través del proxy...')
         
         const customLinkResponse = await http.post(`/api/doli/dolibarmodernfrontendapi/link/${selectedTicket.value.id}/${interventionId}`)
-         console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
-         console.log('   Custom link result:', customLinkResponse.data)
+         // console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
+         // console.log('   Custom link result:', customLinkResponse.data)
         
       } catch (customError) {
-        console.error('❌ ALTERNATIVA 2 TAMBIÉN FALLÓ')
-        console.error('   Custom error status:', customError.response?.status)
-        console.error('   Custom error data:', customError.response?.data)
-        console.error('   Custom error message:', customError.message)
+        // console.error('❌ ALTERNATIVA 2 TAMBIÉN FALLÓ')
+        // console.error('   Custom error status:', customError.response?.status)
+        // console.error('   Custom error data:', customError.response?.data)
+        // console.error('   Custom error message:', customError.message)
         
         // ALTERNATIVA 3: Nota privada como último recurso
         try {
-           console.log('🔗 ALTERNATIVA 3: Usando nota privada como último recurso...')
+           // console.log('🔗 ALTERNATIVA 3: Usando nota privada como último recurso...')
           
           const referenceData = {
             note_private: `[TICKET_LINK]\nTicket: ${selectedTicket.value.ref} (ID: ${selectedTicket.value.id})\nFecha: ${new Date().toLocaleString('es-ES')}\nDuración: ${Math.floor(recordedTime.value / 60)}m ${recordedTime.value % 60}s\nEstado: Vinculado automáticamente desde cronómetro\n[/TICKET_LINK]`
           }
           
-           console.log('📋 Datos de referencia:', referenceData)
+           // console.log('📋 Datos de referencia:', referenceData)
           const referenceResponse = await http.put(`/api/doli/interventions/${interventionId}`, referenceData)
-           console.log('✅ PASO 3 COMPLETADO - Referencia añadida en nota privada')
-           console.log('   Reference result:', referenceResponse.data)
+           // console.log('✅ PASO 3 COMPLETADO - Referencia añadida en nota privada')
+           // console.log('   Reference result:', referenceResponse.data)
           
         } catch (referenceError) {
-          console.error('❌ TODAS LAS ALTERNATIVAS FALLARON')
-          console.error('   Reference error:', referenceError.response?.data)
+          // console.error('❌ TODAS LAS ALTERNATIVAS FALLARON')
+          // console.error('   Reference error:', referenceError.response?.data)
           throw new Error('Todas las alternativas de vinculación fallaron')
         }
       }
@@ -3870,24 +3870,24 @@ const saveTimeEntry = async () => {
     //  console.log('-'.repeat(60))
 
     // PASO 4: Validar la intervención
-     console.log('🔍 PASO 4: Validando intervención...')
+     // console.log('🔍 PASO 4: Validando intervención...')
     
     const validateData = {
       notrigger: 1
     }
     
-     console.log('🔍 Datos de validación:', validateData)
+     // console.log('🔍 Datos de validación:', validateData)
     
     try {
       const validateResponse = await http.post(`/api/doli/interventions/${interventionId}/validate`, validateData)
-       console.log('✅ PASO 4 COMPLETADO - Intervención validada')
-       console.log('   Validate result:', validateResponse.data)
+       // console.log('✅ PASO 4 COMPLETADO - Intervención validada')
+       // console.log('   Validate result:', validateResponse.data)
     } catch (validateError) {
-      console.warn('⚠️ PASO 4 FALLÓ - Error validando intervención')
-      console.warn('   Validate error status:', validateError.response?.status)
-      console.warn('   Validate error data:', validateError.response?.data)
-      console.warn('   Validate error message:', validateError.message)
-       console.log('💡 La intervención se creó y vinculó, pero no se pudo validar')
+      // console.warn('⚠️ PASO 4 FALLÓ - Error validando intervención')
+      // console.warn('   Validate error status:', validateError.response?.status)
+      // console.warn('   Validate error data:', validateError.response?.data)
+      // console.warn('   Validate error message:', validateError.message)
+       // console.log('💡 La intervención se creó y vinculó, pero no se pudo validar')
     }
     //  console.log('-'.repeat(60))
     
@@ -3901,15 +3901,15 @@ const saveTimeEntry = async () => {
       await fetchUserInterventions(true)
     }
     
-     console.log('🎉 PROCESO COMPLETADO EXITOSAMENTE')
-     console.log('='.repeat(60))
+     // console.log('🎉 PROCESO COMPLETADO EXITOSAMENTE')
+     // console.log('='.repeat(60))
     
   } catch (error) {
-    console.error('💥 ERROR GENERAL EN EL PROCESO:')
-    console.error('   Intervention ID:', interventionId)
-    console.error('   Error:', error.message)
-    console.error('   Details:', error.response?.data)
-    console.error('='.repeat(60))
+    // console.error('💥 ERROR GENERAL EN EL PROCESO:')
+    // console.error('   Intervention ID:', interventionId)
+    // console.error('   Error:', error.message)
+    // console.error('   Details:', error.response?.data)
+    // console.error('='.repeat(60))
     
     alert('Error al guardar la intervención: ' + (error.response?.data?.message || error.message))
   } finally {
@@ -4121,7 +4121,7 @@ const getCompanyName = async () => {
     const response = await http.get('/api/doli/setup/company')
     return response.data?.name || 'Sistema'
   } catch (error) {
-    console.warn('Error obteniendo nombre de empresa:', error)
+    // console.warn('Error obteniendo nombre de empresa:', error)
     return 'Sistema'
   }
 }
@@ -4144,7 +4144,7 @@ const getUserSignature = async (userId) => {
     const response = await http.get(`/api/doli/users/${userId}`)
     return response.data?.signature || ''
   } catch (error) {
-    console.warn('Error obteniendo firma del usuario:', error)
+    // console.warn('Error obteniendo firma del usuario:', error)
     return ''
   }
 }
@@ -4155,7 +4155,7 @@ const sendPrivateMessage = async (ticketId, message) => {
     const trackId = selectedTicket.value?.track_id || ticketDetails.value?.track_id
     
     if (!trackId) {
-      console.warn('No se encontró track_id para mensaje privado')
+      // console.warn('No se encontró track_id para mensaje privado')
       return
     }
 
@@ -4166,9 +4166,9 @@ const sendPrivateMessage = async (ticketId, message) => {
     }
 
     await http.post('/api/doli/tickets/newmessage', messageData)
-    console.log('✅ Mensaje privado enviado al ticket')
+    // console.log('✅ Mensaje privado enviado al ticket')
   } catch (error) {
-    console.error('Error enviando mensaje privado:', error)
+    // console.error('Error enviando mensaje privado:', error)
   }
 }
 
@@ -4256,7 +4256,7 @@ const saveManualIntervention = async () => {
   try {
     // Si es tipo email, usar el endpoint de email
     if (manualIntervention.value.type === 'email') {
-      console.log('📧 ENVIANDO EMAIL DESDE INTERVENCIÓN MANUAL')
+      // console.log('📧 ENVIANDO EMAIL DESDE INTERVENCIÓN MANUAL')
       
       const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
       if (!ticketId) {
@@ -4275,7 +4275,7 @@ const saveManualIntervention = async () => {
             content: base64
           })
         } catch (error) {
-          console.error('Error convirtiendo archivo a base64:', attachment.name, error)
+          // console.error('Error convirtiendo archivo a base64:', attachment.name, error)
         }
       }
       
@@ -4284,11 +4284,11 @@ const saveManualIntervention = async () => {
       const recipients = removeDuplicateRecipients(rawRecipients)
       
       if (rawRecipients.length !== recipients.length) {
-        console.log('🔄 Duplicados eliminados en intervención manual:', {
-          original: rawRecipients.length,
-          unique: recipients.length,
-          removed: rawRecipients.length - recipients.length
-        })
+        // console.log('🔄 Duplicados eliminados en intervención manual:', {
+        //   original: rawRecipients.length,
+        //   unique: recipients.length,
+        //   removed: rawRecipients.length - recipients.length
+        // })
       }
       
       // Generar asunto con formato [EMPRESA - Ticket REF] TITULO
@@ -4313,14 +4313,14 @@ const saveManualIntervention = async () => {
         attachments: attachments
       }
 
-      console.log('📤 Enviando email con datos:', {
-        subject: emailData.subject,
-        recipients: emailData.recipients,
-        attachments: attachments.length
-      })
+      // console.log('📤 Enviando email con datos:', {
+      //   subject: emailData.subject,
+      //   recipients: emailData.recipients,
+      //   attachments: attachments.length
+      // })
 
       const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
-      console.log('✅ Email enviado:', response.data)
+      // console.log('✅ Email enviado:', response.data)
       
       // Enviar mensaje privado al ticket para registro
       const privateMessage = `Email enviado a: ${recipients.join(', ')}\nAsunto: ${emailData.subject}\n\n${emailMessage}`
@@ -4338,11 +4338,11 @@ const saveManualIntervention = async () => {
     }
     
     // Proceso normal para intervenciones manuales (no email)
-    console.log('🚀 INICIANDO PROCESO DE CREACIÓN DE INTERVENCIÓN MANUAL')
-    console.log('='.repeat(60))
+    // console.log('🚀 INICIANDO PROCESO DE CREACIÓN DE INTERVENCIÓN MANUAL')
+    // console.log('='.repeat(60))
     
     // PASO 1: Crear intervención en BORRADOR
-     console.log('📝 PASO 1: Creando intervención manual en borrador...')
+     // console.log('📝 PASO 1: Creando intervención manual en borrador...')
     
     let interventionData = {
       socid: selectedTicket.value.fk_soc || ticketDetails.value?.fk_soc,
@@ -4387,10 +4387,10 @@ const saveManualIntervention = async () => {
       //  console.log('   Response data keys:', response.data ? Object.keys(response.data) : 'No data')
       //  console.log('   Response headers:', response.headers)
     } catch (createError) {
-      console.error('❌ ERROR AL CREAR INTERVENCIÓN MANUAL:')
-      console.error('   Error status:', createError.response?.status)
-      console.error('   Error data:', createError.response?.data)
-      console.error('   Error message:', createError.message)
+      // console.error('❌ ERROR AL CREAR INTERVENCIÓN MANUAL:')
+      // console.error('   Error status:', createError.response?.status)
+      // console.error('   Error data:', createError.response?.data)
+      // console.error('   Error message:', createError.message)
       
       // Si falla por falta de proyecto, intentar sin proyecto
       if (createError.response?.data?.error?.message?.includes('fk_project')) {
@@ -4402,7 +4402,7 @@ const saveManualIntervention = async () => {
           response = await http.post('/api/doli/interventions', interventionDataNoProject)
           //  console.log('✅ Intervención creada sin proyecto')
         } catch (retryError) {
-          console.error('❌ Error en reintento:', retryError)
+          // console.error('❌ Error en reintento:', retryError)
           throw retryError
         }
       } else {
@@ -4421,7 +4421,7 @@ const saveManualIntervention = async () => {
       }
     }
 
-     console.log('🆔 ID de intervención extraído:', interventionId)
+     // console.log('🆔 ID de intervención extraído:', interventionId)
 
     if (!interventionId) {
       throw new Error('No se pudo obtener el ID de la intervención creada')
@@ -4452,22 +4452,22 @@ const saveManualIntervention = async () => {
       date: startTime
     }
     
-     console.log('📋 Datos de línea:', lineData)
-     console.log('🕐 Hora inicio:', new Date(startTime * 1000).toLocaleString())
-     console.log('🕐 Hora fin:', new Date(endTime * 1000).toLocaleString())
-     console.log('⏱️ Duración:', duration, 'segundos')
+     // console.log('📋 Datos de línea:', lineData)
+     // console.log('🕐 Hora inicio:', new Date(startTime * 1000).toLocaleString())
+     // console.log('🕐 Hora fin:', new Date(endTime * 1000).toLocaleString())
+     // console.log('⏱️ Duración:', duration, 'segundos')
     
     try {
       const lineResponse = await http.post(`/api/doli/interventions/${interventionId}/lines`, lineData)
-       console.log('✅ PASO 2 COMPLETADO - Línea agregada:')
-       console.log('   Line ID:', lineResponse.data)
-       console.log('   Descripción:', lineData.description)
-       console.log('   Duración:', lineData.duration)
+       // console.log('✅ PASO 2 COMPLETADO - Línea agregada:')
+       // console.log('   Line ID:', lineResponse.data)
+       // console.log('   Descripción:', lineData.description)
+       // console.log('   Duración:', lineData.duration)
     } catch (lineError) {
-      console.error('❌ PASO 2 FALLÓ - Error agregando línea:')
-      console.error('   Error status:', lineError.response?.status)
-      console.error('   Error data:', lineError.response?.data)
-      console.error('   Error message:', lineError.message)
+      // console.error('❌ PASO 2 FALLÓ - Error agregando línea:')
+      // console.error('   Error status:', lineError.response?.status)
+      // console.error('   Error data:', lineError.response?.data)
+      // console.error('   Error message:', lineError.message)
       throw lineError
     }
     //  console.log('-'.repeat(60))
@@ -4492,9 +4492,9 @@ const saveManualIntervention = async () => {
       //  console.log('   Link result:', linkResponse.data)
       
     } catch (objectLinksError) {
-      console.warn('❌ ALTERNATIVA 1 FALLÓ - Intentando módulo personalizado...')
-      console.warn('   ObjectLinks error status:', objectLinksError.response?.status)
-      console.warn('   ObjectLinks error data:', objectLinksError.response?.data)
+      // console.warn('❌ ALTERNATIVA 1 FALLÓ - Intentando módulo personalizado...')
+      // console.warn('   ObjectLinks error status:', objectLinksError.response?.status)
+      // console.warn('   ObjectLinks error data:', objectLinksError.response?.data)
       
       // ALTERNATIVA 2: Usar módulo personalizado a través del proxy
       try {
@@ -4502,90 +4502,90 @@ const saveManualIntervention = async () => {
         
         const ticketId = selectedTicket.value.id || ticketDetails.value.id
         const customLinkResponse = await http.post(`/api/doli/dolibarmodernfrontendapi/link/${ticketId}/${interventionId}`)
-         console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
-         console.log('   Custom link result:', customLinkResponse.data)
+         // console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
+         // console.log('   Custom link result:', customLinkResponse.data)
         
       } catch (customError) {
-        console.error('❌ ALTERNATIVA 2 TAMBIÉN FALLÓ')
-        console.error('   Custom error status:', customError.response?.status)
-        console.error('   Custom error data:', customError.response?.data)
-        console.error('   Custom error message:', customError.message)
+        // console.error('❌ ALTERNATIVA 2 TAMBIÉN FALLÓ')
+        // console.error('   Custom error status:', customError.response?.status)
+        // console.error('   Custom error data:', customError.response?.data)
+        // console.error('   Custom error message:', customError.message)
         
         // ALTERNATIVA 3: Nota privada como último recurso
         try {
-           console.log('🔗 ALTERNATIVA 3: Usando nota privada como último recurso...')
+           // console.log('🔗 ALTERNATIVA 3: Usando nota privada como último recurso...')
           
           const referenceData = {
             note_private: `[TICKET_LINK]\nTicket: ${selectedTicket.value.ref || ticketDetails.value.ref} (ID: ${selectedTicket.value.id || ticketDetails.value.id})\nFecha: ${new Date().toLocaleString('es-ES')}\nTipo: Intervención manual\nEstado: Vinculado automáticamente desde formulario manual\n[/TICKET_LINK]`
           }
           
-           console.log('📋 Datos de referencia:', referenceData)
+           // console.log('📋 Datos de referencia:', referenceData)
           const referenceResponse = await http.put(`/api/doli/interventions/${interventionId}`, referenceData)
-           console.log('✅ PASO 3 COMPLETADO - Referencia añadida en nota privada')
-           console.log('   Reference result:', referenceResponse.data)
+           // console.log('✅ PASO 3 COMPLETADO - Referencia añadida en nota privada')
+           // console.log('   Reference result:', referenceResponse.data)
           
         } catch (referenceError) {
-          console.error('❌ TODAS LAS ALTERNATIVAS FALLARON')
-          console.error('   Reference error:', referenceError.response?.data)
-          console.warn('⚠️ La intervención se creó pero no se pudo vincular al ticket')
+          // console.error('❌ TODAS LAS ALTERNATIVAS FALLARON')
+          // console.error('   Reference error:', referenceError.response?.data)
+          // console.warn('⚠️ La intervención se creó pero no se pudo vincular al ticket')
         }
       }
     }
     //  console.log('-'.repeat(60))
 
     // PASO 4: Validar la intervención
-     console.log('🔍 PASO 4: Validando intervención...')
+     // console.log('🔍 PASO 4: Validando intervención...')
     
     const validateData = {
       notrigger: 1
     }
     
-     console.log('🔍 Datos de validación:', validateData)
+     // console.log('🔍 Datos de validación:', validateData)
     
     try {
       const validateResponse = await http.post(`/api/doli/interventions/${interventionId}/validate`, validateData)
-       console.log('✅ PASO 4 COMPLETADO - Intervención validada')
-       console.log('   Validate result:', validateResponse.data)
+       // console.log('✅ PASO 4 COMPLETADO - Intervención validada')
+       // console.log('   Validate result:', validateResponse.data)
     } catch (validateError) {
-      console.warn('⚠️ PASO 4 FALLÓ - Error validando intervención')
-      console.warn('   Validate error status:', validateError.response?.status)
-      console.warn('   Validate error data:', validateError.response?.data)
-      console.warn('   Validate error message:', validateError.message)
-       console.log('💡 La intervención se creó y vinculó, pero no se pudo validar')
+      // console.warn('⚠️ PASO 4 FALLÓ - Error validando intervención')
+      // console.warn('   Validate error status:', validateError.response?.status)
+      // console.warn('   Validate error data:', validateError.response?.data)
+      // console.warn('   Validate error message:', validateError.message)
+       // console.log('💡 La intervención se creó y vinculó, pero no se pudo validar')
     }
     //  console.log('-'.repeat(60))
 
     // PASO 5: Cerrar modal y actualizar datos
-     console.log('🔄 PASO 5: Actualizando interfaz...')
+     // console.log('🔄 PASO 5: Actualizando interfaz...')
     closeManualInterventionModal()
 
     // Refrescar intervenciones del usuario (igual que el timer)
     if (authStore.user?.id) {
       try {
         await fetchUserInterventions(true)
-         console.log('✅ Intervenciones del usuario refrescadas')
+         // console.log('✅ Intervenciones del usuario refrescadas')
       } catch (error) {
-        console.warn('Error al refrescar intervenciones del usuario:', error)
+        // console.warn('Error al refrescar intervenciones del usuario:', error)
       }
     }
     
     // Forzar actualización de las intervenciones del ticket actual
     try {
-       console.log('🔄 Forzando actualización de intervenciones para el ticket actual...')
+       // console.log('🔄 Forzando actualización de intervenciones para el ticket actual...')
       // Trigger reactivity by accessing the computed property
       const currentInterventions = userInterventionsForTicket.value
-       console.log('📋 Intervenciones actuales del ticket:', currentInterventions.length)
+       // console.log('📋 Intervenciones actuales del ticket:', currentInterventions.length)
     } catch (error) {
-      console.warn('Error al actualizar intervenciones del ticket:', error)
+      // console.warn('Error al actualizar intervenciones del ticket:', error)
     }
 
-     console.log('✅ PROCESO COMPLETADO EXITOSAMENTE')
-     console.log('='.repeat(60))
+     // console.log('✅ PROCESO COMPLETADO EXITOSAMENTE')
+     // console.log('='.repeat(60))
     
   } catch (error) {
-    console.error('❌ ERROR GENERAL EN CREACIÓN DE INTERVENCIÓN MANUAL:', error)
-    console.error('❌ Error response:', error.response?.data)
-    console.error('❌ Error status:', error.response?.status)
+    // console.error('❌ ERROR GENERAL EN CREACIÓN DE INTERVENCIÓN MANUAL:', error)
+    // console.error('❌ Error response:', error.response?.data)
+    // console.error('❌ Error status:', error.response?.status)
     
     alert('Error al crear la intervención manual: ' + (error.response?.data?.message || error.message))
   } finally {
@@ -4630,12 +4630,12 @@ const createReminder = async () => {
       throw new Error('No se encontró información del ticket')
     }
     
-     console.log('📝 Creando recordatorio para ticket:', ticketId)
-     console.log('📋 Datos del ticket:', {
-      id: ticketId,
-      fk_soc: ticketData.fk_soc,
-      fk_project: ticketData.fk_project
-    })
+     // console.log('📝 Creando recordatorio para ticket:', ticketId)
+     // console.log('📋 Datos del ticket:', {
+    //   id: ticketId,
+    //   fk_soc: ticketData.fk_soc,
+    //   fk_project: ticketData.fk_project
+    // })
     
     // Convertir fecha datetime-local a timestamp
     const eventDate = new Date(newReminder.value.date)
@@ -4659,15 +4659,15 @@ const createReminder = async () => {
       elementtype: "ticket"
     }
     
-     console.log('📅 Creando evento en agenda:', eventData)
-     console.log('📋 Campos enviados:', Object.keys(eventData))
-     console.log('📋 track_id value:', eventData.track_id)
-     console.log('📋 fk_task value:', eventData.fk_task)
-     console.log('📋 fk_task type:', typeof eventData.fk_task)
-     console.log('📋 ticketId:', ticketId)
+     // console.log('📅 Creando evento en agenda:', eventData)
+     // console.log('📋 Campos enviados:', Object.keys(eventData))
+     // console.log('📋 track_id value:', eventData.track_id)
+     // console.log('📋 fk_task value:', eventData.fk_task)
+     // console.log('📋 fk_task type:', typeof eventData.fk_task)
+     // console.log('📋 ticketId:', ticketId)
     
     const eventResponse = await http.post('/api/doli/agendaevents', eventData)
-     console.log('✅ Evento creado:', eventResponse.data)
+     // console.log('✅ Evento creado:', eventResponse.data)
     
     const eventId = eventResponse.data?.id || eventResponse.data
     
@@ -4687,19 +4687,19 @@ const createReminder = async () => {
     
     ticketReminders.value.push(newReminderItem)
     
-     console.log('✅ Recordatorio creado exitosamente con ID:', eventId)
+     // console.log('✅ Recordatorio creado exitosamente con ID:', eventId)
     closeReminderModal()
     
   } catch (error) {
-    console.error('❌ Error creando recordatorio:', error)
-    console.error('❌ Error details:', error.response?.data)
+    // console.error('❌ Error creando recordatorio:', error)
+    // console.error('❌ Error details:', error.response?.data)
     alert('Error al crear recordatorio: ' + (error.response?.data?.message || error.message))
   }
 }
 
 const toggleReminderComplete = async (reminderId, isCompleted) => {
   try {
-    console.log('✅ Marcando recordatorio como completado:', { reminderId, isCompleted })
+    // console.log('✅ Marcando recordatorio como completado:', { reminderId, isCompleted })
     
     // Actualizar evento en la agenda con percent = 100 (completado)
     const updateData = {
@@ -4707,24 +4707,24 @@ const toggleReminderComplete = async (reminderId, isCompleted) => {
     }
     
     await http.put(`/api/doli/agendaevents/${reminderId}`, updateData)
-    console.log('✅ Recordatorio actualizado en la agenda')
+    // console.log('✅ Recordatorio actualizado en la agenda')
     
     if (isCompleted) {
       // Si se marca como completado, remover de la lista local
       // ya que el filtro solo muestra eventos no completados
       ticketReminders.value = ticketReminders.value.filter(r => r.id !== reminderId)
-      console.log('✅ Recordatorio removido de la lista (completado)')
+      // console.log('✅ Recordatorio removido de la lista (completado)')
     }
     
   } catch (error) {
-    console.error('❌ Error actualizando recordatorio:', error)
+    // console.error('❌ Error actualizando recordatorio:', error)
     alert('Error al actualizar recordatorio: ' + (error.response?.data?.message || error.message))
   }
 }
 
 const deleteReminder = async (reminderId) => {
   try {
-     console.log('🗑️ Eliminando recordatorio (evento):', reminderId)
+     // console.log('🗑️ Eliminando recordatorio (evento):', reminderId)
     
     // Eliminar evento de la agenda
     await http.delete(`/api/doli/agendaevents/${reminderId}`)
@@ -4732,10 +4732,10 @@ const deleteReminder = async (reminderId) => {
     // Eliminar de la lista local
     ticketReminders.value = ticketReminders.value.filter(reminder => reminder.id !== reminderId)
     
-     console.log('✅ Recordatorio eliminado exitosamente')
+     // console.log('✅ Recordatorio eliminado exitosamente')
     
   } catch (error) {
-    console.error('❌ Error eliminando recordatorio:', error)
+    // console.error('❌ Error eliminando recordatorio:', error)
     alert('Error al eliminar recordatorio: ' + (error.response?.data?.message || error.message))
   }
 }
@@ -4745,17 +4745,17 @@ const deleteReminder = async (reminderId) => {
 
 // Create ticket functions
 const openCreateTicketModal = async () => {
-   console.log('🎫 Abriendo modal de crear ticket...')
+   // console.log('🎫 Abriendo modal de crear ticket...')
   
   // Cargar terceros si no están cargados
   if (terceros.value.length === 0) {
-     console.log('📋 Cargando terceros...')
+     // console.log('📋 Cargando terceros...')
     await fetchTerceros()
   }
   
   // Cargar usuarios para el ticket
   if (availableUsersForTicket.value.length === 0) {
-     console.log('👥 Cargando usuarios para ticket...')
+     // console.log('👥 Cargando usuarios para ticket...')
     await fetchUsersForTicket()
   }
   
@@ -4765,17 +4765,17 @@ const openCreateTicketModal = async () => {
 // Función para cargar proyectos del tercero
 const fetchProjectsForThirdparty = async (thirdpartyId) => {
   try {
-     console.log('📋 Cargando proyectos para tercero ID:', thirdpartyId)
+     // console.log('📋 Cargando proyectos para tercero ID:', thirdpartyId)
     
     // Usar sqlfilters para filtrar por tercero específico
     const response = await http.get(`/api/doli/projects?limit=1000&sqlfilters=(t.fk_soc:=:${thirdpartyId})`)
     
     availableProjectsForTicket.value = response.data || []
-     console.log('✅ Proyectos cargados para tercero:', availableProjectsForTicket.value.length)
-     console.log('📋 Proyectos:', availableProjectsForTicket.value.map(p => ({ id: p.id, title: p.title, ref: p.ref })))
+     // console.log('✅ Proyectos cargados para tercero:', availableProjectsForTicket.value.length)
+     // console.log('📋 Proyectos:', availableProjectsForTicket.value.map(p => ({ id: p.id, title: p.title, ref: p.ref })))
   } catch (error) {
-    console.error('❌ Error cargando proyectos:', error)
-    console.error('❌ Error details:', error.response?.data)
+    // console.error('❌ Error cargando proyectos:', error)
+    // console.error('❌ Error details:', error.response?.data)
     availableProjectsForTicket.value = []
   }
 }
@@ -4783,12 +4783,12 @@ const fetchProjectsForThirdparty = async (thirdpartyId) => {
 // Función para cargar todos los usuarios activos
 const fetchUsersForTicket = async () => {
   try {
-     console.log('👥 Cargando usuarios para ticket...')
+     // console.log('👥 Cargando usuarios para ticket...')
     const response = await http.get('/api/doli/users?limit=1000&status=1')
     availableUsersForTicket.value = response.data || []
-     console.log('✅ Usuarios cargados:', availableUsersForTicket.value.length)
+     // console.log('✅ Usuarios cargados:', availableUsersForTicket.value.length)
   } catch (error) {
-    console.error('❌ Error cargando usuarios:', error)
+    // console.error('❌ Error cargando usuarios:', error)
     availableUsersForTicket.value = []
   }
 }
@@ -4834,7 +4834,7 @@ const createTicket = async () => {
   creatingTicket.value = true
 
   try {
-     console.log('🎫 Creando nuevo ticket:', newTicket.value)
+     // console.log('🎫 Creando nuevo ticket:', newTicket.value)
 
     // Preparar datos para el API de Dolibarr
     const ticketData = {
@@ -4854,16 +4854,16 @@ const createTicket = async () => {
       ticketData.ref = newTicket.value.ref.trim()
     }
 
-     console.log('📤 Datos del ticket para API:', ticketData)
+     // console.log('📤 Datos del ticket para API:', ticketData)
 
     const response = await http.post('/api/doli/tickets', ticketData)
-     console.log('✅ Ticket creado exitosamente:', response.data)
+     // console.log('✅ Ticket creado exitosamente:', response.data)
 
     // Cerrar modal
     closeCreateTicketModal()
 
     // Mostrar mensaje de éxito
-     console.log('🎉 Ticket creado con ID:', response.data.id || response.data)
+     // console.log('🎉 Ticket creado con ID:', response.data.id || response.data)
 
     // Recargar lista de tickets
     await fetchTickets()
@@ -4872,8 +4872,8 @@ const createTicket = async () => {
     await updateTicketsCounter()
 
   } catch (error) {
-    console.error('❌ Error creando ticket:', error)
-    console.error('❌ Error response:', error.response?.data)
+    // console.error('❌ Error creando ticket:', error)
+    // console.error('❌ Error response:', error.response?.data)
     
     let errorMessage = 'Error al crear el ticket'
     if (error.response?.data?.message) {
@@ -4908,29 +4908,29 @@ const selectThirdparty = (tercero) => {
     fetchProjectsForThirdparty(tercero.id)
   }
   
-   console.log('🏢 Tercero seleccionado:', tercero)
-   console.log('📋 Proyectos disponibles limpiados, cargando nuevos...')
+   // console.log('🏢 Tercero seleccionado:', tercero)
+   // console.log('📋 Proyectos disponibles limpiados, cargando nuevos...')
 }
 
 const selectContact = (contact) => {
   newTicket.value.contact = contact
   contactSearch.value = `${contact.firstname} ${contact.lastname}`
   showContactDropdown.value = false
-   console.log('👤 Contacto seleccionado:', contact)
+   // console.log('👤 Contacto seleccionado:', contact)
 }
 
 const selectUser = (user) => {
   newTicket.value.assignedTo = user
   userSearch.value = `${user.firstname} ${user.lastname}`
   showUserDropdown.value = false
-   console.log('👨‍💼 Usuario asignado:', user)
+   // console.log('👨‍💼 Usuario asignado:', user)
 }
 
 const selectProject = (project) => {
   newTicket.value.project = project
   projectSearch.value = project.title || project.ref
   showProjectDropdown.value = false
-   console.log('📋 Proyecto seleccionado:', project)
+   // console.log('📋 Proyecto seleccionado:', project)
 }
 
 // Computed properties for filtered options
@@ -4985,7 +4985,7 @@ const completeTicket = async () => {
       throw new Error('No se encontró el ID del ticket')
     }
     
-     console.log('🎯 Cerrando ticket:', ticketId)
+     // console.log('🎯 Cerrando ticket:', ticketId)
     
     // Datos para cerrar el ticket
     const updateData = {
@@ -4993,11 +4993,11 @@ const completeTicket = async () => {
       status: 8     // Status cerrado
     }
     
-     console.log('📝 Datos de actualización:', updateData)
+     // console.log('📝 Datos de actualización:', updateData)
     
     // Enviar PUT request para actualizar el ticket
     const response = await http.put(`/api/doli/tickets/${ticketId}`, updateData)
-     console.log('✅ Ticket cerrado exitosamente:', response.data)
+     // console.log('✅ Ticket cerrado exitosamente:', response.data)
     
     // Actualizar el estado local del ticket
     if (ticketDetails.value) {
@@ -5024,7 +5024,7 @@ const completeTicket = async () => {
     closeModal()
     
     // Mostrar mensaje de éxito
-     console.log('✅ Ticket marcado como completado exitosamente')
+     // console.log('✅ Ticket marcado como completado exitosamente')
     // TODO: Implementar notificación toast más elegante en el futuro
     
     // Recalcular métricas
@@ -5034,8 +5034,8 @@ const completeTicket = async () => {
     await updateTicketsCounter()
     
   } catch (error) {
-    console.error('❌ Error cerrando ticket:', error)
-    console.error('❌ Error details:', error.response?.data)
+    // console.error('❌ Error cerrando ticket:', error)
+    // console.error('❌ Error details:', error.response?.data)
     alert('Error al cerrar ticket: ' + (error.response?.data?.message || error.message))
   } finally {
     completingTicket.value = false
@@ -5059,32 +5059,32 @@ const selectAssignedUser = (userId, displayText) => {
 // Followers methods (internally fetches intervinientes/contacts)
 const fetchTicketFollowers = async (ticketId) => {
   try {
-     console.log('🔍 Obteniendo seguidores del ticket:', ticketId)
+     // console.log('🔍 Obteniendo seguidores del ticket:', ticketId)
     const response = await http.get(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
     
-     console.log('📋 Raw API Response:', response)
-     console.log('📋 Response Data:', response.data)
-     console.log('📋 Response Data Type:', typeof response.data)
-     console.log('📋 Response Data Keys:', response.data ? Object.keys(response.data) : 'No data')
+     // console.log('📋 Raw API Response:', response)
+     // console.log('📋 Response Data:', response.data)
+     // console.log('📋 Response Data Type:', typeof response.data)
+     // console.log('📋 Response Data Keys:', response.data ? Object.keys(response.data) : 'No data')
     
     // Los contactos están en response.data.contacts, no directamente en response.data
     const allFollowers = response.data?.contacts || []
     ticketFollowers.value = allFollowers
     
-     console.log('📋 Contacts Array:', allFollowers)
-     console.log('📋 Contacts Length:', allFollowers.length)
+     // console.log('📋 Contacts Array:', allFollowers)
+     // console.log('📋 Contacts Length:', allFollowers.length)
     
     // Log each follower to understand structure
     if (allFollowers.length > 0) {
-       console.log('📋 Analizando estructura de seguidores:')
+       // console.log('📋 Analizando estructura de seguidores:')
       allFollowers.forEach((follower, index) => {
-         console.log(`  Seguidor ${index + 1}:`, follower)
-         console.log(`    - Keys:`, Object.keys(follower))
-         console.log(`    - type:`, follower.type)
-         console.log(`    - source:`, follower.source)
-         console.log(`    - is_internal:`, follower.is_internal)
-         console.log(`    - element_type:`, follower.element_type)
-         console.log(`    - fk_element:`, follower.fk_element)
+         // console.log(`  Seguidor ${index + 1}:`, follower)
+         // console.log(`    - Keys:`, Object.keys(follower))
+         // console.log(`    - type:`, follower.type)
+         // console.log(`    - source:`, follower.source)
+         // console.log(`    - is_internal:`, follower.is_internal)
+         // console.log(`    - element_type:`, follower.element_type)
+         // console.log(`    - fk_element:`, follower.fk_element)
       })
     }
     
@@ -5093,11 +5093,11 @@ const fetchTicketFollowers = async (ticketId) => {
       // Si tiene user_id (no null), es un usuario interno de Dolibarr
       const isInternal = follower.user_id !== null && follower.user_id !== undefined
       
-       console.log(`🔍 Follower ${follower.contact_id} (${follower.fullname}) es interno?`, isInternal, {
-        user_id: follower.user_id,
-        contact_source: follower.contact_source,
-        contact_type_code: follower.contact_type_code
-      })
+       // console.log(`🔍 Follower ${follower.contact_id} (${follower.fullname}) es interno?`, isInternal, {
+      //   user_id: follower.user_id,
+      //   contact_source: follower.contact_source,
+      //   contact_type_code: follower.contact_type_code
+      // })
       
       return isInternal
     })
@@ -5106,24 +5106,24 @@ const fetchTicketFollowers = async (ticketId) => {
       // Si user_id es null, es un contacto externo del cliente
       const isExternal = follower.user_id === null || follower.user_id === undefined
       
-       console.log(`🔍 Follower ${follower.contact_id} (${follower.fullname}) es externo?`, isExternal, {
-        user_id: follower.user_id,
-        contact_source: follower.contact_source,
-        company_name: follower.company_name
-      })
+       // console.log(`🔍 Follower ${follower.contact_id} (${follower.fullname}) es externo?`, isExternal, {
+      //   user_id: follower.user_id,
+      //   contact_source: follower.contact_source,
+      //   company_name: follower.company_name
+      // })
       
       return isExternal
     })
     
-     console.log('✅ Seguidores clasificados:', {
-      total: allFollowers.length,
-      internos: internalFollowers.value.length,
-      externos: externalFollowers.value.length
-    })
+     // console.log('✅ Seguidores clasificados:', {
+    //   total: allFollowers.length,
+    //   internos: internalFollowers.value.length,
+    //   externos: externalFollowers.value.length
+    // })
     
   } catch (error) {
-    console.warn('⚠️ Error obteniendo seguidores:', error)
-    console.warn('⚠️ Error details:', error.response?.data)
+    // console.warn('⚠️ Error obteniendo seguidores:', error)
+    // console.warn('⚠️ Error details:', error.response?.data)
     ticketFollowers.value = []
     internalFollowers.value = []
     externalFollowers.value = []
@@ -5133,15 +5133,15 @@ const fetchTicketFollowers = async (ticketId) => {
 // Function to fetch ticket reminders (events linked to ticket)
 const fetchTicketReminders = async (ticketId) => {
   try {
-     console.log('📅 Obteniendo recordatorios del ticket:', ticketId)
-     console.log('📅 Filtrando solo eventos NO completados (percent != 100)')
+     // console.log('📅 Obteniendo recordatorios del ticket:', ticketId)
+     // console.log('📅 Filtrando solo eventos NO completados (percent != 100)')
     
     // Buscar eventos de agenda vinculados al ticket (solo los no completados)
     // Filtrar eventos donde percent != 100 (no completados)
     const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=ASC&limit=100&sqlfilters=(t.fk_task:=:${ticketId}) AND (t.percent:!=:100)`)
     
     const events = response.data || []
-     console.log('📅 Eventos NO completados encontrados:', events.length)
+     // console.log('📅 Eventos NO completados encontrados:', events.length)
     
     // Convertir eventos a formato de recordatorios
     ticketReminders.value = events.map(event => {
@@ -5158,7 +5158,7 @@ const fetchTicketReminders = async (ticketId) => {
             minute: '2-digit'
           })
         } catch (error) {
-          console.warn('Error convirtiendo fecha:', event.datep, error)
+          // console.warn('Error convirtiendo fecha:', event.datep, error)
           formattedDate = 'Fecha inválida'
         }
       }
@@ -5173,26 +5173,26 @@ const fetchTicketReminders = async (ticketId) => {
       }
     })
     
-     console.log('✅ Recordatorios cargados:', ticketReminders.value.length)
+     // console.log('✅ Recordatorios cargados:', ticketReminders.value.length)
     
   } catch (error) {
-    console.warn('⚠️ Error obteniendo recordatorios:', error)
-    console.warn('⚠️ Error details:', error.response?.data)
+    // console.warn('⚠️ Error obteniendo recordatorios:', error)
+    // console.warn('⚠️ Error details:', error.response?.data)
     ticketReminders.value = []
   }
 }
 
 const fetchAvailableUsers = async () => {
   try {
-     console.log('🔍 Obteniendo usuarios activos de Dolibarr...')
+     // console.log('🔍 Obteniendo usuarios activos de Dolibarr...')
     const response = await http.get('/api/doli/users?limit=100&active=1')
     availableUsers.value = response.data || []
-     console.log('✅ Usuarios activos obtenidos:', availableUsers.value.length)
+     // console.log('✅ Usuarios activos obtenidos:', availableUsers.value.length)
     if (availableUsers.value.length > 0) {
-       console.log('📋 Primer usuario:', availableUsers.value[0])
+       // console.log('📋 Primer usuario:', availableUsers.value[0])
     }
   } catch (error) {
-    console.warn('⚠️ Error obteniendo usuarios:', error)
+    // console.warn('⚠️ Error obteniendo usuarios:', error)
     availableUsers.value = []
   }
 }
@@ -5204,17 +5204,17 @@ const fetchAvailableContacts = async (socid) => {
   }
   
   try {
-     console.log('🔍 Obteniendo contactos del tercero con filtro SQL:', socid)
-     console.log('📤 URL:', `/api/doli/contacts?sqlfilters=(fk_soc:=:${socid})&limit=100`)
+     // console.log('🔍 Obteniendo contactos del tercero con filtro SQL:', socid)
+     // console.log('📤 URL:', `/api/doli/contacts?sqlfilters=(fk_soc:=:${socid})&limit=100`)
     const response = await http.get(`/api/doli/contacts?sqlfilters=(fk_soc:=:${socid})&limit=100`)
     availableContacts.value = response.data || []
-     console.log('✅ Contactos obtenidos con filtro SQL:', availableContacts.value.length)
+     // console.log('✅ Contactos obtenidos con filtro SQL:', availableContacts.value.length)
     if (availableContacts.value.length > 0) {
-       console.log('📋 Primer contacto:', availableContacts.value[0])
+       // console.log('📋 Primer contacto:', availableContacts.value[0])
     }
   } catch (error) {
-    console.warn('⚠️ Error obteniendo contactos:', error)
-    console.warn('⚠️ Error details:', error.response?.data)
+    // console.warn('⚠️ Error obteniendo contactos:', error)
+    // console.warn('⚠️ Error details:', error.response?.data)
     availableContacts.value = []
   }
 }
@@ -5228,19 +5228,19 @@ const addFollower = async () => {
     const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
     const [type, id] = selectedFollower.value.split(':')
     
-     console.log('➕ Agregando seguidor:', { type, id, ticketId })
+     // console.log('➕ Agregando seguidor:', { type, id, ticketId })
     
     const requestData = {
       contact_id: id,
       contact_type: type // 'user' or 'contact'
     }
     
-    console.log('📤 Request data:', requestData)
-    console.log('📤 Endpoint:', `/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
+    // console.log('📤 Request data:', requestData)
+    // console.log('📤 Endpoint:', `/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
     
     const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`, requestData)
     
-     console.log('✅ Seguidor agregado:', response.data)
+     // console.log('✅ Seguidor agregado:', response.data)
     
     // Refresh followers list
     await fetchTicketFollowers(ticketId)
@@ -5250,7 +5250,7 @@ const addFollower = async () => {
     followersSearchTerm.value = ''
     
   } catch (error) {
-    console.error('❌ Error agregando seguidor:', error)
+    // console.error('❌ Error agregando seguidor:', error)
     alert('Error al agregar seguidor: ' + (error.response?.data?.message || error.message))
   } finally {
     loadingFollowers.value = false
@@ -5265,17 +5265,17 @@ const removeFollower = async (followerId, followerType) => {
   try {
     const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
     
-     console.log('➖ Eliminando seguidor:', { followerId, followerType, ticketId })
+     // console.log('➖ Eliminando seguidor:', { followerId, followerType, ticketId })
     
     await http.delete(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts/${followerId}`)
     
-     console.log('✅ Seguidor eliminado')
+     // console.log('✅ Seguidor eliminado')
     
     // Refresh followers list
     await fetchTicketFollowers(ticketId)
     
   } catch (error) {
-    console.error('❌ Error eliminando seguidor:', error)
+    // console.error('❌ Error eliminando seguidor:', error)
     alert('Error al eliminar seguidor: ' + (error.response?.data?.message || error.message))
   } finally {
     loadingFollowers.value = false
@@ -5290,12 +5290,12 @@ const fetchCompanyInfo = async (socid) => {
   }
   
   try {
-     console.log('🔍 Obteniendo información de la empresa:', socid)
+     // console.log('🔍 Obteniendo información de la empresa:', socid)
     const response = await http.get(`/api/doli/thirdparties/${socid}`)
     currentCompany.value = response.data
-     console.log('✅ Empresa obtenida:', currentCompany.value?.name)
+     // console.log('✅ Empresa obtenida:', currentCompany.value?.name)
   } catch (error) {
-    console.warn('⚠️ Error obteniendo empresa:', error)
+    // console.warn('⚠️ Error obteniendo empresa:', error)
     currentCompany.value = null
   }
 }
@@ -5315,12 +5315,12 @@ const sendComment = async () => {
       throw new Error('No se encontró el ID del ticket')
     }
 
-    console.log('💬 Enviando comentario:', {
-      type: commentType.value,
-      message: newComment.value,
-      ticket_id: ticketId,
-      attachments: commentAttachments.value.length
-    })
+    // console.log('💬 Enviando comentario:', {
+    //   type: commentType.value,
+    //   message: newComment.value,
+    //   ticket_id: ticketId,
+    //   attachments: commentAttachments.value.length
+    // })
 
     let response
 
@@ -5339,7 +5339,7 @@ const sendComment = async () => {
             content: base64
           })
         } catch (error) {
-          console.error('Error convirtiendo archivo a base64:', attachment.name, error)
+          // console.error('Error convirtiendo archivo a base64:', attachment.name, error)
         }
       }
       
@@ -5350,13 +5350,13 @@ const sendComment = async () => {
       const recipients = removeDuplicateRecipients(rawRecipients)
       
       if (rawRecipients.length !== recipients.length) {
-        console.log('🔄 Duplicados eliminados en comentario:', {
-          original: rawRecipients.length,
-          unique: recipients.length,
-          removed: rawRecipients.length - recipients.length,
-          originalEmails: rawRecipients,
-          uniqueEmails: recipients
-        })
+        // console.log('🔄 Duplicados eliminados en comentario:', {
+        //   original: rawRecipients.length,
+        //   unique: recipients.length,
+        //   removed: rawRecipients.length - recipients.length,
+        //   originalEmails: rawRecipients,
+        //   uniqueEmails: recipients
+        // })
       }
       
       // Generar asunto con formato [EMPRESA - Ticket REF] TITULO
@@ -5381,13 +5381,13 @@ const sendComment = async () => {
         attachments: attachments
       }
 
-      console.log('📤 Endpoint: /api/doli/dolibarmodernfrontendapi/tickets/' + ticketId + '/sendemail')
-      console.log('📧 Enviando email con archivos adjuntos:', attachments.length)
-      console.log('📋 Datos del email:', {
-        subject: emailData.subject,
-        recipients: emailData.recipients,
-        attachments: attachments.map(a => ({ name: a.name, size: a.size, type: a.type }))
-      })
+      // console.log('📤 Endpoint: /api/doli/dolibarmodernfrontendapi/tickets/' + ticketId + '/sendemail')
+      // console.log('📧 Enviando email con archivos adjuntos:', attachments.length)
+      // console.log('📋 Datos del email:', {
+      //   subject: emailData.subject,
+      //   recipients: emailData.recipients,
+      //   attachments: attachments.map(a => ({ name: a.name, size: a.size, type: a.type }))
+      // })
 
       response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
       
@@ -5409,12 +5409,12 @@ const sendComment = async () => {
         private: 1  // Mensaje interno
       }
 
-      console.log('📤 Endpoint: /api/doli/tickets/newmessage')
-      console.log('📋 Datos del comentario:', commentData)
+      // console.log('📤 Endpoint: /api/doli/tickets/newmessage')
+      // console.log('📋 Datos del comentario:', commentData)
 
       response = await http.post('/api/doli/tickets/newmessage', commentData)
     }
-     console.log('✅ Comentario enviado:', response.data)
+     // console.log('✅ Comentario enviado:', response.data)
 
     // Limpiar formulario
     newComment.value = ''
@@ -5432,14 +5432,14 @@ const sendComment = async () => {
     try {
       const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
       if (ticketId) {
-         console.log('🔄 Refrescando detalles del ticket...', {
-          ticketId,
-          commentType: commentType.value,
-          messagesKeyBefore: messagesKey.value
-        })
+         // console.log('🔄 Refrescando detalles del ticket...', {
+        //   ticketId,
+        //   commentType: commentType.value,
+        //   messagesKeyBefore: messagesKey.value
+        // })
         
         // Log mensajes antes de recargar
-         console.log('📋 Mensajes antes de recargar:', ticketDetails.value?.messages?.length || 0)
+         // console.log('📋 Mensajes antes de recargar:', ticketDetails.value?.messages?.length || 0)
         
         // Pequeño delay para que el servidor procese el mensaje
         await new Promise(resolve => setTimeout(resolve, 500))
@@ -5447,7 +5447,7 @@ const sendComment = async () => {
         // Recargar detalles completos del ticket SIN CACHÉ
         const currentTicket = selectedTicket.value || { id: ticketId }
         const timestamp = Date.now()
-         console.log('🔄 Recargando ticket sin caché con timestamp:', timestamp)
+         // console.log('🔄 Recargando ticket sin caché con timestamp:', timestamp)
         
         const response = await http.get(`/api/doli/tickets/${ticketId}?_t=${timestamp}`, {
           headers: {
@@ -5457,8 +5457,8 @@ const sendComment = async () => {
           }
         })
         
-         console.log('📋 Response completa del servidor:', response.data)
-         console.log('📋 Mensajes en response:', response.data.messages?.length || 0)
+         // console.log('📋 Response completa del servidor:', response.data)
+         // console.log('📋 Mensajes en response:', response.data.messages?.length || 0)
         
         // Forzar reactividad creando un nuevo objeto completamente
         const newTicketDetails = JSON.parse(JSON.stringify(response.data))
@@ -5472,15 +5472,15 @@ const sendComment = async () => {
         ])
         
         // Log mensajes después de recargar
-         console.log('📋 Mensajes después de recargar:', ticketDetails.value?.messages?.length || 0)
+         // console.log('📋 Mensajes después de recargar:', ticketDetails.value?.messages?.length || 0)
         
         // Forzar actualización de mensajes con múltiples técnicas
-         console.log('🔄 Forzando re-render de sección de comentarios...')
+         // console.log('🔄 Forzando re-render de sección de comentarios...')
         
         // Técnica 1: Incrementar key
         const oldKey = messagesKey.value
         messagesKey.value = Date.now() // Usar timestamp para key única
-         console.log('📋 MessagesKey cambiado de', oldKey, 'a', messagesKey.value)
+         // console.log('📋 MessagesKey cambiado de', oldKey, 'a', messagesKey.value)
         
         // Técnica 2: Forzar actualización con nextTick
         await nextTick()
@@ -5491,38 +5491,38 @@ const sendComment = async () => {
           ticketDetails.value.messages = []
           await nextTick()
           ticketDetails.value.messages = messages
-           console.log('📋 Array de mensajes re-asignado para forzar reactividad')
+           // console.log('📋 Array de mensajes re-asignado para forzar reactividad')
         }
         
-         console.log('✅ Detalles del ticket y mensajes actualizados', {
-          messagesKeyAfter: messagesKey.value,
-          totalMessages: ticketDetails.value?.messages?.length || 0,
-          lastMessage: ticketDetails.value?.messages?.[ticketDetails.value.messages.length - 1]?.message?.substring(0, 50) + '...'
-        })
+         // console.log('✅ Detalles del ticket y mensajes actualizados', {
+        //   messagesKeyAfter: messagesKey.value,
+        //   totalMessages: ticketDetails.value?.messages?.length || 0,
+        //   lastMessage: ticketDetails.value?.messages?.[ticketDetails.value.messages.length - 1]?.message?.substring(0, 50) + '...'
+        // })
         
         // Log para verificar que el template debería actualizarse
-         console.log('🔍 Verificando estado para template:', {
-          hasTicketDetails: !!ticketDetails.value,
-          hasMessages: !!(ticketDetails.value?.messages),
-          messagesLength: ticketDetails.value?.messages?.length || 0,
-          messagesKeyValue: messagesKey.value
-        })
+         // console.log('🔍 Verificando estado para template:', {
+        //   hasTicketDetails: !!ticketDetails.value,
+        //   hasMessages: !!(ticketDetails.value?.messages),
+        //   messagesLength: ticketDetails.value?.messages?.length || 0,
+        //   messagesKeyValue: messagesKey.value
+        // })
         
         // Verificación final
-         console.log('✅ Proceso de actualización completado')
+         // console.log('✅ Proceso de actualización completado')
       }
     } catch (refreshError) {
-      console.warn('⚠️ Error al refrescar detalles del ticket:', refreshError)
+      // console.warn('⚠️ Error al refrescar detalles del ticket:', refreshError)
       // No lanzar error, el comentario ya se envió correctamente
     }
 
-     console.log(`✅ Comentario ${commentType.value === 'email' ? 'enviado por email' : 'guardado como mensaje interno'} correctamente`)
+     // console.log(`✅ Comentario ${commentType.value === 'email' ? 'enviado por email' : 'guardado como mensaje interno'} correctamente`)
 
   } catch (error) {
-    console.error('❌ Error enviando comentario:', error)
-    console.error('❌ Error response:', error.response?.data)
-    console.error('❌ Error status:', error.response?.status)
-    console.error('❌ Error message:', error.message)
+    // console.error('❌ Error enviando comentario:', error)
+    // console.error('❌ Error response:', error.response?.data)
+    // console.error('❌ Error status:', error.response?.status)
+    // console.error('❌ Error message:', error.message)
     
     let errorMessage = 'Error al enviar el comentario'
     
@@ -5544,8 +5544,8 @@ const sendComment = async () => {
     sendingComment.value = false
   }
 }
- console.log('fetchUserInterventions:', fetchUserInterventions)
- console.log('getInterventionsForTicket:', getInterventionsForTicket)
+ // console.log('fetchUserInterventions:', fetchUserInterventions)
+ // console.log('getInterventionsForTicket:', getInterventionsForTicket)
 
 const tickets = ref([])
 const loading = ref(false)
@@ -5568,7 +5568,7 @@ const loadKanbanColumnsPreferences = () => {
     try {
       return JSON.parse(saved)
     } catch (e) {
-      console.error('Error cargando preferencias de columnas:', e)
+      // console.error('Error cargando preferencias de columnas:', e)
     }
   }
   // Valores por defecto
@@ -5610,13 +5610,13 @@ const showNotification = (message, type = 'success') => {
 // Guardar preferencia de vista cuando cambie
 watch(currentView, (newValue) => {
   localStorage.setItem('tickets_view_preference', newValue)
-  console.log('💾 Preferencia de vista guardada:', newValue)
+  // console.log('💾 Preferencia de vista guardada:', newValue)
 })
 
 // Guardar preferencias de columnas cuando cambien
 watch(visibleKanbanColumns, (newValue) => {
   localStorage.setItem('kanban_columns_preferences', JSON.stringify(newValue))
-  console.log('💾 Preferencias de columnas guardadas:', newValue)
+  // console.log('💾 Preferencias de columnas guardadas:', newValue)
 }, { deep: true })
 
 // Ticket metrics
@@ -5752,7 +5752,7 @@ const fetchAllTicketInterventions = async (ticketId) => {
   
   loadingAllInterventions.value = true
   try {
-    console.log('🔍 Obteniendo todas las intervenciones para ticket:', ticketId)
+    // console.log('🔍 Obteniendo todas las intervenciones para ticket:', ticketId)
     
     // Usar el mismo endpoint que funciona, pero obtener todas las intervenciones
     const response = await http.get('/api/doli/interventions', {
@@ -5764,11 +5764,11 @@ const fetchAllTicketInterventions = async (ticketId) => {
       }
     })
 
-    console.log('📦 Respuesta de intervenciones:', response.data?.length || 0, 'intervenciones totales')
+    // console.log('📦 Respuesta de intervenciones:', response.data?.length || 0, 'intervenciones totales')
     
     // Debug: Ver estructura de una intervención
     if (response.data && response.data.length > 0) {
-      console.log('🔍 Estructura de intervención ejemplo:', response.data[0])
+      // console.log('🔍 Estructura de intervención ejemplo:', response.data[0])
     }
 
     if (response.data && Array.isArray(response.data)) {
@@ -5799,13 +5799,13 @@ const fetchAllTicketInterventions = async (ticketId) => {
       // Enriquecer intervenciones con información de usuarios
       const enrichedInterventions = await enrichInterventionsWithUserInfo(filteredInterventions)
       allTicketInterventions.value = enrichedInterventions
-      console.log('✅ Intervenciones filtradas para ticket', ticketId, ':', allTicketInterventions.value.length)
+      // console.log('✅ Intervenciones filtradas para ticket', ticketId, ':', allTicketInterventions.value.length)
     } else {
       allTicketInterventions.value = []
-      console.log('❌ No se recibieron datos de intervenciones')
+      // console.log('❌ No se recibieron datos de intervenciones')
     }
   } catch (error) {
-    console.error('❌ Error al obtener intervenciones del ticket:', error)
+    // console.error('❌ Error al obtener intervenciones del ticket:', error)
     allTicketInterventions.value = []
   } finally {
     loadingAllInterventions.value = false
@@ -5817,11 +5817,11 @@ const enrichInterventionsWithUserInfo = async (interventions) => {
   if (!interventions || interventions.length === 0) return interventions
   
   // Debug: Ver qué intervenciones tenemos
-  console.log('🔍 Intervenciones a enriquecer:', interventions.map(i => ({
-    id: i.id,
-    ref: i.ref,
-    fk_user_author: i.fk_user_author
-  })))
+  // console.log('🔍 Intervenciones a enriquecer:', interventions.map(i => ({
+  //   id: i.id,
+  //   ref: i.ref,
+  //   fk_user_author: i.fk_user_author
+  // })))
   
   // Obtener IDs únicos de usuarios (probar diferentes campos)
   const userIds = [...new Set(interventions.map(i => 
@@ -5829,17 +5829,17 @@ const enrichInterventionsWithUserInfo = async (interventions) => {
   ).filter(Boolean))]
   
   if (userIds.length === 0) {
-    console.log('⚠️ No se encontraron IDs de usuarios en las intervenciones')
+    // console.log('⚠️ No se encontraron IDs de usuarios en las intervenciones')
     return interventions
   }
   
-  console.log('🔍 Obteniendo información de usuarios:', userIds)
+  // console.log('🔍 Obteniendo información de usuarios:', userIds)
   
   try {
     // Obtener información de todos los usuarios
     const userPromises = userIds.map(userId => 
       http.get(`/api/doli/users/${userId}`).catch(error => {
-        console.warn(`Error obteniendo usuario ${userId}:`, error)
+        // console.warn(`Error obteniendo usuario ${userId}:`, error)
         return null
       })
     )
@@ -5854,7 +5854,7 @@ const enrichInterventionsWithUserInfo = async (interventions) => {
       }
     })
     
-    console.log('✅ Usuarios obtenidos:', Object.keys(usersMap).length)
+    // console.log('✅ Usuarios obtenidos:', Object.keys(usersMap).length)
     
     // Enriquecer intervenciones con información de usuarios
     return interventions.map(intervention => {
@@ -5868,7 +5868,7 @@ const enrichInterventionsWithUserInfo = async (interventions) => {
     })
     
   } catch (error) {
-    console.error('❌ Error enriqueciendo intervenciones con usuarios:', error)
+    // console.error('❌ Error enriqueciendo intervenciones con usuarios:', error)
     return interventions
   }
 }
@@ -5956,15 +5956,15 @@ const getUserDisplayName = (intervention) => {
 }
 
 const fetchTickets = async () => {
-   console.log('🎫 Fetching tickets...')
+   // console.log('🎫 Fetching tickets...')
   loading.value = true
   try {
     const response = await http.get('/api/doli/tickets')
-     console.log('✅ Tickets loaded:', response.data?.length || 0, 'tickets')
+     // console.log('✅ Tickets loaded:', response.data?.length || 0, 'tickets')
     const ticketsData = response.data || []
     
     // Enrich tickets with tercero names and assigned user names using cached data
-     console.log('🔄 Enriching tickets - Users available:', users.value.length, 'Terceros available:', terceros.value.length)
+     // console.log('🔄 Enriching tickets - Users available:', users.value.length, 'Terceros available:', terceros.value.length)
     
     // Enriquecer tickets con datos disponibles (sin proyectos aún)
     tickets.value = ticketsData.map(ticket => {
@@ -5981,12 +5981,12 @@ const fetchTickets = async () => {
         const user = users.value.find(u => u.id == ticket.fk_user_assign)
         if (user) {
           ticket.assigned_to = `${user.firstname || ''} ${user.lastname || ''}`.trim() || user.login
-           console.log(`👤 Ticket ${ticket.id} assigned to: ${ticket.assigned_to} (User ID: ${ticket.fk_user_assign})`)
+           // console.log(`👤 Ticket ${ticket.id} assigned to: ${ticket.assigned_to} (User ID: ${ticket.fk_user_assign})`)
         } else {
-           console.log(`⚠️ User not found for ticket ${ticket.id} (User ID: ${ticket.fk_user_assign})`)
+           // console.log(`⚠️ User not found for ticket ${ticket.id} (User ID: ${ticket.fk_user_assign})`)
         }
       } else if (ticket.fk_user_assign) {
-         console.log(`⚠️ No users loaded for ticket ${ticket.id} (User ID: ${ticket.fk_user_assign})`)
+         // console.log(`⚠️ No users loaded for ticket ${ticket.id} (User ID: ${ticket.fk_user_assign})`)
       }
       
       return ticket
@@ -5994,10 +5994,10 @@ const fetchTickets = async () => {
     
     // Calculate metrics after loading tickets
     calculateTicketMetrics()
-     console.log('✅ Tickets and metrics updated successfully')
+     // console.log('✅ Tickets and metrics updated successfully')
   } catch (error) {
-    console.error('❌ Error fetching tickets:', error)
-    console.error('❌ Error details:', error.response?.data)
+    // console.error('❌ Error fetching tickets:', error)
+    // console.error('❌ Error details:', error.response?.data)
   } finally {
     loading.value = false
   }
@@ -6064,17 +6064,17 @@ const calculateTicketMetrics = () => {
   
   const totalActive = ticketMetrics.value.inProgress + ticketMetrics.value.unassigned
   
-  console.log('📊 Métricas calculadas:', {
-    totalTickets: tickets.value.length,
-    ticketsActivos: totalActive,
-    ticketsCerrados: ticketMetrics.value.closed,
-    '---': '---',
-    activosAsignados: ticketMetrics.value.inProgress,
-    activosSinAsignar: ticketMetrics.value.unassigned,
-    '---2': '---',
-    pending: ticketMetrics.value.pending,
-    awaiting: ticketMetrics.value.awaiting
-  })
+  // console.log('📊 Métricas calculadas:', {
+  //   totalTickets: tickets.value.length,
+  //   ticketsActivos: totalActive,
+  //   ticketsCerrados: ticketMetrics.value.closed,
+  //   '---': '---',
+  //   activosAsignados: ticketMetrics.value.inProgress,
+  //   activosSinAsignar: ticketMetrics.value.unassigned,
+  //   '---2': '---',
+  //   pending: ticketMetrics.value.pending,
+  //   awaiting: ticketMetrics.value.awaiting
+  // })
 }
 
 const fetchTerceros = async () => {
@@ -6082,18 +6082,18 @@ const fetchTerceros = async () => {
     const response = await http.get('/api/doli/thirdparties?limit=5000&status=1')
     terceros.value = response.data || []
   } catch (error) {
-    console.error('Error fetching terceros:', error)
+    // console.error('Error fetching terceros:', error)
   }
 }
 
 const fetchUsers = async () => {
   try {
-     console.log('👥 Fetching users...')
+     // console.log('👥 Fetching users...')
     const response = await http.get('/api/doli/users?limit=1000&status=1')
     users.value = response.data || []
-     console.log('✅ Users loaded:', users.value.length)
+     // console.log('✅ Users loaded:', users.value.length)
   } catch (error) {
-    console.error('❌ Error fetching users:', error)
+    // console.error('❌ Error fetching users:', error)
   }
 }
 
@@ -6488,7 +6488,7 @@ const handleKanbanDragStart = (event, ticket) => {
   event.target.style.opacity = '0.5'
   event.target.style.transform = 'rotate(3deg)'
   
-  console.log('🎯 Arrastrando ticket:', ticket.ref)
+  // console.log('🎯 Arrastrando ticket:', ticket.ref)
 }
 
 const handleKanbanDragEnd = (event) => {
@@ -6507,12 +6507,12 @@ const handleKanbanDrop = async (event, newStatus) => {
   const oldStatus = parseInt(ticket.fk_statut)
   
   if (oldStatus === newStatus) {
-    console.log('⚠️ Mismo estado, no se actualiza')
+    // console.log('⚠️ Mismo estado, no se actualiza')
     draggedTicket.value = null
     return
   }
   
-  console.log(`🔄 Moviendo ticket ${ticket.ref} de estado ${oldStatus} a ${newStatus}`)
+  // console.log(`🔄 Moviendo ticket ${ticket.ref} de estado ${oldStatus} a ${newStatus}`)
   
   // 1. ACTUALIZACIÓN OPTIMISTA - Actualizar UI inmediatamente
   ticket.fk_statut = String(newStatus)
@@ -6534,16 +6534,16 @@ const handleKanbanDrop = async (event, newStatus) => {
       fk_statut: newStatus
     })
     
-    console.log('✅ Estado confirmado en servidor:', response.data)
+    // console.log('✅ Estado confirmado en servidor:', response.data)
     
     // Mostrar notificación de éxito
     showNotification(`Ticket ${ticket.ref} movido a ${getStatusName(newStatus)}`, 'success')
     
   } catch (error) {
-    console.error('❌ Error actualizando estado en servidor:', error)
+    // console.error('❌ Error actualizando estado en servidor:', error)
     
     // 3. REVERTIR CAMBIOS si hay error
-    console.log(`🔙 Revirtiendo ticket ${ticket.ref} a estado ${oldStatus}`)
+    // console.log(`🔙 Revirtiendo ticket ${ticket.ref} a estado ${oldStatus}`)
     
     ticket.fk_statut = String(oldStatus)
     
@@ -6628,21 +6628,21 @@ const viewTicketDetails = async (ticket) => {
     try {
       await refreshIfNeeded(authStore.user.id)
     } catch (error) {
-      console.warn('Error al refrescar intervenciones del usuario:', error)
+      // console.warn('Error al refrescar intervenciones del usuario:', error)
     }
   }
   
   try {
-     console.log('🔍 Fetching ticket details for ID:', ticket.id)
+     // console.log('🔍 Fetching ticket details for ID:', ticket.id)
     // Fetch detailed ticket information
     const response = await http.get(`/api/doli/tickets/${ticket.id}`)
-     console.log('✅ Ticket details response:', response)
+     // console.log('✅ Ticket details response:', response)
     ticketDetails.value = response.data
     
     // Enriquecer con nombre del proyecto si existe
     if (ticketDetails.value.fk_project) {
       ticketDetails.value.project_name = await getProjectName(ticketDetails.value.fk_project)
-      console.log(`📁 Proyecto del ticket: ${ticketDetails.value.project_name}`)
+      // console.log(`📁 Proyecto del ticket: ${ticketDetails.value.project_name}`)
     }
     
     // Cargar todas las intervenciones del ticket
@@ -6658,11 +6658,11 @@ const viewTicketDetails = async (ticket) => {
     ])
     
     // Log summary of loaded data
-     console.log('📊 Resumen de datos cargados para intervinientes:')
-     console.log(`   - Usuarios activos: ${availableUsers.value.length}`)
-     console.log(`   - Contactos de empresa (${response.data.fk_soc}): ${availableContacts.value.length}`)
-     console.log(`   - Intervinientes actuales: ${ticketFollowers.value.length}`)
-     console.log(`   - Empresa: ${currentCompany.value?.name || 'No encontrada'}`)
+     // console.log('📊 Resumen de datos cargados para intervinientes:')
+     // console.log(`   - Usuarios activos: ${availableUsers.value.length}`)
+     // console.log(`   - Contactos de empresa (${response.data.fk_soc}): ${availableContacts.value.length}`)
+     // console.log(`   - Intervinientes actuales: ${ticketFollowers.value.length}`)
+     // console.log(`   - Empresa: ${currentCompany.value?.name || 'No encontrada'}`)
     
     // Try multiple methods to get interventions/messages for this ticket
     let interventions = []
@@ -6680,7 +6680,7 @@ const viewTicketDetails = async (ticket) => {
           interventions = messagesResponse.data
         }
       } catch (err) {
-        console.warn('Messages endpoint failed:', err)
+        // console.warn('Messages endpoint failed:', err)
       }
     }
     
@@ -6703,12 +6703,12 @@ const viewTicketDetails = async (ticket) => {
                 interventions.push(interventionResponse.data)
               }
             } catch (interventionErr) {
-              console.warn(`Failed to fetch intervention ${link.objectid}:`, interventionErr)
+              // console.warn(`Failed to fetch intervention ${link.objectid}:`, interventionErr)
             }
           }
         }
       } catch (err) {
-        console.warn('Objectlinks endpoint failed:', err)
+        // console.warn('Objectlinks endpoint failed:', err)
       }
     }
     
@@ -6720,7 +6720,7 @@ const viewTicketDetails = async (ticket) => {
           interventions = agendaResponse.data
         }
       } catch (err) {
-        console.warn('Agenda events endpoint failed:', err)
+        // console.warn('Agenda events endpoint failed:', err)
       }
     }
     
@@ -6739,7 +6739,7 @@ const viewTicketDetails = async (ticket) => {
           interventions = linkedInterventions
         }
       } catch (err) {
-        console.warn('Fichinter endpoint failed:', err)
+        // console.warn('Fichinter endpoint failed:', err)
       }
     }
     
@@ -6751,15 +6751,15 @@ const viewTicketDetails = async (ticket) => {
         const thirdPartyResponse = await http.get(`/api/doli/thirdparties/${ticketDetails.value.fk_soc}`)
         ticketDetails.value.thirdparty_info = thirdPartyResponse.data
       } catch (thirdPartyError) {
-        console.error('Error fetching third party details:', thirdPartyError)
+        // console.error('Error fetching third party details:', thirdPartyError)
         ticketDetails.value.thirdparty_info = null
       }
     }
   } catch (error) {
-    console.error('❌ Error fetching ticket details:', error)
-    console.error('Error status:', error.response?.status)
-    console.error('Error data:', error.response?.data)
-    console.error('Request URL:', error.config?.url)
+    // console.error('❌ Error fetching ticket details:', error)
+    // console.error('Error status:', error.response?.status)
+    // console.error('Error data:', error.response?.data)
+    // console.error('Request URL:', error.config?.url)
     ticketDetails.value = ticket // Fallback to basic ticket data
     ticketDetails.value.messages = []
   } finally {
@@ -6769,7 +6769,7 @@ const viewTicketDetails = async (ticket) => {
 
 const closeModal = async () => {
   try {
-     console.log('🔒 Closing ticket modal...')
+     // console.log('🔒 Closing ticket modal...')
     
     // Usar composable para cerrar el modal
     closeTicketDetails()
@@ -6778,7 +6778,7 @@ const closeModal = async () => {
     allTicketInterventions.value = [] // Limpiar intervenciones
     
     // Force refresh tickets after closing modal
-     console.log('🔄 Refreshing data after modal close...')
+     // console.log('🔄 Refreshing data after modal close...')
     await nextTick() // Wait for DOM updates
     
     // Reload users and terceros first, then tickets
@@ -6788,9 +6788,9 @@ const closeModal = async () => {
     ])
     await fetchTickets()
     
-     console.log('✅ Modal closed and data refreshed successfully')
+     // console.log('✅ Modal closed and data refreshed successfully')
   } catch (error) {
-    console.error('❌ Error closing modal:', error)
+    // console.error('❌ Error closing modal:', error)
   }
 }
 
@@ -6979,7 +6979,7 @@ watch(showOnlyMyTickets, (newValue) => {
     if (selectedUser.value) {
       selectedUser.value = null
       userSearch.value = ''
-      console.log('🧹 Filtro de usuario limpiado al activar "Mis Tickets"')
+      // console.log('🧹 Filtro de usuario limpiado al activar "Mis Tickets"')
     }
   }
 })
@@ -7001,16 +7001,16 @@ onMounted(async () => {
       fetchAllTicketReferences() // Cargar referencias de tickets (categorías, gravedades, tipos)
     ])
     
-    console.log('✅ Referencias de tickets cargadas:', {
-      categorias: ticketCategories.value.length,
-      gravedades: ticketSeverities.value.length,
-      tipos: ticketTypes.value.length
-    })
+    // console.log('✅ Referencias de tickets cargadas:', {
+    //   categorias: ticketCategories.value.length,
+    //   gravedades: ticketSeverities.value.length,
+    //   tipos: ticketTypes.value.length
+    // })
     
     // Then load tickets with enriched data
     await fetchTickets()
   } catch (error) {
-    console.error('❌ Error loading tickets:', error)
+    // console.error('❌ Error loading tickets:', error)
   }
   
   // Fetch user interventions when component mounts
@@ -7018,7 +7018,7 @@ onMounted(async () => {
     try {
       await fetchUserInterventions(true) // Force refresh
     } catch (error) {
-      console.warn('⚠️ Error al obtener intervenciones del usuario:', error)
+      // console.warn('⚠️ Error al obtener intervenciones del usuario:', error)
     }
   }
 })
@@ -7028,61 +7028,61 @@ const startEditProject = async () => {
   editingProject.value = true
   selectedProjectId.value = ticketDetails.value?.fk_project || ''
   
-   console.log('🔍 Starting project edit for ticket:', {
-    ticketId: ticketDetails.value?.id,
-    currentProject: ticketDetails.value?.fk_project,
-    clientId: ticketDetails.value?.fk_soc
-  })
+   // console.log('🔍 Starting project edit for ticket:', {
+  //   ticketId: ticketDetails.value?.id,
+  //   currentProject: ticketDetails.value?.fk_project,
+  //   clientId: ticketDetails.value?.fk_soc
+  // })
   
   let projects = []
   
   // First, if there's a current project, always include it
   if (ticketDetails.value?.fk_project && currentProject.value) {
     projects.push(currentProject.value)
-     console.log('✅ Added current project:', currentProject.value.ref)
+     // console.log('✅ Added current project:', currentProject.value.ref)
   }
   
   // Then fetch available projects for the client
   if (ticketDetails.value?.fk_soc) {
     try {
-       console.log('🔍 Fetching projects for client:', ticketDetails.value.fk_soc)
+       // console.log('🔍 Fetching projects for client:', ticketDetails.value.fk_soc)
       
       // Try different API endpoints to get projects
       let response
       try {
         // Method 1: Use sqlfilters to filter by client ID
         const sqlfilter = `(fk_soc:=:${ticketDetails.value.fk_soc})`
-         console.log('🔍 Using sqlfilter:', sqlfilter)
+         // console.log('🔍 Using sqlfilter:', sqlfilter)
         response = await http.get(`/api/doli/projects?sqlfilters=${encodeURIComponent(sqlfilter)}&limit=100`)
-         console.log('✅ Method 1 (sqlfilters) succeeded')
+         // console.log('✅ Method 1 (sqlfilters) succeeded')
       } catch (error1) {
-        console.warn('Method 1 (sqlfilters) failed, trying method 2...', error1.message)
+        // console.warn('Method 1 (sqlfilters) failed, trying method 2...', error1.message)
         try {
           // Method 2: Filter by fk_soc parameter
           response = await http.get(`/api/doli/projects?fk_soc=${ticketDetails.value.fk_soc}&limit=100`)
-           console.log('✅ Method 2 (fk_soc param) succeeded')
+           // console.log('✅ Method 2 (fk_soc param) succeeded')
         } catch (error2) {
-          console.warn('Method 2 failed, trying method 3...', error2.message)
+          // console.warn('Method 2 failed, trying method 3...', error2.message)
           // Method 3: Get all projects and filter client-side
           response = await http.get(`/api/doli/projects?limit=100`)
-           console.log('✅ Method 3 (get all) succeeded')
+           // console.log('✅ Method 3 (get all) succeeded')
         }
       }
       
-       console.log('📋 Projects API response:', response.data)
+       // console.log('📋 Projects API response:', response.data)
       
       if (response.data && Array.isArray(response.data)) {
         // Debug: Check the structure of the first few projects
-         console.log('🔍 Sample project structure:', response.data.slice(0, 3).map(p => ({
-          id: p.id,
-          ref: p.ref,
-          fk_soc: p.fk_soc,
-          socid: p.socid,
-          client_id: p.client_id,
-          thirdparty_id: p.thirdparty_id
-        })))
+         // console.log('🔍 Sample project structure:', response.data.slice(0, 3).map(p => ({
+        //   id: p.id,
+        //   ref: p.ref,
+        //   fk_soc: p.fk_soc,
+        //   socid: p.socid,
+        //   client_id: p.client_id,
+        //   thirdparty_id: p.thirdparty_id
+        // })))
         
-         console.log('🎯 Looking for client ID:', ticketDetails.value.fk_soc, '(type:', typeof ticketDetails.value.fk_soc, ')')
+         // console.log('🎯 Looking for client ID:', ticketDetails.value.fk_soc, '(type:', typeof ticketDetails.value.fk_soc, ')')
         
         // Filter projects to ensure they belong to the correct client
         const clientProjects = response.data.filter(project => {
@@ -7092,18 +7092,18 @@ const startEditProject = async () => {
                          project.thirdparty_id == ticketDetails.value.fk_soc
           
           if (matches) {
-             console.log('✅ Found matching project:', project.ref, 'with client field:', {
-              fk_soc: project.fk_soc,
-              socid: project.socid,
-              client_id: project.client_id,
-              thirdparty_id: project.thirdparty_id
-            })
+             // console.log('✅ Found matching project:', project.ref, 'with client field:', {
+            //   fk_soc: project.fk_soc,
+            //   socid: project.socid,
+            //   client_id: project.client_id,
+            //   thirdparty_id: project.thirdparty_id
+            // })
           }
           
           return matches
         })
         
-         console.log('🎯 Client projects found:', clientProjects.length)
+         // console.log('🎯 Client projects found:', clientProjects.length)
         
         // Add client projects that aren't already in the list
         clientProjects.forEach(project => {
@@ -7114,15 +7114,15 @@ const startEditProject = async () => {
       }
       
       availableProjects.value = projects
-       console.log('✅ Final projects list:', projects.length, 'projects:', projects.map(p => p.ref))
+       // console.log('✅ Final projects list:', projects.length, 'projects:', projects.map(p => p.ref))
       
     } catch (error) {
-      console.error('Error fetching projects:', error)
+      // console.error('Error fetching projects:', error)
       // If API fails, at least keep the current project
       availableProjects.value = projects
     }
   } else {
-    console.warn('⚠️ No client ID (fk_soc) found in ticket details')
+    // console.warn('⚠️ No client ID (fk_soc) found in ticket details')
     availableProjects.value = projects
   }
 }
@@ -7138,17 +7138,17 @@ const saveProject = async () => {
       fk_project: selectedProjectId.value || null
     }
     
-     console.log('💾 Saving project for ticket:', {
-      ticketId: ticketDetails.value.id,
-      currentProject: ticketDetails.value.fk_project,
-      newProject: selectedProjectId.value,
-      updateData: updateData
-    })
+     // console.log('💾 Saving project for ticket:', {
+    //   ticketId: ticketDetails.value.id,
+    //   currentProject: ticketDetails.value.fk_project,
+    //   newProject: selectedProjectId.value,
+    //   updateData: updateData
+    // })
     
     const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
-     console.log('✅ Project update response:', response.data)
-     console.log('✅ Response status:', response.status)
-     console.log('✅ Response headers:', response.headers)
+     // console.log('✅ Project update response:', response.data)
+     // console.log('✅ Response status:', response.status)
+     // console.log('✅ Response headers:', response.headers)
     
     // Update local data
     ticketDetails.value.fk_project = selectedProjectId.value
@@ -7159,25 +7159,25 @@ const saveProject = async () => {
         const projectResponse = await http.get(`/api/doli/projects/${selectedProjectId.value}`)
         currentProject.value = projectResponse.data
       } catch (error) {
-        console.warn('Error fetching project details:', error)
+        // console.warn('Error fetching project details:', error)
       }
     } else {
       currentProject.value = null
     }
     
     editingProject.value = false
-     console.log('✅ Proyecto actualizado correctamente')
+     // console.log('✅ Proyecto actualizado correctamente')
     
   } catch (error) {
-    console.error('❌ Error updating project:', error)
-    console.error('❌ Error response:', error.response?.data)
-    console.error('❌ Error status:', error.response?.status)
-    console.error('❌ Error headers:', error.response?.headers)
-    console.error('❌ Error config:', error.config)
+    // console.error('❌ Error updating project:', error)
+    // console.error('❌ Error response:', error.response?.data)
+    // console.error('❌ Error status:', error.response?.status)
+    // console.error('❌ Error headers:', error.response?.headers)
+    // console.error('❌ Error config:', error.config)
     
     // Show detailed error information
     if (error.response?.data) {
-      console.error('❌ Server error details:', error.response.data)
+      // console.error('❌ Server error details:', error.response.data)
     }
     
     // Show error message to user
@@ -7189,7 +7189,7 @@ const saveProject = async () => {
 const startEditStatus = () => {
   editingStatus.value = true
   selectedStatus.value = ticketDetails.value?.fk_statut || 0
-  console.log('✏️ Iniciando edición de estado:', selectedStatus.value)
+  // console.log('✏️ Iniciando edición de estado:', selectedStatus.value)
 }
 
 const cancelEditStatus = () => {
@@ -7199,11 +7199,11 @@ const cancelEditStatus = () => {
 
 const saveStatus = async () => {
   try {
-    console.log('💾 Guardando estado del ticket:', {
-      ticketId: ticketDetails.value?.id,
-      estadoAnterior: ticketDetails.value?.fk_statut,
-      estadoNuevo: selectedStatus.value
-    })
+    // console.log('💾 Guardando estado del ticket:', {
+    //   ticketId: ticketDetails.value?.id,
+    //   estadoAnterior: ticketDetails.value?.fk_statut,
+    //   estadoNuevo: selectedStatus.value
+    // })
 
     if (!ticketDetails.value?.id) {
       alert('Error: No se encontró el ID del ticket')
@@ -7216,7 +7216,7 @@ const saveStatus = async () => {
 
     const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
     
-    console.log('✅ Estado actualizado:', response.data)
+    // console.log('✅ Estado actualizado:', response.data)
     
     // Actualizar el estado local
     ticketDetails.value.fk_statut = parseInt(selectedStatus.value)
@@ -7233,9 +7233,9 @@ const saveStatus = async () => {
     // Actualizar contador de tickets
     await updateTicketsCounter()
     
-    console.log('✅ Estado del ticket actualizado exitosamente')
+    // console.log('✅ Estado del ticket actualizado exitosamente')
   } catch (error) {
-    console.error('❌ Error actualizando estado:', error)
+    // console.error('❌ Error actualizando estado:', error)
     alert('Error al actualizar el estado del ticket: ' + (error.response?.data?.message || error.message))
   }
 }
@@ -7258,27 +7258,27 @@ const startEditCompany = async () => {
     selectedThirdparty.value = null
   }
   
-  console.log('🔍 Starting company edit for ticket:', {
-    ticketId: ticketDetails.value?.id,
-    currentCompany: ticketDetails.value?.fk_soc,
-    selectedThirdparty: selectedThirdparty.value
-  })
+  // console.log('🔍 Starting company edit for ticket:', {
+  //   ticketId: ticketDetails.value?.id,
+  //   currentCompany: ticketDetails.value?.fk_soc,
+  //   selectedThirdparty: selectedThirdparty.value
+  // })
   
   try {
-    console.log('🔍 Fetching available companies...')
+    // console.log('🔍 Fetching available companies...')
     const response = await http.get('/api/doli/thirdparties?limit=100&sortfield=t.nom&sortorder=ASC')
     
     if (response.data && Array.isArray(response.data)) {
       availableCompanies.value = response.data
       filteredCompanies.value = response.data // Inicialmente mostrar todas
-      console.log('✅ Companies loaded:', availableCompanies.value.length)
+      // console.log('✅ Companies loaded:', availableCompanies.value.length)
     } else {
-      console.warn('⚠️ No companies data received')
+      // console.warn('⚠️ No companies data received')
       availableCompanies.value = []
       filteredCompanies.value = []
     }
   } catch (error) {
-    console.error('❌ Error fetching companies:', error)
+    // console.error('❌ Error fetching companies:', error)
     availableCompanies.value = []
     filteredCompanies.value = []
   }
@@ -7311,31 +7311,31 @@ const cancelEditCompany = () => {
 
 // Nuevas funciones para ThirdpartySearchInput
 const handleThirdpartySelected = (thirdparty) => {
-  console.log('🏢 Tercero seleccionado:', thirdparty)
+  // console.log('🏢 Tercero seleccionado:', thirdparty)
   selectedThirdparty.value = thirdparty
   selectedCompanyId.value = thirdparty.id
 }
 
 const handleThirdpartyCleared = () => {
-  console.log('🗑️ Tercero limpiado')
+  // console.log('🗑️ Tercero limpiado')
   selectedThirdparty.value = null
   selectedCompanyId.value = ''
 }
 
 const saveCompany = async () => {
   try {
-    console.log('💾 Saving company for ticket:', {
-      ticketId: ticketDetails.value?.id,
-      newCompanyId: selectedCompanyId.value,
-      selectedThirdparty: selectedThirdparty.value
-    })
+    // console.log('💾 Saving company for ticket:', {
+    //   ticketId: ticketDetails.value?.id,
+    //   newCompanyId: selectedCompanyId.value,
+    //   selectedThirdparty: selectedThirdparty.value
+    // })
 
     const updateData = {
       fk_soc: selectedCompanyId.value || null
     }
 
     const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
-    console.log('✅ Company update response:', response)
+    // console.log('✅ Company update response:', response)
 
     // Update ticket details
     if (ticketDetails.value) {
@@ -7352,18 +7352,18 @@ const saveCompany = async () => {
         email: selectedThirdparty.value.email,
         idprof1: selectedThirdparty.value.idprof1
       }
-      console.log('✅ Updated company info:', currentCompany.value?.name)
+      // console.log('✅ Updated company info:', currentCompany.value?.name)
     } else {
       currentCompany.value = null
     }
     
     editingCompany.value = false
     selectedThirdparty.value = null
-    console.log('✅ Empresa actualizada correctamente')
+    // console.log('✅ Empresa actualizada correctamente')
     
   } catch (error) {
-    console.error('❌ Error updating company:', error)
-    console.error('❌ Error response:', error.response?.data)
+    // console.error('❌ Error updating company:', error)
+    // console.error('❌ Error response:', error.response?.data)
     
     // Show error message to user
     alert('Error al actualizar la empresa: ' + (error.response?.data?.message || error.message))
@@ -7375,24 +7375,24 @@ const startEditAssignment = async () => {
   editingAssignment.value = true
   selectedAssignedUserId.value = ticketDetails.value?.fk_user_assign || ''
   
-   console.log('🔍 Starting user assignment edit for ticket:', {
-    ticketId: ticketDetails.value?.id,
-    currentAssignedUser: ticketDetails.value?.fk_user_assign
-  })
+   // console.log('🔍 Starting user assignment edit for ticket:', {
+  //   ticketId: ticketDetails.value?.id,
+  //   currentAssignedUser: ticketDetails.value?.fk_user_assign
+  // })
   
   try {
-     console.log('🔍 Fetching active users...')
+     // console.log('🔍 Fetching active users...')
     const response = await http.get('/api/doli/users?status=1&limit=100')
-     console.log('✅ Users API response:', response.data)
+     // console.log('✅ Users API response:', response.data)
     
     if (response.data && Array.isArray(response.data)) {
       availableUsers.value = response.data.filter(user => user.statut == 1) // Only active users
-       console.log('✅ Active users found:', availableUsers.value.length)
+       // console.log('✅ Active users found:', availableUsers.value.length)
     } else {
       availableUsers.value = []
     }
   } catch (error) {
-    console.error('Error fetching users:', error)
+    // console.error('Error fetching users:', error)
     availableUsers.value = []
   }
 }
@@ -7410,15 +7410,15 @@ const saveAssignment = async () => {
       fk_user_assign: selectedAssignedUserId.value || null
     }
     
-     console.log('💾 Saving assignment for ticket:', {
-      ticketId: ticketDetails.value.id,
-      currentAssignment: ticketDetails.value.fk_user_assign,
-      newAssignment: selectedAssignedUserId.value,
-      updateData: updateData
-    })
+     // console.log('💾 Saving assignment for ticket:', {
+    //   ticketId: ticketDetails.value.id,
+    //   currentAssignment: ticketDetails.value.fk_user_assign,
+    //   newAssignment: selectedAssignedUserId.value,
+    //   updateData: updateData
+    // })
     
     const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
-     console.log('✅ Assignment update response:', response.data)
+     // console.log('✅ Assignment update response:', response.data)
     
     // Update local data
     ticketDetails.value.fk_user_assign = selectedAssignedUserId.value
@@ -7429,7 +7429,7 @@ const saveAssignment = async () => {
         const userResponse = await http.get(`/api/doli/users/${selectedAssignedUserId.value}`)
         currentAssignedUser.value = userResponse.data
       } catch (error) {
-        console.warn('Error fetching user details:', error)
+        // console.warn('Error fetching user details:', error)
       }
     } else {
       currentAssignedUser.value = null
@@ -7438,16 +7438,16 @@ const saveAssignment = async () => {
     editingAssignment.value = false
     assignmentSearchTerm.value = ''
     showAssignmentDropdown.value = false
-     console.log('✅ Asignación actualizada correctamente')
+     // console.log('✅ Asignación actualizada correctamente')
     
   } catch (error) {
-    console.error('❌ Error updating assignment:', error)
-    console.error('❌ Error response:', error.response?.data)
-    console.error('❌ Error status:', error.response?.status)
+    // console.error('❌ Error updating assignment:', error)
+    // console.error('❌ Error response:', error.response?.data)
+    // console.error('❌ Error status:', error.response?.status)
     
     // Show detailed error information
     if (error.response?.data) {
-      console.error('❌ Server error details:', error.response.data)
+      // console.error('❌ Server error details:', error.response.data)
     }
     
     // Show error message to user
@@ -7490,23 +7490,23 @@ const uploadFiles = async (files) => {
   uploadingFiles.value = true
   uploadProgress.value = 0
   
-   console.log('🚀 Starting file upload process for', files.length, 'files')
+   // console.log('🚀 Starting file upload process for', files.length, 'files')
   
   try {
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
-       console.log(`📁 Processing file ${i + 1}/${files.length}:`, file.name)
+       // console.log(`📁 Processing file ${i + 1}/${files.length}:`, file.name)
       
       await uploadSingleFile(file)
       uploadProgress.value = Math.round(((i + 1) / files.length) * 100)
     }
     
-     console.log('✅ All files uploaded successfully')
+     // console.log('✅ All files uploaded successfully')
     // Refresh documents list using custom module
     await fetchTicketDocuments()
     
   } catch (error) {
-    console.error('❌ Error uploading files:', error)
+    // console.error('❌ Error uploading files:', error)
     alert('Error al subir archivos: ' + (error.message || 'Error desconocido'))
   } finally {
     uploadingFiles.value = false
@@ -7522,11 +7522,11 @@ const uploadSingleFile = async (file) => {
       try {
         const fileContent = e.target.result.split(',')[1] // Remove data:type;base64, prefix
         
-         console.log('📤 Uploading file:', {
-          filename: file.name,
-          size: file.size,
-          type: file.type
-        })
+         // console.log('📤 Uploading file:', {
+        //   filename: file.name,
+        //   size: file.size,
+        //   type: file.type
+        // })
         
         // Step 1: Upload document using custom module
         const uploadData = {
@@ -7534,18 +7534,18 @@ const uploadSingleFile = async (file) => {
           file_content: fileContent
         }
         
-         console.log('📋 Upload data (custom module):', uploadData)
+         // console.log('📋 Upload data (custom module):', uploadData)
         
         const uploadUrl = `/api/doli/dolibarmodernfrontendapi/ticket/${ticketDetails.value.id}/documents`
-         console.log('📤 Upload URL (custom module):', uploadUrl)
+         // console.log('📤 Upload URL (custom module):', uploadUrl)
         
         const uploadResponse = await http.post(uploadUrl, uploadData)
-         console.log('✅ Document uploaded via custom module:', uploadResponse.data)
+         // console.log('✅ Document uploaded via custom module:', uploadResponse.data)
         
         resolve(uploadResponse.data)
         
       } catch (error) {
-        console.error('❌ Error in uploadSingleFile:', error)
+        // console.error('❌ Error in uploadSingleFile:', error)
         reject(error)
       }
     }
@@ -7560,7 +7560,7 @@ const uploadSingleFile = async (file) => {
 
 const linkDocumentToTicket = async (documentId) => {
   try {
-     console.log('🔗 Linking document', documentId, 'to ticket', ticketDetails.value.id)
+     // console.log('🔗 Linking document', documentId, 'to ticket', ticketDetails.value.id)
     
     const linkData = {
       source: 'ticket',
@@ -7569,14 +7569,14 @@ const linkDocumentToTicket = async (documentId) => {
       targetid: documentId
     }
     
-     console.log('📋 Link data:', linkData)
+     // console.log('📋 Link data:', linkData)
     
     const linkResponse = await http.post('/api/doli/objectlinks', linkData)
-     console.log('✅ Document linked successfully:', linkResponse.data)
+     // console.log('✅ Document linked successfully:', linkResponse.data)
     
   } catch (error) {
-    console.error('❌ Error linking document:', error)
-    console.error('❌ Error response:', error.response?.data)
+    // console.error('❌ Error linking document:', error)
+    // console.error('❌ Error response:', error.response?.data)
     throw error
   }
 }
@@ -7584,20 +7584,20 @@ const linkDocumentToTicket = async (documentId) => {
 
 const fetchTicketDocuments = async () => {
   if (!ticketDetails.value?.id) {
-     console.log('📋 No ticket ID, skipping document fetch')
+     // console.log('📋 No ticket ID, skipping document fetch')
     return
   }
   
   try {
-     console.log('📋 Fetching documents for ticket:', ticketDetails.value.id)
+     // console.log('📋 Fetching documents for ticket:', ticketDetails.value.id)
     
     // Use custom module to get documents
     const response = await http.get(`/api/doli/dolibarmodernfrontendapi/ticket/${ticketDetails.value.id}/documents`)
     
-     console.log('📋 Raw response from custom module:', response)
-     console.log('📋 Response data:', response.data)
-     console.log('📋 Response data type:', typeof response.data)
-     console.log('📋 Response data keys:', response.data ? Object.keys(response.data) : 'No data')
+     // console.log('📋 Raw response from custom module:', response)
+     // console.log('📋 Response data:', response.data)
+     // console.log('📋 Response data type:', typeof response.data)
+     // console.log('📋 Response data keys:', response.data ? Object.keys(response.data) : 'No data')
     
     // Handle different response structures
     let documents = []
@@ -7613,18 +7613,18 @@ const fetchTicketDocuments = async () => {
     
     ticketDocuments.value = documents
     
-     console.log('✅ Documents processed:', ticketDocuments.value.length)
-     console.log('📋 Documents structure:', ticketDocuments.value)
+     // console.log('✅ Documents processed:', ticketDocuments.value.length)
+     // console.log('📋 Documents structure:', ticketDocuments.value)
     
     // Log individual document structure for debugging
     if (ticketDocuments.value.length > 0) {
-       console.log('📋 First document structure:', ticketDocuments.value[0])
-       console.log('📋 First document keys:', Object.keys(ticketDocuments.value[0]))
+       // console.log('📋 First document structure:', ticketDocuments.value[0])
+       // console.log('📋 First document keys:', Object.keys(ticketDocuments.value[0]))
     }
     
   } catch (error) {
-    console.warn('⚠️ Error fetching ticket documents:', error)
-    console.error('⚠️ Error response:', error.response?.data)
+    // console.warn('⚠️ Error fetching ticket documents:', error)
+    // console.error('⚠️ Error response:', error.response?.data)
     ticketDocuments.value = []
   }
 }
@@ -7643,7 +7643,7 @@ const downloadDocument = (doc) => {
   if (downloadUrl) {
     window.open(downloadUrl, '_blank')
   } else {
-    console.warn('No download URL available for document:', doc)
+    // console.warn('No download URL available for document:', doc)
   }
 }
 
@@ -7694,7 +7694,7 @@ watch(ticketDetails, async (newDetails) => {
       const projectResponse = await http.get(`/api/doli/projects/${newDetails.fk_project}`)
       currentProject.value = projectResponse.data
     } catch (error) {
-      console.warn('Error fetching project details:', error)
+      // console.warn('Error fetching project details:', error)
       currentProject.value = null
     }
   } else {
@@ -7707,7 +7707,7 @@ watch(ticketDetails, async (newDetails) => {
       const userResponse = await http.get(`/api/doli/users/${newDetails.fk_user_assign}`)
       currentAssignedUser.value = userResponse.data
     } catch (error) {
-      console.warn('Error fetching assigned user details:', error)
+      // console.warn('Error fetching assigned user details:', error)
       currentAssignedUser.value = null
     }
   } else {
