@@ -276,9 +276,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import http from '../utils/http'
 import { useTheme } from '../composables/useTheme'
 
+const router = useRouter()
 const { isDark } = useTheme()
 
 // Reactive data
@@ -478,8 +480,7 @@ const formatDate = (dateString) => {
 }
 
 const viewTerceroDetails = (tercero) => {
-  // Navigate to tercero details or open modal
-   console.log('View tercero:', tercero)
+  router.push(`/terceros/clientes/${tercero.id}`)
 }
 
 const editTercero = (tercero) => {

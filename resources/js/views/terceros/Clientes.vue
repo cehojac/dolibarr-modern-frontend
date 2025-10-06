@@ -156,7 +156,13 @@
                     </div>
                   </div>
                   <div class="ml-4">
-                    <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ client.name }}</div>
+                    <div 
+                      @click="viewClient(client)"
+                      class="text-sm font-medium cursor-pointer hover:underline transition-colors" 
+                      :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
+                    >
+                      {{ client.name }}
+                    </div>
                     <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ client.code_client || 'Sin código' }}</div>
                   </div>
                 </div>
@@ -287,9 +293,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
 import http from '../../utils/http'
 
+const router = useRouter()
 const { isDark } = useTheme()
 
 // Reactive data
@@ -427,7 +435,7 @@ const handleSearch = () => {
 }
 
 const viewClient = (client) => {
-   console.log('View client:', client)
+  router.push(`/terceros/clientes/${client.id}`)
 }
 
 const editClient = (client) => {
