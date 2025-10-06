@@ -155,7 +155,13 @@
                     </div>
                   </div>
                   <div class="ml-4">
-                    <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">{{ partner.name }}</div>
+                    <div 
+                      @click="viewPartner(partner)"
+                      class="text-sm font-medium cursor-pointer hover:underline transition-colors" 
+                      :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
+                    >
+                      {{ partner.name }}
+                    </div>
                     <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ partner.code_client || 'Sin código' }}</div>
                   </div>
                 </div>
@@ -296,9 +302,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
 import http from '../../utils/http'
 
+const router = useRouter()
 const { isDark } = useTheme()
 
 // Reactive data
@@ -447,7 +455,7 @@ const handleSearch = () => {
 }
 
 const viewPartner = (partner) => {
-   console.log('View partner:', partner)
+  router.push(`/terceros/clientes/${partner.id}`)
 }
 
 const editPartner = (partner) => {
