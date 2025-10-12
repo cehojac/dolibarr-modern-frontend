@@ -1296,6 +1296,20 @@
                     </svg>
                     <span class="text-sm">Add Timesheet</span>
                   </button>
+                  
+                  <!-- Delete Button - Less prominent -->
+                  <button 
+                    @click="showDeleteModal = true"
+                    :disabled="deletingTicket"
+                    class="flex items-center space-x-2 px-3 py-2 rounded-lg border transition-colors ml-auto" 
+                    :class="isDark ? 'border-gray-600 text-gray-400 hover:text-red-400 hover:border-red-400 disabled:opacity-50 disabled:cursor-not-allowed' : 'border-gray-300 text-gray-500 hover:text-red-600 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed'"
+                    title="Eliminar ticket"
+                  >
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span class="text-sm">Eliminar</span>
+                  </button>
                 </div>
 
                 <!-- Description Section -->
@@ -3047,6 +3061,78 @@
     </div>
   </div>
 
+  <!-- Modal de confirmación para eliminar ticket -->
+  <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="showDeleteModal = false">
+    <div class="rounded-lg p-6 w-full max-w-md mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'" @click.stop>
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+          <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+          Eliminar Ticket
+        </h3>
+      </div>
+      
+      <p class="text-sm mb-4" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+        Esta acción es <strong class="text-red-600">permanente</strong> y no se puede deshacer. Se eliminarán todos los datos asociados al ticket, incluyendo comentarios, archivos adjuntos e intervenciones.
+      </p>
+      
+      <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-6" :class="isDark ? 'bg-red-900/20 border-red-800' : ''">
+        <div class="flex items-start space-x-2">
+          <svg class="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <p class="text-xs font-medium" :class="isDark ? 'text-red-400' : 'text-red-800'">¡Advertencia!</p>
+            <p class="text-xs mt-1" :class="isDark ? 'text-red-300' : 'text-red-700'">
+              Para confirmar, escribe el nombre del cliente: <strong>{{ currentCompany?.name || 'N/A' }}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Input de confirmación -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+          Nombre del cliente
+        </label>
+        <input
+          v-model="deleteConfirmationText"
+          type="text"
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+          :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+          :placeholder="`Escribe: ${currentCompany?.name || 'N/A'}`"
+          @keyup.enter="deleteTicket"
+        />
+      </div>
+      
+      <!-- Modal Actions -->
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="showDeleteModal = false; deleteConfirmationText = ''"
+          :disabled="deletingTicket"
+          class="px-4 py-2 text-sm font-medium border rounded-md transition-colors"
+          :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700 disabled:opacity-50' : 'text-gray-700 border-gray-300 hover:bg-gray-50 disabled:opacity-50'"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="deleteTicket"
+          :disabled="deletingTicket || deleteConfirmationText.trim() !== (currentCompany?.name || '')"
+          class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center space-x-2"
+        >
+          <svg v-if="deletingTicket" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ deletingTicket ? 'Eliminando...' : 'Sí, eliminar ticket' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
 
   <!-- Modal de crear ticket -->
   <div v-if="showCreateTicketModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -3628,6 +3714,11 @@ const showReminderModal = ref(false)
 // Complete ticket state
 const showCompleteModal = ref(false)
 const completingTicket = ref(false)
+
+// Delete ticket state
+const showDeleteModal = ref(false)
+const deletingTicket = ref(false)
+const deleteConfirmationText = ref('')
 
 // Email state (no modal needed, shown inline)
 // emailRecipientsPreview computed property handles the display
@@ -5120,6 +5211,57 @@ const completeTicket = async () => {
     alert('Error al cerrar ticket: ' + (error.response?.data?.message || error.message))
   } finally {
     completingTicket.value = false
+  }
+}
+
+// Delete ticket function
+const deleteTicket = async () => {
+  try {
+    // Validar que el nombre del cliente coincida
+    if (deleteConfirmationText.value.trim() !== (currentCompany.value?.name || '')) {
+      alert('El nombre del cliente no coincide. Por favor, verifica e intenta nuevamente.')
+      return
+    }
+    
+    deletingTicket.value = true
+    const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
+    
+    if (!ticketId) {
+      throw new Error('No se encontró el ID del ticket')
+    }
+    
+    console.log('🗑️ Eliminando ticket:', ticketId)
+    
+    // Enviar DELETE request para eliminar el ticket
+    const response = await http.delete(`/api/doli/tickets/${ticketId}`)
+    console.log('✅ Ticket eliminado exitosamente:', response.data)
+    
+    // Eliminar el ticket de la lista local
+    const ticketIndex = tickets.value.findIndex(t => t.id === ticketId)
+    if (ticketIndex !== -1) {
+      tickets.value.splice(ticketIndex, 1)
+    }
+    
+    // Cerrar modales
+    showDeleteModal.value = false
+    deleteConfirmationText.value = ''
+    closeModal()
+    
+    // Mostrar mensaje de éxito
+    alert('Ticket eliminado exitosamente')
+    
+    // Recalcular métricas
+    calculateTicketMetrics()
+    
+    // Actualizar contador del menú lateral
+    await updateTicketsCounter()
+    
+  } catch (error) {
+    console.error('❌ Error eliminando ticket:', error)
+    console.error('❌ Error details:', error.response?.data)
+    alert('Error al eliminar ticket: ' + (error.response?.data?.message || error.message))
+  } finally {
+    deletingTicket.value = false
   }
 }
 
