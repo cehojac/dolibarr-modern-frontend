@@ -6470,13 +6470,26 @@ const emailRecipientsPreview = computed(() => {
     })
   }
   
-  // 3. Emails de seguidores (si existen)
+  // 3. Emails de seguidores internos (usuarios de Dolibarr)
+  if (internalFollowers.value && internalFollowers.value.length > 0) {
+    internalFollowers.value.forEach(follower => {
+      if (follower.email) {
+        recipients.push({
+          email: follower.email,
+          name: follower.fullname || follower.name || follower.email,
+          type: 'internal'
+        })
+      }
+    })
+  }
+  
+  // 4. Emails de seguidores externos (contactos del cliente)
   if (externalFollowers.value && externalFollowers.value.length > 0) {
     externalFollowers.value.forEach(follower => {
       if (follower.email) {
         recipients.push({
           email: follower.email,
-          name: follower.name || follower.email,
+          name: follower.fullname || follower.name || follower.email,
           type: 'external'
         })
       }
@@ -6508,6 +6521,13 @@ const emailRecipientsPreview = computed(() => {
       return true
     }
     return false
+  })
+  
+  console.log('📧 Destinatarios de email calculados:', {
+    total: uniqueRecipients.length,
+    internos: uniqueRecipients.filter(r => r.type === 'internal').length,
+    externos: uniqueRecipients.filter(r => r.type === 'external').length,
+    lista: uniqueRecipients
   })
   
   return uniqueRecipients
