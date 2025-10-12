@@ -13,7 +13,7 @@
     </div>
 
     <!-- Métricas Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <!-- Total Clients -->
       <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalClients }}</div>
@@ -28,20 +28,28 @@
       
       <!-- New This Month -->
       <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold text-blue-600">{{ newThisMonth }}</div>
-        <div class="text-sm text-blue-600">Nuevos Este Mes</div>
-      </div>
-      
-      <!-- VIP Clients -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold text-purple-600">{{ vipClients }}</div>
-        <div class="text-sm text-purple-600">VIP</div>
-      </div>
-      
-      <!-- Revenue This Month -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold text-yellow-600">{{ formatCurrency(monthlyRevenue) }}</div>
-        <div class="text-sm text-yellow-600">Facturación Mensual</div>
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-2xl font-bold text-blue-600">{{ newThisMonth }}</div>
+            <div class="text-sm text-blue-600">Nuevos Este Mes</div>
+          </div>
+          <div v-if="monthComparison !== null" class="flex items-center space-x-1 text-xs font-medium px-2 py-1 rounded-full"
+               :class="monthComparison >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+            <svg v-if="monthComparison > 0" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+            <svg v-else-if="monthComparison < 0" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+            <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14" />
+            </svg>
+            <span>{{ Math.abs(monthComparison) }}</span>
+          </div>
+        </div>
+        <div v-if="newLastMonth !== null" class="text-xs mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+          Mes anterior: {{ newLastMonth }}
+        </div>
       </div>
     </div>
 
@@ -267,7 +275,7 @@
               
               <!-- Fecha Creación -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ formatDate(client.datec) }}
+                {{ formatDate(client.date_creation) }}
               </td>
               
               <!-- Acciones -->
@@ -375,23 +383,33 @@ const itemsPerPage = ref(25)
 // Métricas computadas
 const totalClients = computed(() => clients.value.length)
 const activeClients = computed(() => clients.value.filter(c => c.status == 1).length)
+
 const newThisMonth = computed(() => {
   const now = new Date()
   const thisMonth = now.getMonth()
   const thisYear = now.getFullYear()
   return clients.value.filter(c => {
-    if (!c.datec) return false
-    const date = new Date(c.datec)
+    if (!c.date_creation) return false
+    const date = new Date(c.date_creation * 1000) // Convertir timestamp Unix a Date
     return date.getMonth() === thisMonth && date.getFullYear() === thisYear
   }).length
 })
-const vipClients = computed(() => {
-  // Simular clientes VIP basado en ID
-  return clients.value.filter(c => parseInt(c.id) % 10 === 0).length
+
+const newLastMonth = computed(() => {
+  const now = new Date()
+  const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1
+  const lastMonthYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
+  
+  return clients.value.filter(c => {
+    if (!c.date_creation) return false
+    const date = new Date(c.date_creation * 1000) // Convertir timestamp Unix a Date
+    return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear
+  }).length
 })
-const monthlyRevenue = computed(() => {
-  // Simular facturación mensual
-  return clients.value.length * 1250.50
+
+const monthComparison = computed(() => {
+  if (newLastMonth.value === null) return null
+  return newThisMonth.value - newLastMonth.value
 })
 
 // Computed properties
@@ -480,18 +498,19 @@ const getPrimaryContact = (client) => {
   return contacts[parseInt(client.id) % contacts.length]
 }
 
-const formatDate = (dateString) => {
-  if (!dateString) return '-'
+const formatDate = (timestamp) => {
+  if (!timestamp) return '-'
   
   try {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-GB', {
+    // Convertir timestamp Unix (segundos) a Date (milisegundos)
+    const date = new Date(timestamp * 1000)
+    return date.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     })
   } catch (error) {
-    return dateString
+    return '-'
   }
 }
 
