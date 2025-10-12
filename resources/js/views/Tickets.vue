@@ -1186,17 +1186,57 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketDetails?.subject || 'Cargando...' }}</h3>
-                  <div class="flex items-center space-x-2 mt-1">
-                    <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Ticket {{ selectedTicket?.ref }}</p>
-                    <span 
-                      v-if="ticketDetails?.track_id" 
-                      class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
-                      :class="isDark ? 'bg-blue-900/30 text-blue-300 border border-blue-700/50' : 'bg-blue-100 text-blue-800 border border-blue-200'"
-                    >
-                      🔗 Track: {{ ticketDetails.track_id }}
-                    </span>
+                <div class="flex-1">
+                  <!-- Subject editing mode -->
+                  <div v-if="editingSubject" class="space-y-2">
+                    <input
+                      v-model="editedSubject"
+                      type="text"
+                      class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                      placeholder="Título del ticket"
+                    />
+                    <div class="flex items-center space-x-2">
+                      <button
+                        @click="saveSubject"
+                        class="px-3 py-1 text-sm font-medium rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        @click="cancelEditSubject"
+                        class="px-3 py-1 text-sm font-medium rounded-lg transition-colors"
+                        :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Subject view mode -->
+                  <div v-else>
+                    <div class="flex items-center space-x-2">
+                      <h3 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketDetails?.subject || 'Cargando...' }}</h3>
+                      <button
+                        @click="startEditSubject"
+                        class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        title="Editar título"
+                      >
+                        <svg class="w-4 h-4" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="flex items-center space-x-2 mt-1">
+                      <p class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Ticket {{ selectedTicket?.ref }}</p>
+                      <span 
+                        v-if="ticketDetails?.track_id" 
+                        class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full"
+                        :class="isDark ? 'bg-blue-900/30 text-blue-300 border border-blue-700/50' : 'bg-blue-100 text-blue-800 border border-blue-200'"
+                      >
+                        🔗 Track: {{ ticketDetails.track_id }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1260,13 +1300,54 @@
 
                 <!-- Description Section -->
                 <div class="mb-8">
-                  <div class="flex items-center space-x-2 mb-4">
-                    <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-                    </svg>
-                    <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Descripción</h3>
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                      <svg class="w-5 h-5" :class="isDark ? 'text-gray-400' : 'text-gray-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                      </svg>
+                      <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Descripción</h3>
+                    </div>
+                    <button
+                      v-if="!editingDescription"
+                      @click="startEditDescription"
+                      class="flex items-center space-x-1 px-2 py-1 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      :class="isDark ? 'text-gray-400' : 'text-gray-600'"
+                    >
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      <span>Editar</span>
+                    </button>
                   </div>
-                  <div class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
+                  
+                  <!-- Description editing mode -->
+                  <div v-if="editingDescription" class="space-y-3">
+                    <textarea
+                      v-model="editedDescription"
+                      rows="8"
+                      class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+                      placeholder="Descripción del ticket"
+                    ></textarea>
+                    <div class="flex items-center space-x-2">
+                      <button
+                        @click="saveDescription"
+                        class="px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        Guardar
+                      </button>
+                      <button
+                        @click="cancelEditDescription"
+                        class="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                        :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Description view mode -->
+                  <div v-else class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
                     <div v-if="ticketDetails.message" class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
                       <!-- Descripción truncada o completa -->
                       <div 
@@ -5228,19 +5309,33 @@ const addFollower = async () => {
     const ticketId = selectedTicket.value?.id || ticketDetails.value?.id
     const [type, id] = selectedFollower.value.split(':')
     
-     // console.log('➕ Agregando seguidor:', { type, id, ticketId })
+    console.log('➕ Agregando seguidor:', { type, id, ticketId })
     
-    const requestData = {
-      contact_id: id,
-      contact_type: type // 'user' or 'contact'
+    // Preparar datos según el tipo de seguidor
+    let requestData
+    
+    if (type === 'user') {
+      // Usuario interno de Dolibarr
+      requestData = {
+        contact_id: id,
+        contact_type: 'SUPPORTTEC',
+        contact_source: 'internal'
+      }
+    } else {
+      // Contacto externo (tercero)
+      requestData = {
+        contact_id: id,
+        contact_type: 'CUSTOMER',
+        contact_source: 'external'
+      }
     }
     
-    // console.log('📤 Request data:', requestData)
-    // console.log('📤 Endpoint:', `/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
+    console.log('📤 Request data:', requestData)
+    console.log('📤 Endpoint:', `/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
     
     const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`, requestData)
     
-     // console.log('✅ Seguidor agregado:', response.data)
+    console.log('✅ Seguidor agregado:', response.data)
     
     // Refresh followers list
     await fetchTicketFollowers(ticketId)
@@ -5250,7 +5345,8 @@ const addFollower = async () => {
     followersSearchTerm.value = ''
     
   } catch (error) {
-    // console.error('❌ Error agregando seguidor:', error)
+    console.error('❌ Error agregando seguidor:', error)
+    console.error('❌ Error response:', error.response?.data)
     alert('Error al agregar seguidor: ' + (error.response?.data?.message || error.message))
   } finally {
     loadingFollowers.value = false
@@ -5682,6 +5778,12 @@ const selectedAssignedUserId = ref('')
 const currentAssignedUser = ref(null)
 const showAssignmentDropdown = ref(false)
 const assignmentSearchTerm = ref('')
+
+// Subject and description editing
+const editingSubject = ref(false)
+const editedSubject = ref('')
+const editingDescription = ref(false)
+const editedDescription = ref('')
 
 // File upload management
 const isDragOver = ref(false)
@@ -7402,6 +7504,80 @@ const cancelEditAssignment = () => {
   selectedAssignedUserId.value = ''
   assignmentSearchTerm.value = ''
   showAssignmentDropdown.value = false
+}
+
+// Subject editing functions
+const startEditSubject = () => {
+  editingSubject.value = true
+  editedSubject.value = ticketDetails.value?.subject || ''
+}
+
+const cancelEditSubject = () => {
+  editingSubject.value = false
+  editedSubject.value = ''
+}
+
+const saveSubject = async () => {
+  try {
+    if (!editedSubject.value.trim()) {
+      alert('El título no puede estar vacío')
+      return
+    }
+
+    const updateData = {
+      subject: editedSubject.value.trim()
+    }
+    
+    const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
+    
+    // Update local data
+    if (ticketDetails.value) {
+      ticketDetails.value.subject = editedSubject.value.trim()
+    }
+    if (selectedTicket.value) {
+      selectedTicket.value.subject = editedSubject.value.trim()
+    }
+    
+    editingSubject.value = false
+    editedSubject.value = ''
+    
+  } catch (error) {
+    console.error('❌ Error updating subject:', error)
+    alert('Error al actualizar el título: ' + (error.response?.data?.message || error.message))
+  }
+}
+
+// Description editing functions
+const startEditDescription = () => {
+  editingDescription.value = true
+  editedDescription.value = ticketDetails.value?.message || ''
+}
+
+const cancelEditDescription = () => {
+  editingDescription.value = false
+  editedDescription.value = ''
+}
+
+const saveDescription = async () => {
+  try {
+    const updateData = {
+      message: editedDescription.value.trim()
+    }
+    
+    const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
+    
+    // Update local data
+    if (ticketDetails.value) {
+      ticketDetails.value.message = editedDescription.value.trim()
+    }
+    
+    editingDescription.value = false
+    editedDescription.value = ''
+    
+  } catch (error) {
+    console.error('❌ Error updating description:', error)
+    alert('Error al actualizar la descripción: ' + (error.response?.data?.message || error.message))
+  }
 }
 
 const saveAssignment = async () => {
