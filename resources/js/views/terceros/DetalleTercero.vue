@@ -100,34 +100,49 @@
             
             <!-- Botones de acción -->
             <button 
-              class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors"
-              :class="isDark ? 'bg-purple-600 hover:bg-purple-700' : 'bg-purple-500 hover:bg-purple-600'"
+              class="flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors"
+              :class="isDark ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600' : 'bg-purple-500 hover:bg-purple-600 text-white border-purple-500'"
             >
-              Enviar E-mail
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>Enviar E-mail</span>
             </button>
             <button 
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'"
+              class="flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors"
+              :class="isDark ? 'bg-blue-600 hover:bg-blue-700 text-white border-blue-600' : 'bg-blue-500 hover:bg-blue-600 text-white border-blue-500'"
             >
-              Modificar
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span>Modificar</span>
             </button>
             <button 
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-500 hover:bg-gray-600 text-white'"
+              class="flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors"
+              :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 border-gray-600' : 'bg-gray-500 hover:bg-gray-600 text-white border-gray-500'"
             >
-              Fusión
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              <span>Fusión</span>
             </button>
             <button 
-              class="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              :class="isDark ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-red-500 hover:bg-red-600 text-white'"
+              @click="showDeleteModal = true"
+              :disabled="deletingThirdparty"
+              class="flex items-center space-x-2 px-3 py-2 rounded-lg border text-sm font-medium transition-colors"
+              :class="isDark ? 'border-gray-600 text-gray-400 hover:text-red-400 hover:border-red-400 disabled:opacity-50 disabled:cursor-not-allowed' : 'border-gray-300 text-gray-500 hover:text-red-600 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed'"
+              title="Eliminar cliente"
             >
-              Eliminar
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span>Eliminar</span>
             </button>
           </div>
         </div>
 
         <!-- Tabs de navegación -->
-        <div class="flex space-x-1 overflow-x-auto">
+        <div v-if="tabs.length > 0" class="flex space-x-1 overflow-x-auto">
           <button
             v-for="tab in tabs"
             :key="tab.key"
@@ -150,6 +165,16 @@
               {{ tab.count }}
             </span>
           </button>
+        </div>
+        
+        <!-- Mensaje si no hay pestañas disponibles -->
+        <div v-else class="px-4 py-3">
+          <div class="flex items-center space-x-2 text-sm" :class="isDark ? 'text-yellow-400' : 'text-yellow-600'">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>No tienes permisos para ver ninguna sección de este tercero.</span>
+          </div>
         </div>
       </div>
     </div>
@@ -353,6 +378,55 @@
                 >
                 <span class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Recibir e-mails masivos</span>
               </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección: Campos Adicionales (array_options) -->
+        <div v-if="filteredArrayOptions.length > 0" class="rounded-lg border p-6 mb-6" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+              Campos Adicionales
+            </h2>
+            <span class="flex items-center space-x-2 text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <svg class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+              <span>Campos personalizados</span>
+            </span>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div 
+              v-for="field in filteredArrayOptions" 
+              :key="field.key"
+              class="p-4 rounded-lg border transition-colors"
+              :class="isDark ? 'bg-gray-700/50 border-gray-600 hover:bg-gray-700' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'"
+            >
+              <label class="text-xs font-medium uppercase tracking-wider block mb-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+                {{ formatFieldName(field.key) }}
+              </label>
+              <div class="flex items-center space-x-2">
+                <!-- Icono según tipo de dato -->
+                <svg v-if="typeof field.value === 'boolean'" class="w-4 h-4 flex-shrink-0" :class="field.value ? 'text-green-500' : 'text-red-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path v-if="field.value" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <svg v-else-if="isDate(field.value)" class="w-4 h-4 flex-shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <svg v-else-if="typeof field.value === 'number'" class="w-4 h-4 flex-shrink-0 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                </svg>
+                <svg v-else class="w-4 h-4 flex-shrink-0 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                
+                <!-- Valor formateado -->
+                <p class="text-sm font-medium break-words" :class="isDark ? 'text-white' : 'text-gray-900'">
+                  {{ formatFieldValue(field.value) }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -631,22 +705,101 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal de confirmación para eliminar cliente -->
+  <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="showDeleteModal = false">
+    <div class="rounded-lg p-6 w-full max-w-md mx-4 shadow-xl" :class="isDark ? 'bg-gray-800' : 'bg-white'" @click.stop>
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+          <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
+          Eliminar Cliente
+        </h3>
+      </div>
+      
+      <p class="text-sm mb-4" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+        Esta acción es <strong class="text-red-600">permanente</strong> y no se puede deshacer. Se eliminarán todos los datos asociados al cliente, incluyendo contactos, proyectos, tickets y documentos.
+      </p>
+      
+      <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-6" :class="isDark ? 'bg-red-900/20 border-red-800' : ''">
+        <div class="flex items-start space-x-2">
+          <svg class="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div>
+            <p class="text-xs font-medium" :class="isDark ? 'text-red-400' : 'text-red-800'">¡Advertencia!</p>
+            <p class="text-xs mt-1" :class="isDark ? 'text-red-300' : 'text-red-700'">
+              Para confirmar, escribe el nombre del cliente: <strong>{{ tercero?.name || 'N/A' }}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Input de confirmación -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+          Nombre del cliente
+        </label>
+        <input
+          v-model="deleteConfirmationText"
+          type="text"
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+          :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
+          :placeholder="`Escribe: ${tercero?.name || 'N/A'}`"
+          @keyup.enter="deleteThirdparty"
+        />
+      </div>
+      
+      <!-- Modal Actions -->
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="showDeleteModal = false; deleteConfirmationText = ''"
+          :disabled="deletingThirdparty"
+          class="px-4 py-2 text-sm font-medium border rounded-md transition-colors"
+          :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700 disabled:opacity-50' : 'text-gray-700 border-gray-300 hover:bg-gray-50 disabled:opacity-50'"
+        >
+          Cancelar
+        </button>
+        <button
+          @click="deleteThirdparty"
+          :disabled="deletingThirdparty || deleteConfirmationText.trim() !== (tercero?.name || '')"
+          class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md transition-colors flex items-center space-x-2"
+        >
+          <svg v-if="deletingThirdparty" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ deletingThirdparty ? 'Eliminando...' : 'Sí, eliminar cliente' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
+import { usePermissions } from '../../composables/usePermissions'
 import http from '../../utils/http'
 
 const route = useRoute()
 const router = useRouter()
 const { isDark } = useTheme()
+const { hasPermission, hasAnyPermission } = usePermissions()
 
 const loading = ref(true)
 const tercero = ref(null)
 const activeTab = ref('tercero')
 const loadingEvents = ref(false)
+
+// Delete thirdparty state
+const showDeleteModal = ref(false)
+const deletingThirdparty = ref(false)
+const deleteConfirmationText = ref('')
 const events = ref([
   { id: 14496, ref: '14496', date: '03/03/25 12:56', user: 'Arturo', type: 'Mensaje', title: '[CARLOS EDMUNDO HERRERA]' },
   { id: 14495, ref: '14495', date: '28/02/25 18:47', user: 'Arturo', type: 'Mensaje', title: '[CARLOS EDMUNDO HERRERA]' },
@@ -660,20 +813,109 @@ const events = ref([
   { id: 14124, ref: '14124', date: '23/12/24 21:03', user: 'CARLOS', type: 'Otro - Recepción', title: 'Recepción de Email - De administracion@' }
 ])
 
-const tabs = computed(() => [
-  { key: 'tercero', label: 'Tercero' },
-  { key: 'contactos', label: 'Contactos/Direcciones', count: 3 },
-  { key: 'cliente', label: 'Cliente' },
-  { key: 'proyectos', label: 'Proyectos', count: 2 },
-  { key: 'items', label: 'Ítems relacionados' },
-  { key: 'pagos', label: 'Métodos de pago' },
-  { key: 'asociaciones', label: 'Asociaciones' },
-  { key: 'tickets', label: 'Tickets', count: 34 },
-  { key: 'notificaciones', label: 'Notificaciones' },
-  { key: 'notas', label: 'Notas' },
-  { key: 'documentos', label: 'Documentos' },
-  { key: 'agenda', label: 'Eventos/Agenda' },
-])
+const tabs = computed(() => {
+  const allTabs = [
+    { 
+      key: 'tercero', 
+      label: 'Tercero',
+      permission: 'societe->lire' // Permiso para ver terceros
+    },
+    { 
+      key: 'contactos', 
+      label: 'Contactos/Direcciones', 
+      count: 3,
+      permission: 'societe->contact->lire' // Permiso para ver contactos
+    },
+    { 
+      key: 'cliente', 
+      label: 'Cliente',
+      permission: 'societe->lire' // Permiso para ver información de cliente
+    },
+    { 
+      key: 'proyectos', 
+      label: 'Proyectos', 
+      count: 2,
+      permission: 'projet->lire' // Permiso para ver proyectos
+    },
+    { 
+      key: 'items', 
+      label: 'Ítems relacionados',
+      permission: 'produit->lire' // Permiso para ver productos/servicios
+    },
+    { 
+      key: 'pagos', 
+      label: 'Métodos de pago',
+      permission: 'banque->lire' // Permiso para ver métodos de pago
+    },
+    { 
+      key: 'asociaciones', 
+      label: 'Asociaciones',
+      permission: 'societe->lire' // Permiso para ver asociaciones
+    },
+    { 
+      key: 'tickets', 
+      label: 'Tickets', 
+      count: 34,
+      permission: 'ticket->lire' // Permiso para ver tickets
+    },
+    { 
+      key: 'notificaciones', 
+      label: 'Notificaciones',
+      permission: 'societe->lire' // Permiso básico para notificaciones
+    },
+    { 
+      key: 'notas', 
+      label: 'Notas',
+      permission: 'societe->lire' // Permiso para ver notas
+    },
+    { 
+      key: 'documentos', 
+      label: 'Documentos',
+      permission: 'societe->lire' // Permiso para ver documentos
+    },
+    { 
+      key: 'agenda', 
+      label: 'Eventos/Agenda',
+      permission: 'agenda->myactions->read' // Permiso para ver eventos
+    },
+  ]
+  
+  // Filtrar pestañas según permisos del usuario
+  const filteredTabs = allTabs.filter(tab => {
+    // Si no tiene permiso definido, mostrar siempre
+    if (!tab.permission) return true
+    
+    // Verificar si el usuario tiene el permiso
+    return hasPermission(tab.permission)
+  })
+  
+  console.log('🔐 Pestañas filtradas por permisos:', {
+    total: allTabs.length,
+    visibles: filteredTabs.length,
+    ocultas: allTabs.length - filteredTabs.length,
+    tabs: filteredTabs.map(t => t.label)
+  })
+  
+  return filteredTabs
+})
+
+// Computed property to filter non-null array_options
+const filteredArrayOptions = computed(() => {
+  if (!tercero.value?.array_options) {
+    return []
+  }
+  
+  // Filter out null, undefined, and empty string values
+  return Object.entries(tercero.value.array_options)
+    .filter(([key, value]) => {
+      // Keep the field if value is not null, undefined, or empty string
+      return value !== null && value !== undefined && value !== ''
+    })
+    .map(([key, value]) => ({
+      key,
+      value
+    }))
+})
 
 const loadTercero = async () => {
   try {
@@ -681,6 +923,14 @@ const loadTercero = async () => {
     const terceroId = route.params.id
     const response = await http.get(`/api/doli/thirdparties/${terceroId}`)
     tercero.value = response.data
+    
+    // Verificar que la pestaña activa esté disponible después de filtrar por permisos
+    const availableTabs = tabs.value
+    if (availableTabs.length > 0 && !availableTabs.find(t => t.key === activeTab.value)) {
+      // Si la pestaña activa no está disponible, cambiar a la primera disponible
+      activeTab.value = availableTabs[0].key
+      console.log(`⚠️ Pestaña activa no disponible, cambiando a: ${availableTabs[0].label}`)
+    }
   } catch (error) {
     console.error('Error cargando tercero:', error)
   } finally {
@@ -718,6 +968,134 @@ const getInitials = (name) => {
 const formatEventDate = (dateStr) => {
   if (!dateStr) return '-'
   return dateStr
+}
+
+// Format field name from array_options key
+const formatFieldName = (key) => {
+  // Remove 'options_' prefix if exists
+  let name = key.replace(/^options_/, '')
+  
+  // Replace underscores with spaces
+  name = name.replace(/_/g, ' ')
+  
+  // Capitalize first letter of each word
+  name = name.split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+  
+  return name
+}
+
+// Format field value based on type
+const formatFieldValue = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return '-'
+  }
+  
+  // Boolean
+  if (typeof value === 'boolean') {
+    return value ? 'Sí' : 'No'
+  }
+  
+  // Number
+  if (typeof value === 'number') {
+    return value.toLocaleString('es-ES')
+  }
+  
+  // Date (check if it's a timestamp or date string)
+  if (isDate(value)) {
+    return formatDate(value)
+  }
+  
+  // String
+  return value
+}
+
+// Check if value is a date
+const isDate = (value) => {
+  if (!value) return false
+  
+  // Check if it's a timestamp (number > 1000000000)
+  if (typeof value === 'number' && value > 1000000000) {
+    return true
+  }
+  
+  // Check if it's a date string (YYYY-MM-DD or similar)
+  if (typeof value === 'string') {
+    const datePattern = /^\d{4}-\d{2}-\d{2}/
+    return datePattern.test(value)
+  }
+  
+  return false
+}
+
+// Format date value
+const formatDate = (value) => {
+  try {
+    let date
+    
+    // If it's a timestamp
+    if (typeof value === 'number') {
+      date = new Date(value * 1000) // Convert to milliseconds
+    } else {
+      date = new Date(value)
+    }
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return value
+    }
+    
+    // Format as DD/MM/YYYY
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    
+    return `${day}/${month}/${year}`
+  } catch (error) {
+    return value
+  }
+}
+
+// Delete thirdparty function
+const deleteThirdparty = async () => {
+  try {
+    // Validar que el nombre del cliente coincida
+    if (deleteConfirmationText.value.trim() !== (tercero.value?.name || '')) {
+      alert('El nombre del cliente no coincide. Por favor, verifica e intenta nuevamente.')
+      return
+    }
+    
+    deletingThirdparty.value = true
+    const terceroId = route.params.id
+    
+    if (!terceroId) {
+      throw new Error('No se encontró el ID del cliente')
+    }
+    
+    console.log('🗑️ Eliminando cliente:', terceroId)
+    
+    // Enviar DELETE request para eliminar el cliente
+    const response = await http.delete(`/api/doli/thirdparties/${terceroId}`)
+    console.log('✅ Cliente eliminado exitosamente:', response.data)
+    
+    // Cerrar modal
+    showDeleteModal.value = false
+    deleteConfirmationText.value = ''
+    
+    // Mostrar mensaje de éxito
+    alert('Cliente eliminado exitosamente')
+    
+    // Redirigir al listado de clientes
+    router.push('/terceros/clientes')
+    
+  } catch (error) {
+    console.error('❌ Error eliminando cliente:', error)
+    console.error('❌ Error details:', error.response?.data)
+    alert('Error al eliminar cliente: ' + (error.response?.data?.message || error.message))
+  } finally {
+    deletingThirdparty.value = false
+  }
 }
 
 onMounted(() => {

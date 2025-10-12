@@ -71,14 +71,73 @@
       </button>
     </div>
 
-    <!-- Controls Bar -->
+    <!-- Filters Bar -->
+    <div class="rounded-lg border p-4 mb-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center space-x-4 flex-wrap gap-2">
+          <!-- Estado Filter -->
+          <div class="flex items-center space-x-2">
+            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Estado:</label>
+            <select v-model="statusFilter" @change="handleFilterChange" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white'">
+              <option value="all">Todos</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+          </div>
+
+          <!-- Tipo Filter -->
+          <div class="flex items-center space-x-2">
+            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Tipo:</label>
+            <select v-model="typeFilter" @change="handleFilterChange" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white'">
+              <option value="all">Todos</option>
+              <option value="1">Cliente</option>
+              <option value="3">Cliente y Proveedor</option>
+            </select>
+          </div>
+
+          <!-- Items per page -->
+          <div class="flex items-center space-x-2">
+            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Mostrar:</label>
+            <select v-model="itemsPerPage" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white'">
+              <option :value="25">25</option>
+              <option :value="50">50</option>
+              <option :value="100">100</option>
+              <option :value="500">500</option>
+            </select>
+          </div>
+
+          <!-- Reset Filters -->
+          <button 
+            @click="resetFilters" 
+            class="px-3 py-2 text-sm font-medium rounded-lg border transition-colors"
+            :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'"
+          >
+            <svg class="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Limpiar
+          </button>
+        </div>
+        
+        <div class="relative">
+          <input
+            v-model="searchQuery"
+            @input="handleSearch"
+            type="text"
+            placeholder="Buscar por nombre, alias, email o código..."
+            class="border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-80"
+            :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white'"
+          >
+          <svg class="absolute right-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
     <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-4">
-        <select v-model="itemsPerPage" class="border border-gray-300 rounded px-3 py-1 text-sm" :class="isDark ? 'bg-gray-800 border-gray-600 text-white' : 'bg-white'">
-          <option :value="25">25</option>
-          <option :value="50">50</option>
-          <option :value="100">100</option>
-        </select>
+      <div class="flex items-center space-x-3">
         <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
         <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
         <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadClients">
@@ -88,18 +147,8 @@
         </button>
       </div>
       
-      <div class="relative">
-        <input
-          v-model="searchQuery"
-          @input="handleSearch"
-          type="text"
-          placeholder="Buscar clientes..."
-          class="border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          :class="isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'bg-white'"
-        >
-        <svg class="absolute right-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+      <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+        <span class="font-medium">{{ filteredClients.length }}</span> clientes encontrados
       </div>
     </div>
 
@@ -163,7 +212,17 @@
                     >
                       {{ client.name }}
                     </div>
-                    <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">{{ client.code_client || 'Sin código' }}</div>
+                    <div class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                      <span v-if="client.name_alias" class="inline-flex items-center">
+                        <svg class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        {{ client.name_alias }}
+                      </span>
+                      <span v-if="client.name_alias && client.code_client" class="mx-1">•</span>
+                      <span v-if="client.code_client">{{ client.code_client }}</span>
+                      <span v-if="!client.name_alias && !client.code_client">Sin código</span>
+                    </div>
                   </div>
                 </div>
               </td>
@@ -306,6 +365,8 @@ const loading = ref(false)
 
 // Filters
 const searchQuery = ref('')
+const statusFilter = ref('active') // Por defecto mostrar solo activos
+const typeFilter = ref('all')
 
 // Pagination
 const currentPage = ref(1)
@@ -337,11 +398,24 @@ const monthlyRevenue = computed(() => {
 const filteredClients = computed(() => {
   let filtered = clients.value
 
+  // Filter by status
+  if (statusFilter.value === 'active') {
+    filtered = filtered.filter(client => client.status == 1)
+  } else if (statusFilter.value === 'inactive') {
+    filtered = filtered.filter(client => client.status != 1)
+  }
+
+  // Filter by type
+  if (typeFilter.value !== 'all') {
+    filtered = filtered.filter(client => client.client == typeFilter.value)
+  }
+
   // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(client => 
       (client.name && client.name.toLowerCase().includes(query)) ||
+      (client.name_alias && client.name_alias.toLowerCase().includes(query)) ||
       (client.email && client.email.toLowerCase().includes(query)) ||
       (client.code_client && client.code_client.toLowerCase().includes(query))
     )
@@ -383,8 +457,8 @@ const loadClients = async () => {
   loading.value = true
   try {
      console.log('🔄 Cargando clientes...')
-    // Filtrar solo clientes (client = 1 o 3) y activos
-    const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.client:in:1,3)AND(t.status:=:1)')
+    // Filtrar solo clientes (client = 1 o 3) - Todos (activos e inactivos)
+    const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.client:in:1,3)')
     clients.value = response.data || []
      console.log('✅ Clientes cargados:', clients.value.length)
   } catch (error) {
@@ -431,6 +505,17 @@ const formatCurrency = (amount) => {
 }
 
 const handleSearch = () => {
+  currentPage.value = 1
+}
+
+const handleFilterChange = () => {
+  currentPage.value = 1
+}
+
+const resetFilters = () => {
+  statusFilter.value = 'active'
+  typeFilter.value = 'all'
+  searchQuery.value = ''
   currentPage.value = 1
 }
 
