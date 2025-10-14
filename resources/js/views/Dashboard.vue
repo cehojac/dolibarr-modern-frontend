@@ -4,56 +4,42 @@
     <div class="mb-8 xl:mb-10 2xl:mb-12">
       <h1 class="text-3xl xl:text-4xl 2xl:text-5xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">Panel Principal</h1>
       <p class="mt-2 xl:mt-3 2xl:mt-4 text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Resumen de tu gestión empresarial</p>
-      
-      <!-- Información de permisos (solo para desarrollo/debug) -->
-      <PermissionGuard permission="user->user->configurer" show-fallback>
-        <div class="mt-4 p-3 rounded-lg border" :class="isDark ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'">
-          <div class="flex items-center space-x-2">
-            <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span class="text-sm font-medium" :class="isDark ? 'text-blue-300' : 'text-blue-700'">
-              Modo Administrador - Permisos cargados: {{ permissions.length }}
-            </span>
-          </div>
-        </div>
-      </PermissionGuard>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 gap-6 xl:gap-8 2xl:gap-10 sm:grid-cols-2 lg:grid-cols-4 mb-8 xl:mb-10 2xl:mb-12">
+    <div class="grid grid-cols-1 gap-4 sm:gap-6 xl:gap-8 2xl:gap-10 sm:grid-cols-2 lg:grid-cols-4 mb-8 xl:mb-10 2xl:mb-12 items-stretch">
       <!-- Terceros Card -->
       <PermissionGuard permission="societe->lire" show-fallback>
         <div
-          class="border rounded-xl p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+          class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
           @click="$router.push('/terceros')"
         >
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
                 </svg>
               </div>
             </div>
-            <div class="ml-4 xl:ml-6 2xl:ml-8">
-              <p class="text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Terceros</p>
-              <p class="text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">-</p>
+            <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+              <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Terceros</p>
+              <p class="text-xl sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ tercerosCount || '-' }}</p>
             </div>
           </div>
         </div>
         <template #fallback>
-          <div class="border rounded-xl p-6 xl:p-8 2xl:p-10 opacity-50" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+          <div class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 opacity-50" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
             <div class="flex items-center">
               <div class="flex-shrink-0">
-                <div class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-gray-400 rounded-lg flex items-center justify-center">
-                  <svg class="w-6 h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-gray-400 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
                   </svg>
                 </div>
               </div>
-              <div class="ml-4 xl:ml-6 2xl:ml-8">
-                <p class="text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Terceros</p>
+              <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+                <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Terceros</p>
                 <p class="text-xs" :class="isDark ? 'text-gray-600' : 'text-gray-500'">Sin permisos</p>
               </div>
             </div>
@@ -64,46 +50,175 @@
       <!-- Tickets Card -->
       <PermissionGuard permission="ticket->read" show-fallback>
         <div
-          class="border rounded-xl p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+          class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
           @click="$router.push('/tickets')"
         >
           <div class="flex items-center">
             <div class="flex-shrink-0">
-              <div class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg class="w-6 h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 rounded-lg flex items-center justify-center" :class="ticketsCountComposable === 0 ? 'bg-green-600' : 'bg-blue-600'">
+                <svg v-if="ticketsCountComposable === 0" class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg v-else class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
             </div>
-            <div class="ml-4 xl:ml-6 2xl:ml-8">
-              <p class="text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tickets Asignados</p>
-              <p class="text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketsCountComposable || '-' }}</p>
+            <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8 flex-1">
+              <div class="flex items-baseline gap-2">
+                <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tickets Asignados</p>
+                
+              </div>
+              <p class="text-xl sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ticketsCountComposable !== null ? ticketsCountComposable : '-' }}</p>
             </div>
           </div>
         </div>
+      </PermissionGuard>
+
+      <!-- Productos Card -->
+      <PermissionGuard permission="produit->lire" show-fallback>
+        <div
+          class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+          @click="$router.push('/productos')"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+              <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Productos</p>
+              <p class="text-xl sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ productsCount || '-' }}</p>
+            </div>
+          </div>
+        </div>
+        <template #fallback>
+          <div class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 opacity-50" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-gray-400 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+                <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Productos</p>
+                <p class="text-xs" :class="isDark ? 'text-gray-600' : 'text-gray-500'">Sin permisos</p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </PermissionGuard>
+
+      <!-- Eventos Vencidos Card -->
+      <PermissionGuard permission="agenda->myactions->read" show-fallback>
+        <div
+          class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="[isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50', overdueEventsCount > 0 ? (isDark ? 'bg-red-900/20 border-red-700' : 'bg-red-50 border-red-200') : '']"
+          @click="$router.push('/agenda')"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 rounded-lg flex items-center justify-center" :class="overdueEventsCount > 0 ? 'bg-red-600' : 'bg-blue-600'">
+                <svg v-if="overdueEventsCount > 0" class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <svg v-else class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+              <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="overdueEventsCount > 0 ? 'text-red-600' : (isDark ? 'text-gray-400' : 'text-gray-600')">Eventos Vencidos</p>
+              <p class="text-xl sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="overdueEventsCount > 0 ? 'text-red-700' : (isDark ? 'text-white' : 'text-gray-900')">{{ overdueEventsCount || '0' }}</p>
+            </div>
+          </div>
+        </div>
+        <template #fallback>
+          <div class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 opacity-50" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-gray-400 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+                <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Eventos Vencidos</p>
+                <p class="text-xs" :class="isDark ? 'text-gray-600' : 'text-gray-500'">Sin permisos</p>
+              </div>
+            </div>
+          </div>
+        </template>
+      </PermissionGuard>
+
+      <!-- Facturas Vencidas Card -->
+      <PermissionGuard permission="facture->lire" show-fallback>
+        <div
+          class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="[isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50', overdueInvoicesCount > 0 ? (isDark ? 'bg-orange-900/20 border-orange-700' : 'bg-orange-50 border-orange-200') : '']"
+          @click="$router.push('/facturas')"
+        >
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 rounded-lg flex items-center justify-center" :class="overdueInvoicesCount > 0 ? 'bg-orange-600' : 'bg-blue-600'">
+                <svg v-if="overdueInvoicesCount > 0" class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg v-else class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+              <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="overdueInvoicesCount > 0 ? 'text-orange-600' : (isDark ? 'text-gray-400' : 'text-gray-600')">Facturas Vencidas</p>
+              <p class="text-xl sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="overdueInvoicesCount > 0 ? 'text-orange-700' : (isDark ? 'text-white' : 'text-gray-900')">{{ overdueInvoicesCount || '0' }}</p>
+            </div>
+          </div>
+        </div>
+        <template #fallback>
+          <div class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 opacity-50" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-gray-400 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728" />
+                  </svg>
+                </div>
+              </div>
+              <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+                <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-500' : 'text-gray-400'">Facturas Vencidas</p>
+                <p class="text-xs" :class="isDark ? 'text-gray-600' : 'text-gray-500'">Sin permisos</p>
+              </div>
+            </div>
+          </div>
+        </template>
       </PermissionGuard>
 
       <!-- Resto de módulos sin restricciones específicas -->
       <div
         v-for="module in otherModules"
         :key="module.name"
-        class="border rounded-xl p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
+        class="h-full border rounded-xl p-4 sm:p-6 xl:p-8 2xl:p-10 transition-colors cursor-pointer" :class="isDark ? 'bg-gray-900 border-gray-800 hover:bg-gray-800' : 'bg-white border-gray-200 hover:bg-gray-50'"
         @click="$router.push(module.href)"
       >
         <div class="flex items-center">
           <div class="flex-shrink-0">
-            <div class="w-12 h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div class="w-10 h-10 sm:w-12 sm:h-12 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 bg-blue-600 rounded-lg flex items-center justify-center">
               <svg
-                class="w-6 h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white"
+                class="w-5 h-5 sm:w-6 sm:h-6 xl:w-8 xl:h-8 2xl:w-10 2xl:h-10 text-white"
                 fill="none" viewBox="0 0 24 24" stroke="currentColor"
               >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="module.iconPath" />
               </svg>
             </div>
           </div>
-          <div class="ml-4 xl:ml-6 2xl:ml-8">
-            <p class="text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ module.name }}</p>
-            <p class="text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ module.count !== undefined ? module.count : '-' }}</p>
+          <div class="ml-3 sm:ml-4 xl:ml-6 2xl:ml-8">
+            <p class="text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ module.name }}</p>
+            <p class="text-xl sm:text-2xl xl:text-3xl 2xl:text-4xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ module.count !== undefined ? module.count : '-' }}</p>
           </div>
         </div>
       </div>
@@ -167,17 +282,8 @@
                 </div>
               </th>
               <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tipo</th>
-              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
               <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Asignado a</th>
               <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Detalles</th>
-              <th @click="sortBy('date_start')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
-                <div class="flex items-center space-x-1">
-                  <span>Fecha inicio</span>
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                  </svg>
-                </div>
-              </th>
               <th @click="sortBy('date_end')" class="px-6 py-4 text-left text-xs font-medium uppercase tracking-wider cursor-pointer transition-colors" :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'">
                 <div class="flex items-center space-x-1">
                   <span>Fecha fin</span>
@@ -186,13 +292,11 @@
                   </svg>
                 </div>
               </th>
-              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Proyecto</th>
-              <th scope="col" class="px-8 py-4 text-left text-sm font-semibold uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Progreso</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-900 divide-gray-800' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="10" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+              <td colspan="6" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center justify-center space-x-2">
                   <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                   <span>Cargando tareas...</span>
@@ -200,7 +304,7 @@
               </td>
             </tr>
             <tr v-else-if="paginatedTodos.length === 0">
-              <td colspan="10" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+              <td colspan="6" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex flex-col items-center space-y-2">
                   <svg class="w-12 h-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -233,15 +337,10 @@
                   {{ todo.type === 'ticket' ? 'Ticket' : 'Tarea' }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getStatusClass(todo.status, todo.type)">
-                  {{ getStatusText(todo.status, todo.type) }}
-                </span>
-              </td>
               <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ todo.assigned_to || '-' }}
               </td>
-              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+              <td class="px-8 py-6 text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 <div class="space-y-1">
                   <div v-if="todo.type === 'task'">
                     <!-- Task details -->
@@ -259,22 +358,7 @@
                 </div>
               </td>
               <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ formatDate(todo.date_start) }}
-              </td>
-              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 {{ formatDate(todo.date_end) }}
-              </td>
-              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                {{ todo.project || '-' }}
-              </td>
-              <td class="px-8 py-6 whitespace-nowrap text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                <div v-if="todo.type === 'task' && todo.progress !== undefined" class="flex items-center">
-                  <div class="w-full rounded-full h-2 mr-2" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'">
-                    <div class="bg-blue-500 h-2 rounded-full" :style="`width: ${todo.progress}%`"></div>
-                  </div>
-                  <span class="text-xs">{{ todo.progress }}%</span>
-                </div>
-                <span v-else>-</span>
               </td>
             </tr>
           </tbody>
@@ -344,6 +428,10 @@ import { useTheme } from '../composables/useTheme'
 import { useAuthStore } from '../stores/auth'
 import { useTicketsCounter } from '../composables/useTicketsCounter'
 import { useTasksCounter } from '../composables/useTasksCounter'
+import { useTercerosCounter } from '../composables/useTercerosCounter'
+import { useProductsCounter } from '../composables/useProductsCounter'
+import { useAgendaCounter } from '../composables/useAgendaCounter'
+import { useInvoicesCounter } from '../composables/useInvoicesCounter'
 import { usePermissions } from '../composables/usePermissions'
 import { useTicketDetails } from '../composables/useTicketDetails'
 import PermissionGuard from '../components/PermissionGuard.vue'
@@ -354,6 +442,10 @@ const { isDark } = useTheme()
 const authStore = useAuthStore()
 const { assignedTicketsCount: ticketsCountComposable, fetchAssignedTicketsCount } = useTicketsCounter()
 const { assignedTasksCount: tasksCountComposable, fetchAssignedTasksCount } = useTasksCounter()
+const { tercerosCount, fetchTercerosCount } = useTercerosCounter()
+const { productsCount, fetchProductsCount } = useProductsCounter()
+const { overdueEventsCount, fetchOverdueEventsCount } = useAgendaCounter()
+const { overdueInvoicesCount, fetchOverdueInvoicesCount } = useInvoicesCounter()
 const { canAccess, hasPermission, permissions } = usePermissions()
 
 // Composable de detalles de ticket
@@ -365,9 +457,8 @@ const {
   closeTicketDetails
 } = useTicketDetails()
 
-// Reactive data - módulos que no requieren permisos específicos
+// Reactive data - módulos sin restricciones específicas
 const otherModules = computed(() => [
-  { name: 'Productos', href: '/productos', iconPath: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
   { name: 'Tareas Asignadas', href: '/tareas', iconPath: 'M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', count: tasksCountComposable.value }
 ])
 
@@ -707,6 +798,10 @@ onMounted(async () => {
   await Promise.all([
     fetchAssignedTicketsCount(),
     fetchAssignedTasksCount(),
+    fetchTercerosCount(),
+    fetchProductsCount(),
+    fetchOverdueEventsCount(),
+    fetchOverdueInvoicesCount(),
     loadTodos()
   ])
 })

@@ -28,8 +28,8 @@ export function useTicketsCounter() {
 
     loading.value = true
     try {
-      // Fetch tickets assigned to current user
-      const response = await http.get('/api/doli/tickets')
+      // Fetch all tickets with high limit to get accurate count
+      const response = await http.get('/api/doli/tickets?limit=10000')
       const tickets = response.data || []
       
        // console.log('Total tickets fetched:', tickets.length)

@@ -15,40 +15,43 @@
     <!-- Métricas Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <!-- Total Clients -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalClients }}</div>
-        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Total Clientes</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalClients }}</p>
+            <p class="text-sm font-medium text-blue-500">Total Clientes</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ totalClients }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- Active Clients -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold text-green-600">{{ activeClients }}</div>
-        <div class="text-sm text-green-600">Activos</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ activeClients }}</p>
+            <p class="text-sm font-medium text-green-500">Activos</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ activeClients }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- New This Month -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
         <div class="flex items-center justify-between">
           <div>
-            <div class="text-2xl font-bold text-blue-600">{{ newThisMonth }}</div>
-            <div class="text-sm text-blue-600">Nuevos Este Mes</div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ newThisMonth }}</p>
+            <p class="text-sm font-medium text-orange-500">Nuevos Este Mes</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              <span v-if="monthComparison !== null">
+                <span v-if="monthComparison > 0" class="text-green-500">↑ {{ Math.abs(monthComparison) }}</span>
+                <span v-else-if="monthComparison < 0" class="text-red-500">↓ {{ Math.abs(monthComparison) }}</span>
+                <span v-else>→ 0</span>
+                vs mes anterior
+              </span>
+              <span v-else>Mes anterior: {{ newLastMonth }}</span>
+            </p>
           </div>
-          <div v-if="monthComparison !== null" class="flex items-center space-x-1 text-xs font-medium px-2 py-1 rounded-full"
-               :class="monthComparison >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
-            <svg v-if="monthComparison > 0" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-            </svg>
-            <svg v-else-if="monthComparison < 0" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-            <svg v-else class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14" />
-            </svg>
-            <span>{{ Math.abs(monthComparison) }}</span>
-          </div>
-        </div>
-        <div v-if="newLastMonth !== null" class="text-xs mt-2" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-          Mes anterior: {{ newLastMonth }}
         </div>
       </div>
     </div>
