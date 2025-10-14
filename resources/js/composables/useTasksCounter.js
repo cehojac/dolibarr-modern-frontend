@@ -23,8 +23,8 @@ export function useTasksCounter() {
 
     loading.value = true
     try {
-      // Fetch tasks assigned to current user
-      const response = await http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
+      // Fetch all tasks with high limit to get accurate count
+      const response = await http.get('/api/doli/tasks?limit=10000&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
       const tasks = response.data || []
       
        // console.log('📋 Tasks Counter - Total tasks fetched:', tasks.length)

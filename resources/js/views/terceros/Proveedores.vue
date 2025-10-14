@@ -15,33 +15,58 @@
     <!-- Métricas Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
       <!-- Total Suppliers -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalSuppliers }}</div>
-        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Total Proveedores</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalSuppliers }}</p>
+            <p class="text-sm font-medium text-blue-500">Total Proveedores</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ totalSuppliers }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- Active Suppliers -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold text-green-600">{{ activeSuppliers }}</div>
-        <div class="text-sm text-green-600">Activos</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ activeSuppliers }}</p>
+            <p class="text-sm font-medium text-green-500">Activos</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ activeSuppliers }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- Preferred Suppliers -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold text-purple-600">{{ preferredSuppliers }}</div>
-        <div class="text-sm text-purple-600">Preferidos</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ preferredSuppliers }}</p>
+            <p class="text-sm font-medium text-purple-500">Preferidos</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ preferredSuppliers }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- Orders This Month -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold text-blue-600">{{ ordersThisMonth }}</div>
-        <div class="text-sm text-blue-600">Pedidos Este Mes</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ordersThisMonth }}</p>
+            <p class="text-sm font-medium text-blue-500">Pedidos Este Mes</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ ordersThisMonth }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- Monthly Spending -->
-      <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
-        <div class="text-2xl font-bold text-orange-600">{{ formatCurrency(monthlySpending) }}</div>
-        <div class="text-sm text-orange-600">Gasto Mensual</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ formatCurrency(monthlySpending) }}</p>
+            <p class="text-sm font-medium text-orange-500">Gasto Mensual</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Mes actual</p>
+          </div>
+        </div>
       </div>
     </div>
 

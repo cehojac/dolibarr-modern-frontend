@@ -6,7 +6,7 @@
         <div>
           <h1 class="text-2xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">Clientes Potenciales</h1>
           <div class="flex items-center mt-1">
-            <span class="text-sm text-gray-500">Gestión de clientes potenciales y oportunidades comerciales</span>
+            <span class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Gestión de clientes potenciales y oportunidades comerciales</span>
           </div>
         </div>
       </div>
@@ -15,40 +15,60 @@
     <!-- Métricas Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <!-- Total Prospects -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
-        <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalProspects }}</div>
-        <div class="text-sm text-gray-500">Total Prospects</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalProspects }}</p>
+            <p class="text-sm font-medium text-blue-500">Total Prospects</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ totalProspects }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- Active Prospects -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
-        <div class="text-2xl font-bold text-green-600">{{ activeProspects }}</div>
-        <div class="text-sm text-green-600">Active Prospects</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ activeProspects }}</p>
+            <p class="text-sm font-medium text-green-500">Active Prospects</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ activeProspects }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- Converted This Month -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
-        <div class="text-2xl font-bold text-blue-600">{{ convertedThisMonth }}</div>
-        <div class="text-sm text-blue-600">Converted This Month</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ convertedThisMonth }}</p>
+            <p class="text-sm font-medium text-blue-500">Converted This Month</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ convertedThisMonth }}</p>
+          </div>
+        </div>
       </div>
       
       <!-- Conversion Rate -->
-      <div class="bg-white rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
-        <div class="text-2xl font-bold text-purple-600">{{ conversionRate }}%</div>
-        <div class="text-sm text-purple-600">Conversion Rate</div>
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ conversionRate }}%</p>
+            <p class="text-sm font-medium text-purple-500">Conversion Rate</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tasa de conversión</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="flex items-center justify-between mb-6">
       <div class="flex items-center space-x-3">
-        <button class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
+        <button class="px-4 py-2 rounded-lg text-sm font-medium flex items-center text-white" :class="isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-900 hover:bg-gray-800'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
           New Prospect
         </button>
-        <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center" :class="isDark ? 'border-gray-600 text-gray-300' : ''">
+        <button class="border px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
           </svg>
@@ -56,7 +76,7 @@
         </button>
       </div>
       
-      <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center" :class="isDark ? 'border-gray-600 text-gray-300' : ''">
+      <button class="border px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
         <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
@@ -72,9 +92,9 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-blue-600 hover:text-blue-800 text-sm">Export</button>
-        <button class="text-blue-600 hover:text-blue-800 text-sm">Bulk Actions</button>
-        <button class="text-gray-500 hover:text-gray-700" @click="loadProspects">
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadProspects">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
@@ -97,12 +117,12 @@
     </div>
 
     <!-- Tabla de Clientes Potenciales -->
-    <div class="bg-white rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'border-gray-200'">
+    <div class="rounded-lg border overflow-hidden" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
       <div class="overflow-x-auto">
         <table class="min-w-full">
-          <thead class="bg-gray-50" :class="isDark ? 'bg-gray-700' : ''">
+          <thead :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-400' : ''">
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center">
                   #
                   <svg class="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -110,7 +130,7 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-400' : ''">
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center">
                   Company
                   <svg class="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,15 +138,15 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Contact Person</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Phone</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Prospect Level</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Date Created</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Contact Person</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Email</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Phone</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Prospect Level</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Date Created</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200" :class="isDark ? 'bg-gray-800 divide-gray-700' : ''">
+          <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
               <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center justify-center space-x-2">
@@ -150,7 +170,8 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <button 
                   @click="viewProspectDetails(prospect)"
-                  class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  class="font-medium text-sm transition-colors"
+                  :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
                 >
                   {{ prospect.name }}
                 </button>
@@ -163,7 +184,7 @@
               
               <!-- Email -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                <a v-if="prospect.email" :href="'mailto:' + prospect.email" class="text-blue-600 hover:text-blue-800">
+                <a v-if="prospect.email" :href="'mailto:' + prospect.email" class="transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">
                   {{ prospect.email }}
                 </a>
                 <span v-else>-</span>
