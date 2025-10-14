@@ -2897,24 +2897,45 @@ const viewTaskDetails = async (task) => {
       }
     }
     
-    // Initialize assigned user - buscar por fk_user_assign primero, luego por nombre
-    console.log('🔍 Buscando usuario asignado:', {
-      fk_user_assign: taskData.fk_user_assign,
-      assigned_to: task.assigned_to,
-      users_count: users.value.length
-    })
-    
-    if (taskData.fk_user_assign) {
-      currentTaskAssignedUser.value = users.value.find(u => u.id == taskData.fk_user_assign)
-      console.log('👤 Usuario asignado encontrado por ID:', currentTaskAssignedUser.value)
-    } else if (task.assigned_to) {
-      currentTaskAssignedUser.value = users.value.find(u => 
-        `${u.firstname} ${u.lastname}` === task.assigned_to
-      ) || { firstname: task.assigned_to.split(' ')[0], lastname: task.assigned_to.split(' ').slice(1).join(' ') }
-      console.log('👤 Usuario asignado encontrado por nombre:', currentTaskAssignedUser.value)
-    } else {
-      currentTaskAssignedUser.value = null
-      console.log('👤 No hay usuario asignado')
+    // Fetch assigned user from custom API endpoint
+    try {
+      console.log('🔍 Fetching task contacts from API:', task.id)
+      const contactsResponse = await http.get(`/api/doli/dolibarmodernfrontendapi/task/${task.id}/contacts`)
+      
+      if (contactsResponse.data && contactsResponse.data.contacts) {
+        console.log('📞 Task contacts received:', contactsResponse.data)
+        
+        // Find the TASKEXECUTIVE contact (assigned user)
+        const executiveContact = contactsResponse.data.contacts.find(
+          contact => contact.contact_type_code === 'TASKEXECUTIVE'
+        )
+        
+        if (executiveContact) {
+          console.log('👤 Found TASKEXECUTIVE contact:', executiveContact)
+          // Set the assigned user from the contact data
+          currentTaskAssignedUser.value = {
+            id: executiveContact.user_id,
+            firstname: executiveContact.firstname,
+            lastname: executiveContact.lastname,
+            email: executiveContact.email,
+            phone_mobile: executiveContact.phone_mobile
+          }
+          // Update taskDetails with the assigned user ID
+          taskDetails.value.fk_user_assign = executiveContact.user_id
+          console.log('✅ Assigned user set:', currentTaskAssignedUser.value)
+        } else {
+          currentTaskAssignedUser.value = null
+          console.log('👤 No TASKEXECUTIVE contact found')
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error fetching task contacts:', error)
+      // Fallback to old method if API fails
+      if (taskData.fk_user_assign) {
+        currentTaskAssignedUser.value = users.value.find(u => u.id == taskData.fk_user_assign)
+      } else {
+        currentTaskAssignedUser.value = null
+      }
     }
     
     // Initialize notes and description with existing values
@@ -3368,8 +3389,10 @@ const saveTaskCompany = async () => {
 const startEditTaskAssignment = () => {
   editingTaskAssignment.value = true
   selectedTaskAssignedUserId.value = taskDetails.value?.fk_user_assign || ''
-  taskAssignmentSearchTerm.value = currentTaskAssignedUser.value ? 
-    `${currentTaskAssignedUser.value.firstname} ${currentTaskAssignedUser.value.lastname}` : ''
+  // Dejar el campo de búsqueda vacío para mostrar todos los usuarios
+  taskAssignmentSearchTerm.value = ''
+  // Abrir el dropdown automáticamente
+  showTaskAssignmentDropdown.value = true
 }
 
 const cancelEditTaskAssignment = () => {
@@ -3395,8 +3418,7 @@ const saveTaskAssignment = async () => {
   try {
     console.log('💾 Saving task assignment:', {
       taskId: taskDetails.value.id,
-      userId: selectedTaskAssignedUserId.value,
-      selectedUser: selectedTaskAssignedUserId.value
+      userId: selectedTaskAssignedUserId.value
     })
     
     const selectedUser = selectedTaskAssignedUserId.value ? 
@@ -3404,16 +3426,25 @@ const saveTaskAssignment = async () => {
     
     console.log('👤 Selected user:', selectedUser)
     
-    // Prepare data for API
-    const updateData = {
-      fk_user_assign: selectedTaskAssignedUserId.value || null
+    if (!selectedTaskAssignedUserId.value) {
+      alert('Por favor selecciona un usuario para asignar')
+      return
     }
     
-    console.log('📤 Sending update data:', updateData)
+    // Prepare data for custom API endpoint
+    const assignData = {
+      user_id: parseInt(selectedTaskAssignedUserId.value),
+      role: 'TASKEXECUTIVE'
+    }
     
-    // API call to update task using http.put like in tickets
-    const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    console.log('✅ Assignment update response:', response.data)
+    console.log('📤 Sending assignment data:', assignData)
+    
+    // API call to assign user using custom endpoint
+    const response = await http.post(
+      `/api/doli/dolibarmodernfrontendapi/task/${taskDetails.value.id}/assign`,
+      assignData
+    )
+    console.log('✅ Assignment response:', response.data)
     
     // Update local data
     if (selectedUser) {
