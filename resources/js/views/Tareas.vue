@@ -594,7 +594,7 @@
                     </div>
                     <button
                       v-if="!isEditingDescription"
-                      @click="isEditingDescription = true"
+                      @click="startEditDescription"
                       class="p-2 rounded-lg transition-colors"
                       :class="isDark ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'"
                       title="Editar descripción"
@@ -607,20 +607,94 @@
                   
                   <!-- View Mode -->
                   <div v-if="!isEditingDescription" class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
-                    <div class="text-sm p-4 rounded-lg" :class="isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-700'">
-                      {{ taskDetails.description }}
+                    <div 
+                      v-if="taskDetails.description" 
+                      class="text-sm p-4 rounded-lg" 
+                      :class="isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-50 text-gray-700'"
+                      v-html="taskDetails.description"
+                    ></div>
+                    <div 
+                      v-else 
+                      class="text-sm p-4 rounded-lg italic" 
+                      :class="isDark ? 'bg-gray-800 text-gray-500' : 'bg-gray-50 text-gray-400'"
+                    >
+                      Sin descripción
                     </div>
                   </div>
                   
                   <!-- Edit Mode -->
                   <div v-else class="space-y-3">
-                    <textarea
-                      v-model="taskDescription"
-                      rows="6"
-                      class="w-full p-4 border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      :class="isDark ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-                      placeholder="Descripción de la tarea..."
-                    ></textarea>
+                    <div class="border rounded-lg" :class="isDark ? 'border-gray-700' : 'border-gray-300'">
+                      <!-- Barra de herramientas del editor -->
+                      <div class="flex items-center space-x-2 p-2 border-b" :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-gray-50'">
+                        <button
+                          type="button"
+                          @click="formatEditDescription('bold')"
+                          class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                          :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'"
+                          title="Negrita"
+                        >
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M6 4v12h4.5c2.5 0 4.5-2 4.5-4.5 0-1.5-.8-2.8-2-3.5 1.2-.7 2-2 2-3.5C15 2 13 0 10.5 0H6v4zm2-2h2.5C11.3 2 12 2.7 12 3.5S11.3 5 10.5 5H8V2zm0 5h3c.8 0 1.5.7 1.5 1.5S11.8 10 11 10H8V7z"/>
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          @click="formatEditDescription('italic')"
+                          class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                          :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'"
+                          title="Cursiva"
+                        >
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8 1h6v2H8V1zm2 2h2l-2 12H8l2-12z"/>
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          @click="formatEditDescription('underline')"
+                          class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                          :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'"
+                          title="Subrayado"
+                        >
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 18H4v-2h12v2H10zM10 2C7.8 2 6 3.8 6 6v4c0 2.2 1.8 4 4 4s4-1.8 4-4V6c0-2.2-1.8-4-4-4z"/>
+                          </svg>
+                        </button>
+                        <div class="w-px h-4" :class="isDark ? 'bg-gray-700' : 'bg-gray-300'"></div>
+                        <button
+                          type="button"
+                          @click="insertEditDescriptionList('ul')"
+                          class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                          :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'"
+                          title="Lista con viñetas"
+                        >
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4a1 1 0 100 2 1 1 0 000-2zM6 5h11a1 1 0 110 2H6a1 1 0 110-2zM3 9a1 1 0 100 2 1 1 0 000-2zM6 10h11a1 1 0 110 2H6a1 1 0 110-2zM3 14a1 1 0 100 2 1 1 0 000-2zM6 15h11a1 1 0 110 2H6a1 1 0 110-2z"/>
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          @click="insertEditDescriptionList('ol')"
+                          class="p-1 rounded hover:bg-opacity-80 transition-colors"
+                          :class="isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'"
+                          title="Lista numerada"
+                        >
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M3 4h1v1H3V4zM3 7h1v1H3V7zM3 10h1v1H3v-1zM6 5h11a1 1 0 110 2H6a1 1 0 110-2zM6 10h11a1 1 0 110 2H6a1 1 0 110-2zM6 15h11a1 1 0 110 2H6a1 1 0 110-2z"/>
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      <!-- Área de contenido editable -->
+                      <div
+                        ref="editDescriptionEditor"
+                        contenteditable="true"
+                        @input="updateEditDescriptionContent"
+                        class="p-4 min-h-[150px] focus:outline-none text-sm"
+                        :class="isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'"
+                        style="white-space: pre-wrap;"
+                      ></div>
+                    </div>
                     <div class="flex space-x-2">
                       <button
                         @click="saveDescription"
@@ -1047,7 +1121,7 @@
                             <input
                               v-model="taskCompanySearchTerm"
                               @focus="showTaskCompanyDropdown = true"
-                              @blur="setTimeout(() => showTaskCompanyDropdown = false, 200)"
+                              @blur="handleTaskCompanyBlur"
                               type="text"
                               placeholder="Buscar empresa..."
                               class="w-full p-2 border rounded-lg text-sm"
@@ -1139,7 +1213,7 @@
                             <input
                               v-model="taskAssignmentSearchTerm"
                               @focus="showTaskAssignmentDropdown = true"
-                              @blur="setTimeout(() => showTaskAssignmentDropdown = false, 200)"
+                              @blur="handleTaskAssignmentBlur"
                               type="text"
                               placeholder="Buscar usuario..."
                               class="w-full p-2 border rounded-lg text-sm"
@@ -1367,7 +1441,7 @@
                         <input
                           v-model="followerSearchTerm"
                           @focus="showFollowerDropdown = true"
-                          @blur="setTimeout(() => showFollowerDropdown = false, 200)"
+                          @blur="handleFollowerBlur"
                           type="text"
                           placeholder="Buscar contacto para agregar..."
                           class="w-full p-2 border rounded-lg text-sm"
@@ -2114,6 +2188,7 @@ const isSavingTaskPriority = ref(false)
 const isEditingDescription = ref(false)
 const taskDescription = ref('')
 const isSavingDescription = ref(false)
+const editDescriptionEditor = ref(null)
 
 // Task client and project editing
 const editingTaskClient = ref(false)
@@ -2822,10 +2897,24 @@ const viewTaskDetails = async (task) => {
       }
     }
     
-    if (task.assigned_to) {
+    // Initialize assigned user - buscar por fk_user_assign primero, luego por nombre
+    console.log('🔍 Buscando usuario asignado:', {
+      fk_user_assign: taskData.fk_user_assign,
+      assigned_to: task.assigned_to,
+      users_count: users.value.length
+    })
+    
+    if (taskData.fk_user_assign) {
+      currentTaskAssignedUser.value = users.value.find(u => u.id == taskData.fk_user_assign)
+      console.log('👤 Usuario asignado encontrado por ID:', currentTaskAssignedUser.value)
+    } else if (task.assigned_to) {
       currentTaskAssignedUser.value = users.value.find(u => 
         `${u.firstname} ${u.lastname}` === task.assigned_to
       ) || { firstname: task.assigned_to.split(' ')[0], lastname: task.assigned_to.split(' ').slice(1).join(' ') }
+      console.log('👤 Usuario asignado encontrado por nombre:', currentTaskAssignedUser.value)
+    } else {
+      currentTaskAssignedUser.value = null
+      console.log('👤 No hay usuario asignado')
     }
     
     // Initialize notes and description with existing values
@@ -3217,6 +3306,12 @@ const cancelEditTaskCompany = () => {
   showTaskCompanyDropdown.value = false
 }
 
+const handleTaskCompanyBlur = () => {
+  setTimeout(() => {
+    showTaskCompanyDropdown.value = false
+  }, 200)
+}
+
 const selectTaskCompany = (companyId, companyName) => {
   selectedTaskCompanyId.value = companyId
   taskCompanySearchTerm.value = companyName
@@ -3284,6 +3379,12 @@ const cancelEditTaskAssignment = () => {
   showTaskAssignmentDropdown.value = false
 }
 
+const handleTaskAssignmentBlur = () => {
+  setTimeout(() => {
+    showTaskAssignmentDropdown.value = false
+  }, 200)
+}
+
 const selectTaskAssignedUser = (userId, displayText) => {
   selectedTaskAssignedUserId.value = userId
   taskAssignmentSearchTerm.value = displayText
@@ -3292,22 +3393,27 @@ const selectTaskAssignedUser = (userId, displayText) => {
 
 const saveTaskAssignment = async () => {
   try {
-    // console.log('💾 Saving task assignment:', {
-    //   taskId: selectedTask.value.id,
-    //   userId: selectedTaskAssignedUserId.value
-    // })
+    console.log('💾 Saving task assignment:', {
+      taskId: taskDetails.value.id,
+      userId: selectedTaskAssignedUserId.value,
+      selectedUser: selectedTaskAssignedUserId.value
+    })
     
     const selectedUser = selectedTaskAssignedUserId.value ? 
       users.value.find(u => u.id == selectedTaskAssignedUserId.value) : null
+    
+    console.log('👤 Selected user:', selectedUser)
     
     // Prepare data for API
     const updateData = {
       fk_user_assign: selectedTaskAssignedUserId.value || null
     }
     
+    console.log('📤 Sending update data:', updateData)
+    
     // API call to update task using http.put like in tickets
     const response = await http.put(`/api/doli/tasks/${taskDetails.value.id}`, updateData)
-    // console.log('✅ Assignment update response:', response.data)
+    console.log('✅ Assignment update response:', response.data)
     
     // Update local data
     if (selectedUser) {
@@ -3320,11 +3426,24 @@ const saveTaskAssignment = async () => {
       taskDetails.value.fk_user_assign = null
     }
     
+    // Actualizar también la tarea en la lista
+    const taskInList = tasks.value.find(t => t.id === taskDetails.value.id)
+    if (taskInList) {
+      if (selectedUser) {
+        taskInList.assigned_to = `${selectedUser.firstname} ${selectedUser.lastname}`
+        taskInList.fk_user_assign = selectedUser.id
+      } else {
+        taskInList.assigned_to = null
+        taskInList.fk_user_assign = null
+      }
+    }
+    
     cancelEditTaskAssignment()
-    // console.log('✅ Task assignment updated successfully')
+    console.log('✅ Task assignment updated successfully')
   } catch (error) {
-    // console.error('❌ Error updating task assignment:', error)
-    alert('Error al actualizar el usuario asignado')
+    console.error('❌ Error updating task assignment:', error)
+    console.error('Error details:', error.response?.data)
+    alert('Error al actualizar el usuario asignado: ' + (error.response?.data?.error?.message || error.message))
   }
 }
 
@@ -3384,9 +3503,42 @@ const saveTaskStatus = async () => {
 }
 
 // Task description editing functions
+const startEditDescription = () => {
+  isEditingDescription.value = true
+  taskDescription.value = taskDetails.value?.description || ''
+  
+  // Cargar el contenido HTML en el editor después de que el DOM se actualice
+  setTimeout(() => {
+    if (editDescriptionEditor.value) {
+      editDescriptionEditor.value.innerHTML = taskDescription.value
+    }
+  }, 0)
+}
+
 const cancelEditDescription = () => {
   isEditingDescription.value = false
   taskDescription.value = taskDetails.value?.description || ''
+  if (editDescriptionEditor.value) {
+    editDescriptionEditor.value.innerHTML = ''
+  }
+}
+
+// Funciones del editor WYSIWYG para edición de descripción
+const formatEditDescription = (command) => {
+  document.execCommand(command, false, null)
+  editDescriptionEditor.value?.focus()
+}
+
+const insertEditDescriptionList = (type) => {
+  const command = type === 'ul' ? 'insertUnorderedList' : 'insertOrderedList'
+  document.execCommand(command, false, null)
+  editDescriptionEditor.value?.focus()
+}
+
+const updateEditDescriptionContent = () => {
+  if (editDescriptionEditor.value) {
+    taskDescription.value = editDescriptionEditor.value.innerHTML
+  }
 }
 
 const saveDescription = async () => {
@@ -3671,6 +3823,12 @@ const removeReminder = (reminderId) => {
 }
 
 // Follower functions
+const handleFollowerBlur = () => {
+  setTimeout(() => {
+    showFollowerDropdown.value = false
+  }, 200)
+}
+
 const addFollower = (contact) => {
   if (taskFollowers.value.find(f => f.id === contact.id)) return
   
@@ -4257,5 +4415,49 @@ onUnmounted(() => {
 
 [contenteditable="true"] u {
   text-decoration: underline;
+}
+
+/* Estilos para el contenido HTML renderizado en la descripción */
+.prose p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose u {
+  text-decoration: underline;
+}
+
+.prose a {
+  color: #3B82F6;
+  text-decoration: underline;
+}
+
+.prose a:hover {
+  color: #2563EB;
+}
+
+.prose span[style*="font-size"] {
+  line-height: 1.4;
 }
 </style>
