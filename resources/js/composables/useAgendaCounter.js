@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import http from '../utils/http'
 
 const overdueEventsCount = ref(0)
 const isLoading = ref(false)
@@ -27,20 +28,9 @@ export function useAgendaCounter() {
       
       // Llamar a la API SIN filtros SQL - traer todos los eventos del usuario
       // (igual que en la página Agenda para consistencia)
-      const response = await fetch(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=500&user_ids=${authStore.user.id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'include'
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
+      const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=500&user_ids=${authStore.user.id}`)
+      
+      const data = response.data
       console.log('📅 Overdue events response:', data)
       
       // Contar eventos vencidos, excluyendo eventos systemauto y completados

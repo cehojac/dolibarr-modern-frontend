@@ -362,24 +362,22 @@
                 </span>
               </td>
 
-              <!-- Tercero -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div v-if="task.tercero_name" class="flex items-center">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3" :class="isDark ? 'bg-green-600' : 'bg-green-500'">
-                    <span class="text-xs font-medium text-white">
-                      {{ task.tercero_name.charAt(0).toUpperCase() }}
-                    </span>
+              <!-- Tercero / Proyecto -->
+              <td class="px-6 py-4">
+                <div class="space-y-1">
+                  <!-- Tercero -->
+                  <div v-if="task.tercero_name" class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+                    {{ task.tercero_name }}
                   </div>
-                  <div>
-                    <div class="text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
-                      {{ task.tercero_name }}
-                    </div>
-                    <div class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                      Cliente
-                    </div>
+                  <div v-else class="text-sm italic" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+                    Sin tercero
+                  </div>
+                  
+                  <!-- Proyecto (segunda línea) -->
+                  <div v-if="task.project_name" class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    Proyecto: {{ task.project_name }}
                   </div>
                 </div>
-                <div v-else class="text-sm text-gray-400">Sin tercero</div>
               </td>
 
               <!-- Progreso -->
@@ -2563,72 +2561,13 @@ const loadTasks = async (forceRefresh = false) => {
   }
 }
 
-// Función para cargar roles de usuario en tareas
-const loadTaskRoles = async () => {
-  if (!authStore.user?.id || tasks.value.length === 0) {
-    // console.log('⚠️ No se pueden cargar roles:', {
-    //   hasUser: !!authStore.user?.id,
-    //   userId: authStore.user?.id,
-    //   tasksCount: tasks.value.length
-    // })
-    return
-  }
-  
-  // console.log('👤 Cargando roles de usuario en tareas...')
-  
-  try {
-    // Cargar roles de TODAS las tareas en paralelo
-    const rolePromises = tasks.value.map(task => 
-      http.get(`/api/doli/tasks/${task.id}/roles?userid=${authStore.user.id}`)
-        .then(response => {
-          const roles = response.data || []
-          // La API devuelve un array de strings: ["TASKEXECUTIVE"]
-          const isExecutive = roles.includes('TASKEXECUTIVE')
-          
-          return {
-            taskId: task.id,
-            roles: roles,
-            isExecutive: isExecutive
-          }
-        })
-        .catch(() => ({
-          taskId: task.id,
-          roles: [],
-          isExecutive: false
-        }))
-    )
-    
-    const rolesResults = await Promise.all(rolePromises)
-    
-    // Crear mapa de taskId -> isExecutive
-    const rolesMap = {}
-    rolesResults.forEach(result => {
-      rolesMap[result.taskId] = result.isExecutive
-    })
-    
-    // Actualizar tareas con información de roles y nombre de usuario
-    tasks.value = tasks.value.map(task => {
-      const isAssigned = rolesMap[task.id] || false
-      
-      // Si la tarea está asignada al usuario actual y no tiene assigned_to, agregarlo
-      let assignedTo = task.assigned_to
-      if (isAssigned && !assignedTo && authStore.user) {
-        assignedTo = `${authStore.user.firstname || ''} ${authStore.user.lastname || ''}`.trim() || authStore.user.login
-      }
-      
-      return {
-        ...task,
-        isUserAssigned: isAssigned,
-        assigned_to: assignedTo
-      }
-    })
-    
-    const assignedCount = rolesResults.filter(r => r.isExecutive).length
-    // console.log('✅ Roles cargados:', assignedCount, 'de', tasks.value.length, 'tareas asignadas al usuario')
-  } catch (error) {
-    // console.error('❌ Error cargando roles:', error)
-  }
-}
+// FUNCIÓN ELIMINADA: loadTaskRoles()
+// Ya no es necesaria porque:
+// 1. Causaba exceso de peticiones (1 por cada tarea)
+// 2. La API de Dolibarr deniega acceso por rate limiting
+// 3. Ahora usamos /api/doli/dolibarmodernfrontendapi/task/{id}/contacts
+//    solo cuando se abre el detalle de una tarea específica
+// 4. El campo fk_user_assign ya nos indica si hay usuario asignado
 
 // Función para cargar y enriquecer datos adicionales
 const loadAdditionalDataInBackground = async () => {
@@ -2765,8 +2704,8 @@ const loadAdditionalDataInBackground = async () => {
     tasks.value = enrichedTasks
     // console.log('✅ Datos enriquecidos:', enrichedTasks.length, 'tareas')
     
-    // Cargar roles de usuario en background
-    await loadTaskRoles()
+    // Ya no cargamos roles aquí para evitar exceso de peticiones
+    // Los roles se cargan individualmente cuando se abre el detalle de la tarea
   } catch (err) {
     // console.error('❌ Error al enriquecer tareas:', err)
     // Mantener las tareas básicas aunque falle el enriquecimiento

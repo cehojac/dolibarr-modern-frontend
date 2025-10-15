@@ -233,6 +233,18 @@
             <p class="mt-1 xl:mt-2 2xl:mt-3 text-base xl:text-lg 2xl:text-xl" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tickets y tareas de proyectos que requieren atención</p>
           </div>
           <div class="flex items-center space-x-3 xl:space-x-4 2xl:space-x-5">
+            <!-- Rows per page selector -->
+            <select
+              v-model="itemsPerPage"
+              @change="handleItemsPerPageChange"
+              class="border rounded-lg px-3 xl:px-4 2xl:px-5 py-2 xl:py-3 2xl:py-3 text-sm xl:text-base 2xl:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500" :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
+            >
+              <option :value="20">20</option>
+              <option :value="50">50</option>
+              <option :value="100">100</option>
+              <option :value="9999">Todas</option>
+            </select>
+            
             <!-- Filter by type -->
             <select
               v-model="typeFilter"
@@ -342,18 +354,22 @@
               </td>
               <td class="px-8 py-6 text-base" :class="isDark ? 'text-gray-300' : 'text-gray-600'">
                 <div class="space-y-1">
-                  <div v-if="todo.type === 'task'">
-                    <!-- Task details -->
-                    <div v-if="todo.tercero_name" class="text-xs">Tercero: {{ todo.tercero_name }}</div>
-                    <div v-if="todo.project_name" class="text-xs">Proyecto: {{ todo.project_name }}</div>
-                    <div v-if="todo.project_tags" class="text-xs">Tags: {{ todo.project_tags }}</div>
+                  <!-- Tercero (común para tickets y tareas) -->
+                  <div v-if="todo.tercero_name" class="text-sm font-medium">
+                    {{ todo.tercero_name }}
                   </div>
-                  <div v-else>
-                    <!-- Ticket details -->
-                    <div v-if="todo.tercero_name" class="text-xs">Tercero: {{ todo.tercero_name }}</div>
-                    <div v-if="todo.project_category" class="text-xs">Categoría: {{ todo.project_category }}</div>
-                    <div v-if="todo.severity" class="text-xs">Gravedad: {{ todo.severity }}</div>
-                    <div v-if="todo.tags" class="text-xs">Tags: {{ todo.tags }}</div>
+                  
+                  <!-- Tags/Proyecto (común para tickets y tareas) -->
+                  <div v-if="todo.type === 'task' && todo.project_name" class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    Proyecto: {{ todo.project_name }}
+                  </div>
+                  <div v-else-if="todo.type === 'ticket' && todo.tags" class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                    Tags: {{ todo.tags }}
+                  </div>
+                  
+                  <!-- Información adicional solo si no hay tercero ni tags -->
+                  <div v-if="!todo.tercero_name && !todo.project_name && !todo.tags" class="text-xs italic" :class="isDark ? 'text-gray-500' : 'text-gray-400'">
+                    Sin información adicional
                   </div>
                 </div>
               </td>
@@ -476,7 +492,7 @@ const assignedTasksCount = ref(0)
 
 // Pagination
 const currentPage = ref(1)
-const itemsPerPage = 20
+const itemsPerPage = ref(20)
 
 // Computed properties
 const filteredTodos = computed(() => {
@@ -516,16 +532,30 @@ const filteredTodos = computed(() => {
   return filtered
 })
 
-const totalPages = computed(() => Math.ceil(filteredTodos.value.length / itemsPerPage))
+const totalPages = computed(() => {
+  // Si itemsPerPage es 9999 (Todas), solo hay 1 página
+  if (itemsPerPage.value >= 9999) return 1
+  return Math.ceil(filteredTodos.value.length / itemsPerPage.value)
+})
 
 const paginatedTodos = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage
-  const end = start + itemsPerPage
+  // Si itemsPerPage es 9999 (Todas), mostrar todos
+  if (itemsPerPage.value >= 9999) return filteredTodos.value
+  
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
   return filteredTodos.value.slice(start, end)
 })
 
-const startIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
-const endIndex = computed(() => Math.min(startIndex.value + itemsPerPage, filteredTodos.value.length))
+const startIndex = computed(() => {
+  if (itemsPerPage.value >= 9999) return 0
+  return (currentPage.value - 1) * itemsPerPage.value
+})
+
+const endIndex = computed(() => {
+  if (itemsPerPage.value >= 9999) return filteredTodos.value.length
+  return Math.min(startIndex.value + itemsPerPage.value, filteredTodos.value.length)
+})
 
 const visiblePages = computed(() => {
   const pages = []
@@ -633,7 +663,13 @@ const loadTodos = async () => {
         // Only include non-completed tasks
         if (task.progress < 100) {
           const project = projectsMap[task.fk_project] || projectsMap[String(task.fk_project)] || null
-          const assignedUser = usersMap[task.fk_user_assign] || null
+          
+          // Try to find assigned user from multiple possible fields
+          let assignedUser = null
+          if (task.fk_user_assign) {
+            assignedUser = usersMap[task.fk_user_assign] || usersMap[String(task.fk_user_assign)] || null
+          }
+          
           const tercero = project ? tercerosMap[project.fk_soc] : null
           
           // Count tasks assigned to current user
@@ -645,13 +681,22 @@ const loadTodos = async () => {
             assignedTasksCounter++
           }
           
+          // Build assigned_to string
+          let assignedToString = null
+          if (assignedUser) {
+            assignedToString = `${assignedUser.firstname || ''} ${assignedUser.lastname || ''}`.trim()
+            if (!assignedToString && assignedUser.login) {
+              assignedToString = assignedUser.login
+            }
+          }
+          
           todoItems.push({
             id: task.id,
             type: 'task',
             ref: task.ref || `TASK-${task.id}`,
             title: task.label || 'Sin título',
             status: task.progress >= 100 ? 'completed' : (task.progress > 0 ? 'in_progress' : 'pending'),
-            assigned_to: assignedUser ? `${assignedUser.firstname} ${assignedUser.lastname}`.trim() : null,
+            assigned_to: assignedToString,
             tags: project ? project.category : null,
             date_start: task.dateo,
             date_end: task.datee,
@@ -686,6 +731,10 @@ const sortBy = (field) => {
 }
 
 const applyFilters = () => {
+  currentPage.value = 1
+}
+
+const handleItemsPerPageChange = () => {
   currentPage.value = 1
 }
 
