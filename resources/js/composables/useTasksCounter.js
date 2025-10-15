@@ -29,31 +29,15 @@ export function useTasksCounter() {
       
        // console.log('📋 Tasks Counter - Total tasks fetched:', tasks.length)
       
-      // Check for role-based assignment first
+      // Count tasks assigned to user using fk_user_assign field
+      // NO hacemos peticiones a /roles para evitar rate limiting
       let taskCount = 0
       
       for (const task of tasks) {
-        let isAssigned = false
-        
-        // First check if user has a role in this task
-        if (task.id && userId) {
-          try {
-            const roleResponse = await http.get(`/api/doli/tasks/${task.id}/roles?userid=${userId}`)
-            if (roleResponse.data && roleResponse.data.length > 0) {
-              isAssigned = true
-               // console.log(`✅ User ${userId} has role in task ${task.ref}`)
-            }
-          } catch (error) {
-            // No role found, continue with fallback logic
-          }
-        }
-        
-        // Fallback: Check traditional assignment fields
-        if (!isAssigned) {
-          const isAssignedById = userId && task.fk_user_assign == userId
-          const isAssignedByLogin = userLogin && task.fk_user_assign_login == userLogin
-          isAssigned = isAssignedById || isAssignedByLogin
-        }
+        // Check assignment using fk_user_assign field only
+        const isAssignedById = userId && task.fk_user_assign == userId
+        const isAssignedByLogin = userLogin && task.fk_user_assign_login == userLogin
+        const isAssigned = isAssignedById || isAssignedByLogin
         
         // Only count if assigned and not completed
         const isNotCompleted = task.progress < 100
