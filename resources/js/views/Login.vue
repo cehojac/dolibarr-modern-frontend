@@ -27,6 +27,31 @@
         <div class="text-center mb-10 lg:mb-12 xl:mb-16">
           <span class="text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold transition-colors duration-200"
           :class="isDark ? 'text-white' : 'text-gray-900'">DOLIBARR MODERN FRONTEND</span>
+          
+          <!-- Versión de Dolibarr -->
+          <div v-if="dolibarrVersion" class="mt-3 text-sm lg:text-base transition-colors duration-200"
+               :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+            Versión Dolibarr: {{ dolibarrVersion }}
+          </div>
+        </div>
+        
+        <!-- Mensaje de acceso bloqueado (solo se muestra después de cargar) -->
+        <div v-if="!statusLoading && isAccessLocked" class="mb-8 p-4 lg:p-6 rounded-lg border-2 transition-colors duration-200"
+             :class="isDark ? 'bg-red-900 border-red-700 text-red-200' : 'bg-red-50 border-red-300 text-red-800'">
+          <div class="flex items-start space-x-3">
+            <svg class="w-6 h-6 lg:w-7 lg:h-7 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            <div>
+              <h3 class="font-semibold text-base lg:text-lg mb-1">Acceso Bloqueado</h3>
+              <p class="text-sm lg:text-base">
+                El acceso a Dolibarr está bloqueado. Por favor, cambie la configuración en Dolibarr para permitir el acceso a la API.
+              </p>
+              <p class="text-xs lg:text-sm mt-2 opacity-90">
+                Configure <code class="px-1 py-0.5 rounded" :class="isDark ? 'bg-red-800' : 'bg-red-200'">access_locked = 0</code> en la configuración de Dolibarr.
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Login Form -->
@@ -77,11 +102,12 @@
 
           <button
             type="submit"
-            :disabled="loading"
+            :disabled="loading || isAccessLocked"
             class="w-full bg-blue-600 text-white py-3 px-6 lg:py-4 lg:px-8 xl:py-5 xl:px-10 rounded-lg text-base lg:text-lg xl:text-xl font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
             :class="isDark ? 'focus:ring-offset-gray-900' : 'focus:ring-offset-white'"
           >
             <span v-if="loading">Verificando...</span>
+            <span v-else-if="isAccessLocked">Acceso Bloqueado</span>
             <span v-else>Acceder</span>
           </button>
         </form>
@@ -117,6 +143,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useValidation } from '../composables/useValidation'
 import { useTheme } from '../composables/useTheme'
+import { useDolibarrStatus } from '../composables/useDolibarrStatus'
 import FormInput from '../components/FormInput.vue'
 import LoginProgress from '../components/LoginProgress.vue'
 import DolibarrLogo from '../assets/Dolibarr_logo.png'
@@ -125,10 +152,12 @@ import DolibarrLogo from '../assets/Dolibarr_logo.png'
 const router = useRouter()
 const authStore = useAuthStore()
 const { isDark, toggleTheme, initTheme } = useTheme()
+const { dolibarrVersion, isAccessLocked, loadStatus, loading: statusLoading } = useDolibarrStatus()
 
-// Initialize theme on component mount
-onMounted(() => {
+// Initialize theme and load Dolibarr status on component mount
+onMounted(async () => {
   initTheme()
+  await loadStatus()
 })
 
 const validation = useValidation(
