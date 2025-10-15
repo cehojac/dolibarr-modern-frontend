@@ -13,7 +13,7 @@
     </div>
 
     <!-- Métricas Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       <!-- Total Clients -->
       <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
         <div class="flex items-center justify-between">
@@ -50,6 +50,19 @@
                 vs mes anterior
               </span>
               <span v-else>Mes anterior: {{ newLastMonth }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Clientes que también son Proveedores -->
+      <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ clientsAlsoSuppliers }}</p>
+            <p class="text-sm font-medium text-purple-500">También Proveedores</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
+              Socios comerciales
             </p>
           </div>
         </div>
@@ -178,18 +191,17 @@
                 </div>
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Empresa</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Contacto Principal</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Email</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Teléfono</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Categoría</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tipo</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Fecha Creación</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center justify-center space-x-2">
                   <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                   <span class="text-sm">Cargando clientes...</span>
@@ -197,7 +209,7 @@
               </td>
             </tr>
             <tr v-else-if="filteredClients.length === 0">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <span class="text-sm">No se encontraron clientes</span>
               </td>
             </tr>
@@ -238,11 +250,6 @@
                 </div>
               </td>
               
-              <!-- Contacto Principal -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ getPrimaryContact(client) }}
-              </td>
-              
               <!-- Email -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
                 {{ client.email || '-' }}
@@ -268,12 +275,18 @@
                 </label>
               </td>
               
-              <!-- Categoría -->
+              <!-- Tipo -->
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full" 
-                      :class="isDark ? 'bg-green-800 text-green-200' : 'bg-green-100 text-green-800'">
-                  Cliente
-                </span>
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    v-for="badge in getThirdpartyBadges(client)" 
+                    :key="badge.label"
+                    class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full" 
+                    :class="badge.class"
+                  >
+                    {{ badge.label }}
+                  </span>
+                </div>
               </td>
               
               <!-- Fecha Creación -->
@@ -366,6 +379,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
 import http from '../../utils/http'
+import { getThirdpartyType, getThirdpartyBadges } from '../../utils/thirdpartyHelpers'
 
 const router = useRouter()
 const { isDark } = useTheme()
@@ -386,6 +400,14 @@ const itemsPerPage = ref(25)
 // Métricas computadas
 const totalClients = computed(() => clients.value.length)
 const activeClients = computed(() => clients.value.filter(c => c.status == 1).length)
+
+// Clientes que también son proveedores (socios)
+const clientsAlsoSuppliers = computed(() => {
+  return clients.value.filter(c => {
+    const typeInfo = getThirdpartyType(c)
+    return typeInfo.isPartner
+  }).length
+})
 
 const newThisMonth = computed(() => {
   const now = new Date()
@@ -493,12 +515,6 @@ const loadClients = async () => {
 const getInitials = (name) => {
   if (!name) return 'C'
   return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-}
-
-const getPrimaryContact = (client) => {
-  // Simular contacto principal basado en el nombre de la empresa
-  const contacts = ['Juan Pérez', 'María García', 'Carlos López', 'Ana Martín', 'Luis Rodríguez']
-  return contacts[parseInt(client.id) % contacts.length]
 }
 
 const formatDate = (timestamp) => {
