@@ -210,31 +210,12 @@
               </label>
               <div class="flex flex-wrap gap-2">
                 <span 
-                  v-if="tercero.client"
-                  class="px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2"
-                  :class="isDark ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-700'"
+                  v-for="badge in getThirdpartyBadges(tercero)" 
+                  :key="badge.label"
+                  class="px-4 py-2 rounded-lg text-sm font-medium" 
+                  :class="badge.class"
                 >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  <span>Cliente</span>
-                </span>
-                <span 
-                  v-if="tercero.fournisseur"
-                  class="px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2"
-                  :class="isDark ? 'bg-orange-900 text-orange-200' : 'bg-orange-100 text-orange-700'"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                  </svg>
-                  <span>Proveedor</span>
-                </span>
-                <span 
-                  v-if="!tercero.client && !tercero.fournisseur"
-                  class="px-4 py-2 rounded-lg text-sm font-medium"
-                  :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'"
-                >
-                  Personal
+                  {{ badge.label }}
                 </span>
               </div>
             </div>
@@ -294,13 +275,17 @@
                 <p class="text-base font-mono font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
                   {{ tercero.idprof1 || tercero.tva_intra || '-' }}
                 </p>
-                <button 
+                <a 
                   v-if="tercero.idprof1 || tercero.tva_intra" 
-                  class="px-2 py-1 text-xs rounded transition-colors"
+                  :href="getValidationUrl(tercero.idprof1 || tercero.tva_intra)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-2 py-1 text-xs rounded transition-colors inline-block"
                   :class="isDark ? 'bg-blue-900 text-blue-200 hover:bg-blue-800' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
+                  title="Verificar CIF/NIF en fuente oficial"
                 >
                   Verificar
-                </button>
+                </a>
               </div>
             </div>
             
@@ -785,6 +770,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
 import { usePermissions } from '../../composables/usePermissions'
 import http from '../../utils/http'
+import { getThirdpartyType, getThirdpartyBadges } from '../../utils/thirdpartyHelpers'
 
 const route = useRoute()
 const router = useRouter()
@@ -936,6 +922,28 @@ const loadTercero = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Generar URL de validación para CIF/NIF
+const getValidationUrl = (idprof) => {
+  if (!idprof) return '#'
+  
+  // Limpiar el ID profesional (quitar espacios)
+  const cleanIdprof = idprof.replace(/\s+/g, '')
+  
+  // URL template para España (por defecto)
+  // Puedes configurar esto según el país del tercero si es necesario
+  const urlTemplate = 'http://www.e-informa.es/servlet/app/portal/ENTP/screen/SProducto/prod/ETIQUETA_EMPRESA/nif/{IDPROF}'
+  
+  // Reemplazar {IDPROF} con el valor real
+  const validationUrl = urlTemplate.replace('{IDPROF}', cleanIdprof)
+  
+  console.log('🔍 URL de verificación CIF/NIF:', {
+    idprof: cleanIdprof,
+    url: validationUrl
+  })
+  
+  return validationUrl
 }
 
 const goBack = () => {
