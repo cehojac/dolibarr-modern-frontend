@@ -8023,12 +8023,99 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-const downloadDocument = (doc) => {
-  const downloadUrl = doc.download_url || doc.url
-  if (downloadUrl) {
-    window.open(downloadUrl, '_blank')
-  } else {
-    // console.warn('No download URL available for document:', doc)
+const downloadDocument = async (doc) => {
+  try {
+    // Construir los parámetros para la API de descarga
+    const modulepart = 'ticket' // Módulo de tickets
+    
+    // Obtener la referencia del ticket (ej: TS2510-0392)
+    const ticketRef = ticketDetails.value?.ref || selectedTicket.value?.ref
+    
+    if (!ticketRef) {
+      console.error('No se encontró la referencia del ticket')
+      notificationStore.error('No se puede descargar el archivo')
+      return
+    }
+    
+    // Construir la ruta completa: REF_TICKET/nombre_archivo.ext
+    const fileName = doc.name || doc.relativename
+    if (!fileName) {
+      console.error('No se encontró el nombre del archivo:', doc)
+      notificationStore.error('No se puede descargar el archivo')
+      return
+    }
+    
+    const originalFile = `${ticketRef}/${fileName}`
+    
+    console.log('📥 Descargando archivo:', originalFile)
+    
+    // Construir la URL de descarga con los parámetros
+    const downloadUrl = `/api/doli/documents/download?modulepart=${encodeURIComponent(modulepart)}&original_file=${encodeURIComponent(originalFile)}`
+    
+    // Hacer la petición GET para descargar el archivo
+    // La API devuelve un JSON con el contenido en base64
+    const response = await http.get(downloadUrl)
+    
+    console.log('📦 Response:', response.data)
+    
+    // Verificar que la respuesta tenga el contenido
+    if (!response.data || !response.data.content) {
+      console.error('❌ No se recibió contenido del archivo')
+      notificationStore.error('No se pudo obtener el contenido del archivo')
+      return
+    }
+    
+    // Decodificar el contenido base64
+    const base64Content = response.data.content
+    const binaryString = atob(base64Content)
+    const bytes = new Uint8Array(binaryString.length)
+    
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+    
+    // Determinar el tipo MIME correcto
+    let mimeType = 'application/octet-stream'
+    const contentType = response.data['content-type']
+    
+    if (contentType === 'archive' || fileName.endsWith('.zip')) {
+      mimeType = 'application/zip'
+    } else if (fileName.endsWith('.pdf')) {
+      mimeType = 'application/pdf'
+    } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) {
+      mimeType = 'image/jpeg'
+    } else if (fileName.endsWith('.png')) {
+      mimeType = 'image/png'
+    }
+    
+    // Crear blob con el contenido decodificado
+    const blob = new Blob([bytes], { type: mimeType })
+    
+    console.log('📦 Blob creado:', {
+      size: blob.size,
+      type: blob.type,
+      expectedSize: response.data.filesize
+    })
+    
+    // Crear URL y descargar
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = response.data.filename || fileName
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    
+    // Limpiar después de un pequeño delay
+    setTimeout(() => {
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    }, 100)
+    
+    console.log('✅ Archivo descargado:', response.data.filename)
+  } catch (error) {
+    console.error('❌ Error descargando archivo:', error)
+    notificationStore.error('Error al descargar el archivo')
   }
 }
 
