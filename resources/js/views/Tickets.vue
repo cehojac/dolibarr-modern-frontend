@@ -7758,8 +7758,87 @@ const updateDescriptionContent = (event) => {
 }
 
 const formatDescriptionText = (command) => {
-  document.execCommand(command, false, null)
-  descriptionEditor.value?.focus()
+  if (!descriptionEditor.value) return
+  
+  // Enfocar el editor primero
+  descriptionEditor.value.focus()
+  
+  // Para listas, usar un enfoque más robusto
+  if (command === 'insertUnorderedList' || command === 'insertOrderedList') {
+    const listTag = command === 'insertUnorderedList' ? 'ul' : 'ol'
+    const selection = window.getSelection()
+    
+    // Si no hay selección, crear una en el editor
+    if (!selection.rangeCount) {
+      const range = document.createRange()
+      range.selectNodeContents(descriptionEditor.value)
+      range.collapse(false)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+    
+    const range = selection.getRangeAt(0)
+    
+    // Verificar si ya estamos en una lista del mismo tipo
+    let currentElement = range.commonAncestorContainer
+    if (currentElement.nodeType === Node.TEXT_NODE) {
+      currentElement = currentElement.parentNode
+    }
+    
+    let existingList = null
+    while (currentElement && currentElement !== descriptionEditor.value) {
+      if (currentElement.nodeName === listTag.toUpperCase()) {
+        existingList = currentElement
+        break
+      }
+      currentElement = currentElement.parentNode
+    }
+    
+    if (existingList) {
+      // Ya estamos en una lista del mismo tipo, removerla
+      const parent = existingList.parentNode
+      const items = existingList.querySelectorAll('li')
+      items.forEach(li => {
+        const p = document.createElement('p')
+        p.innerHTML = li.innerHTML
+        parent.insertBefore(p, existingList)
+      })
+      parent.removeChild(existingList)
+    } else {
+      // Crear una nueva lista
+      const list = document.createElement(listTag)
+      const li = document.createElement('li')
+      
+      // Si hay texto seleccionado, usarlo
+      if (range.toString().trim()) {
+        const selectedText = range.extractContents()
+        li.appendChild(selectedText)
+      } else {
+        // Si no hay selección, crear un item vacío
+        li.innerHTML = '&nbsp;'
+      }
+      
+      list.appendChild(li)
+      range.insertNode(list)
+      
+      // Colocar el cursor dentro del li
+      const newRange = document.createRange()
+      newRange.setStart(li, 0)
+      newRange.collapse(true)
+      selection.removeAllRanges()
+      selection.addRange(newRange)
+      
+      // Actualizar el contenido
+      editedDescription.value = descriptionEditor.value.innerHTML
+    }
+  } else {
+    // Para otros comandos, usar execCommand normal
+    document.execCommand(command, false, null)
+  }
+  
+  // Actualizar el contenido y mantener el foco
+  editedDescription.value = descriptionEditor.value.innerHTML
+  descriptionEditor.value.focus()
 }
 
 const cancelEditDescription = () => {
