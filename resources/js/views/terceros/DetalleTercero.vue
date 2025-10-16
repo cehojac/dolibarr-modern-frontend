@@ -389,27 +389,51 @@
               :class="isDark ? 'bg-gray-700/50 border-gray-600 hover:bg-gray-700' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'"
             >
               <label class="text-xs font-medium uppercase tracking-wider block mb-2" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
-                {{ formatFieldName(field.key) }}
+                {{ field.label }}
               </label>
               <div class="flex items-center space-x-2">
-                <!-- Icono según tipo de dato -->
-                <svg v-if="typeof field.value === 'boolean'" class="w-4 h-4 flex-shrink-0" :class="field.value ? 'text-green-500' : 'text-red-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path v-if="field.value" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <svg v-else-if="isDate(field.value)" class="w-4 h-4 flex-shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <!-- Icono según tipo de campo -->
+                <!-- Date -->
+                <svg v-if="field.type === 'date' || field.type === 'datetime'" class="w-4 h-4 flex-shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <svg v-else-if="typeof field.value === 'number'" class="w-4 h-4 flex-shrink-0 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <!-- Boolean/Checkbox -->
+                <svg v-else-if="field.type === 'boolean' || field.type === 'checkbox'" class="w-4 h-4 flex-shrink-0" :class="(field.value === '1' || field.value === 1) ? 'text-green-500' : 'text-red-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path v-if="field.value === '1' || field.value === 1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <!-- Number/Price -->
+                <svg v-else-if="field.type === 'int' || field.type === 'integer' || field.type === 'double' || field.type === 'price'" class="w-4 h-4 flex-shrink-0 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                 </svg>
+                <!-- Email -->
+                <svg v-else-if="field.type === 'mail'" class="w-4 h-4 flex-shrink-0 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <!-- Phone -->
+                <svg v-else-if="field.type === 'phone'" class="w-4 h-4 flex-shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                <!-- URL -->
+                <svg v-else-if="field.type === 'url'" class="w-4 h-4 flex-shrink-0 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                <!-- Select/List -->
+                <svg v-else-if="field.type === 'select' || field.type === 'sellist'" class="w-4 h-4 flex-shrink-0 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                <!-- Text/HTML -->
+                <svg v-else-if="field.type === 'text' || field.type === 'html'" class="w-4 h-4 flex-shrink-0 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <!-- Default -->
                 <svg v-else class="w-4 h-4 flex-shrink-0 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 
-                <!-- Valor formateado -->
+                <!-- Valor formateado según tipo -->
                 <p class="text-sm font-medium break-words" :class="isDark ? 'text-white' : 'text-gray-900'">
-                  {{ formatFieldValue(field.value) }}
+                  {{ getFormattedValue(field) }}
                 </p>
               </div>
             </div>
@@ -769,6 +793,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
 import { usePermissions } from '../../composables/usePermissions'
+import { useExtrafields } from '../../composables/useExtrafields'
 import http from '../../utils/http'
 import { getThirdpartyType, getThirdpartyBadges } from '../../utils/thirdpartyHelpers'
 
@@ -776,11 +801,14 @@ const route = useRoute()
 const router = useRouter()
 const { isDark } = useTheme()
 const { hasPermission, hasAnyPermission } = usePermissions()
+const { getExtrafields, formatExtrafieldValue } = useExtrafields()
 
 const loading = ref(true)
 const tercero = ref(null)
 const activeTab = ref('tercero')
 const loadingEvents = ref(false)
+const extrafieldsConfig = ref({})
+const extrafieldsFormattedValues = ref({})
 
 // Delete thirdparty state
 const showDeleteModal = ref(false)
@@ -885,30 +913,69 @@ const tabs = computed(() => {
   return filteredTabs
 })
 
-// Computed property to filter non-null array_options
+// Computed property to filter non-null array_options with extrafield configuration
 const filteredArrayOptions = computed(() => {
   if (!tercero.value?.array_options) {
     return []
   }
   
+  // La configuración viene anidada en 'societe'
+  const fieldsConfig = extrafieldsConfig.value.societe || extrafieldsConfig.value
+  
   // Filter out null, undefined, and empty string values
   return Object.entries(tercero.value.array_options)
     .filter(([key, value]) => {
       // Keep the field if value is not null, undefined, or empty string
-      return value !== null && value !== undefined && value !== ''
+      if (value === null || value === undefined || value === '') return false
+      
+      // Para campos select, verificar que la opción exista
+      const fieldKey = key.replace(/^options_/, '')
+      const fieldConfig = fieldsConfig[fieldKey]
+      
+      if (fieldConfig?.type === 'select') {
+        const options = fieldConfig.param?.options
+        // Solo mostrar si la opción existe
+        return options && options[value]
+      }
+      
+      return true
     })
-    .map(([key, value]) => ({
-      key,
-      value
-    }))
+    .map(([key, value]) => {
+      // Obtener configuración del extrafield
+      const fieldKey = key.replace(/^options_/, '')
+      const fieldConfig = fieldsConfig[fieldKey]
+      
+      return {
+        key,
+        value,
+        config: fieldConfig,
+        label: fieldConfig?.label || formatFieldName(key),
+        type: fieldConfig?.type || 'varchar'
+      }
+    })
 })
 
 const loadTercero = async () => {
   try {
     loading.value = true
     const terceroId = route.params.id
-    const response = await http.get(`/api/doli/thirdparties/${terceroId}`)
-    tercero.value = response.data
+    
+    // Cargar datos del tercero y extrafields en paralelo
+    const [terceroResponse, extrafields] = await Promise.all([
+      http.get(`/api/doli/thirdparties/${terceroId}`),
+      getExtrafields('thirdparty')
+    ])
+    
+    tercero.value = terceroResponse.data
+    extrafieldsConfig.value = extrafields
+    
+    console.log('✅ Tercero y extrafields cargados:', {
+      tercero: tercero.value.name,
+      extrafieldsCount: Object.keys(extrafields).length
+    })
+    
+    // Formatear valores de extrafields (especialmente para sellist que necesitan llamadas API)
+    await formatExtrafieldsValues()
     
     // Verificar que la pestaña activa esté disponible después de filtrar por permisos
     const availableTabs = tabs.value
@@ -922,6 +989,130 @@ const loadTercero = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// Obtener valor formateado de un campo
+const getFormattedValue = (field) => {
+  const formattedValue = extrafieldsFormattedValues.value[field.key]
+  
+  console.log(`🔍 getFormattedValue para ${field.key}:`, {
+    hasFormatted: !!formattedValue,
+    formattedValue,
+    originalValue: field.value,
+    type: field.type
+  })
+  
+  if (formattedValue !== undefined && formattedValue !== null) {
+    return formattedValue
+  }
+  
+  return field.value
+}
+
+// Formatear valores de extrafields
+const formatExtrafieldsValues = async () => {
+  if (!tercero.value?.array_options) {
+    console.log('⚠️ No hay array_options para formatear')
+    return
+  }
+  
+  console.log('🔄 Iniciando formateo de extrafields...')
+  console.log('📋 Array options:', tercero.value.array_options)
+  console.log('⚙️ Extrafields config:', extrafieldsConfig.value)
+  
+  // La configuración viene anidada en 'societe'
+  const fieldsConfig = extrafieldsConfig.value.societe || extrafieldsConfig.value
+  console.log('⚙️ Configuración de campos societe:', fieldsConfig)
+  
+  const formattedValues = {}
+  
+  // Procesar cada extrafield
+  for (const [key, value] of Object.entries(tercero.value.array_options)) {
+    if (value === null || value === undefined || value === '') continue
+    
+    // Limpiar el key: quitar "options_" del inicio
+    const fieldKey = key.replace(/^options_/, '')
+    
+    // Buscar la configuración del campo
+    const fieldConfig = fieldsConfig[fieldKey]
+    
+    if (!fieldConfig) {
+      console.warn(`⚠️ No se encontró configuración para el campo: ${fieldKey}`)
+      formattedValues[key] = value
+      continue
+    }
+    
+    console.log(`🔍 Procesando campo: ${key}`, {
+      fieldKey,
+      value,
+      type: fieldConfig.type,
+      label: fieldConfig.label
+    })
+    
+    try {
+      // Formatear según el tipo
+      if (fieldConfig.type === 'date') {
+        // Convertir timestamp a fecha
+        const date = new Date(value * 1000)
+        formattedValues[key] = date.toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })
+        console.log(`✅ Fecha formateada: ${value} → ${formattedValues[key]}`)
+        
+      } else if (fieldConfig.type === 'select') {
+        // Para select, buscar la etiqueta en las opciones
+        const options = fieldConfig.param?.options
+        if (options && options[value]) {
+          formattedValues[key] = options[value]
+          console.log(`✅ Select resuelto: ${value} → ${formattedValues[key]}`)
+        } else {
+          // Si no se encuentra la opción, no mostrar el campo (no agregar a formattedValues)
+          console.log(`⚠️ No se encontró opción para: ${value}, campo omitido`)
+          continue
+        }
+        
+      } else if (fieldConfig.type === 'sellist') {
+        // Para sellist, buscar el nombre del elemento
+        const param = fieldConfig.param?.options || fieldConfig.param
+        
+        // Si es una referencia a societe
+        if (fieldConfig.elementtype === 'societe' || String(param).includes('societe')) {
+          try {
+            const response = await http.get(`/api/doli/thirdparties/${value}`)
+            formattedValues[key] = response.data?.name || value
+            console.log(`✅ Tercero resuelto: ${value} → ${formattedValues[key]}`)
+          } catch (error) {
+            console.error(`❌ Error obteniendo tercero ${value}:`, error)
+            formattedValues[key] = value
+          }
+        } else {
+          formattedValues[key] = value
+        }
+        
+      } else if (fieldConfig.type === 'checkbox' || fieldConfig.type === 'boolean') {
+        // Para checkbox/boolean, mostrar Sí/No
+        formattedValues[key] = (value === '1' || value === 1 || value === true) ? 'Sí' : 'No'
+        console.log(`✅ Boolean formateado: ${value} → ${formattedValues[key]}`)
+        
+      } else if (fieldConfig.type === 'double' || fieldConfig.type === 'price') {
+        // Para números decimales
+        formattedValues[key] = parseFloat(value).toFixed(2)
+        console.log(`✅ Número formateado: ${value} → ${formattedValues[key]}`)
+        
+      } else {
+        // Para otros tipos, usar el valor directo
+        formattedValues[key] = value
+      }
+    } catch (error) {
+      console.error(`❌ Error formateando campo ${key}:`, error)
+      formattedValues[key] = value
+    }
+  }
+  
+  extrafieldsFormattedValues.value = formattedValues
+  console.log('✅ Todos los valores formateados:', formattedValues)
 }
 
 // Generar URL de validación para CIF/NIF
@@ -1107,6 +1298,8 @@ const deleteThirdparty = async () => {
 }
 
 onMounted(() => {
+  // Scroll al inicio de la página
+  window.scrollTo({ top: 0, behavior: 'smooth' })
   loadTercero()
 })
 </script>

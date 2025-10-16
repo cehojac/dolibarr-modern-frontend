@@ -442,7 +442,7 @@
 
     <!-- Modal de Creación de Evento -->
     <div v-if="showCreateEventModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" :class="isDark ? 'bg-gray-800' : 'bg-white'">
+      <div class="rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" :class="isDark ? 'bg-gray-800' : 'bg-white'">
         <!-- Header del Modal -->
         <div class="flex items-center justify-between p-6 border-b" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
           <h2 class="text-xl font-semibold" :class="isDark ? 'text-white' : 'text-gray-900'">
@@ -532,15 +532,140 @@
           <!-- Evento asignado a -->
           <div class="grid grid-cols-4 gap-4 items-center">
             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Evento asignado a</label>
-            <div class="col-span-3 flex items-center space-x-2">
-              <div class="flex items-center space-x-2 px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span class="text-xs font-medium text-white">{{ userInitials }}</span>
+            <div class="col-span-3">
+              <select 
+                v-model="newEvent.userownerid" 
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option v-for="user in availableUsers" :key="user.id" :value="user.id">
+                  {{ user.firstname }} {{ user.lastname }} ({{ user.login }})
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Recurrencia -->
+          <div class="grid grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Recurrencia</label>
+            <div class="col-span-3">
+              <select 
+                v-model="newEvent.recurrence" 
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              >
+                <option value="none">Una sola vez</option>
+                <option value="daily">Cada día</option>
+                <option value="weekly">Cada semana</option>
+                <option value="monthly">Cada mes</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Empresa relacionada (buscador) -->
+          <div class="grid grid-cols-4 gap-4 items-start">
+            <label class="text-sm font-medium pt-2 text-gray-700 dark:text-gray-300">Empresa</label>
+            <div class="col-span-3 relative">
+              <!-- Input de búsqueda -->
+              <div class="relative">
+                <input 
+                  v-model="companySearchTerm" 
+                  @input="onCompanySearch"
+                  @focus="showCompanyDropdown = true"
+                  type="text" 
+                  placeholder="Buscar empresa (mín. 3 caracteres)..."
+                  class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                <div v-if="isSearchingCompany" class="absolute right-3 top-2.5">
+                  <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
                 </div>
-                <span>{{ authStore.user?.firstname || authStore.user?.login }} (Propietario)</span>
-                <input type="checkbox" checked disabled class="form-checkbox h-4 w-4 text-blue-600 rounded bg-white border-gray-300 dark:bg-gray-700 dark:border-gray-600">
-                <span class="text-xs">Ocupado</span>
               </div>
+              
+              <!-- Dropdown de resultados -->
+              <div 
+                v-if="showCompanyDropdown && companySearchResults.length > 0" 
+                class="absolute z-10 w-full mt-1 border rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                :class="isDark ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'"
+              >
+                <div 
+                  v-for="company in companySearchResults" 
+                  :key="company.id"
+                  @click="selectCompany(company)"
+                  class="px-3 py-2 cursor-pointer hover:bg-blue-50 dark:hover:bg-gray-700 text-sm"
+                  :class="isDark ? 'text-white' : 'text-gray-900'"
+                >
+                  <div class="font-medium">{{ company.name }}</div>
+                  <div v-if="company.alias" class="text-xs text-gray-500 dark:text-gray-400">{{ company.alias }}</div>
+                </div>
+              </div>
+              
+              <!-- Empresa seleccionada -->
+              <div v-if="selectedCompany" class="mt-2 flex items-center justify-between px-3 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                <span class="text-sm font-medium" :class="isDark ? 'text-blue-200' : 'text-blue-800'">
+                  {{ selectedCompany.name }}
+                </span>
+                <button 
+                  @click="clearCompanySelection" 
+                  type="button"
+                  class="text-red-500 hover:text-red-700"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contacto (solo si hay empresa seleccionada) -->
+          <div v-if="newEvent.socid" class="grid grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Contacto</label>
+            <div class="col-span-3">
+              <select 
+                v-model="newEvent.contactid" 
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                :disabled="loadingContacts"
+              >
+                <option :value="null">-- Sin contacto --</option>
+                <option v-for="contact in companyContacts" :key="contact.id" :value="contact.id">
+                  {{ contact.firstname }} {{ contact.lastname }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Proyecto (solo si hay empresa seleccionada) -->
+          <div v-if="newEvent.socid" class="grid grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Proyecto</label>
+            <div class="col-span-3">
+              <select 
+                v-model="newEvent.projectid" 
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                :disabled="loadingProjects"
+              >
+                <option :value="null">-- Sin proyecto --</option>
+                <option v-for="project in companyProjects" :key="project.id" :value="project.id">
+                  {{ project.ref }} - {{ project.title }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tarea (solo si hay proyecto seleccionado) -->
+          <div v-if="newEvent.projectid" class="grid grid-cols-4 gap-4 items-center">
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Tarea</label>
+            <div class="col-span-3">
+              <select 
+                v-model="newEvent.taskid" 
+                class="w-full border rounded-lg px-3 py-2 text-sm bg-white border-gray-300 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                :disabled="loadingTasks"
+              >
+                <option :value="null">-- Sin tarea --</option>
+                <option v-for="task in projectTasks" :key="task.id" :value="task.id">
+                  {{ task.ref }} - {{ task.label }}
+                </option>
+              </select>
             </div>
           </div>
 
@@ -1094,11 +1219,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useTheme } from '../composables/useTheme'
 import { useAuthStore } from '../stores/auth'
 import { useAgendaCounter } from '../composables/useAgendaCounter'
 import { useNotificationStore } from '../stores/notifications'
+import { useThirdpartySearch } from '../composables/useThirdpartySearch'
 import http from '../utils/http'
 
 const { isDark } = useTheme()
@@ -1145,11 +1271,36 @@ const newEvent = ref({
   startTime: '',
   endTime: '',
   allDay: false,
+  recurrence: 'none', // Recurrencia del evento
+  socid: null, // Empresa relacionada
+  contactid: null, // Contacto relacionado
+  projectid: null, // Proyecto relacionado
+  taskid: null, // Tarea relacionada
   location: '',
   status: '0',
   percentage: 0,
-  note: ''
+  note: '',
+  userownerid: null // Se establecerá al usuario actual por defecto
 })
+
+// Lista de usuarios disponibles
+const availableUsers = ref([])
+const loadingUsers = ref(false)
+
+// Buscador de empresas
+const { searchThirdparties, isSearching: isSearchingCompany } = useThirdpartySearch()
+const companySearchTerm = ref('')
+const companySearchResults = ref([])
+const showCompanyDropdown = ref(false)
+const selectedCompany = ref(null)
+
+// Datos relacionados con la empresa seleccionada
+const companyContacts = ref([])
+const companyProjects = ref([])
+const projectTasks = ref([])
+const loadingContacts = ref(false)
+const loadingProjects = ref(false)
+const loadingTasks = ref(false)
 
 // Vistas disponibles
 const views = [
@@ -1713,11 +1864,28 @@ const openCreateEventModal = (date, hour = null) => {
     startTime: hour ? `${hour.toString().padStart(2, '0')}:00` : '09:00',
     endTime: hour ? `${(hour + 1).toString().padStart(2, '0')}:00` : '10:00',
     allDay: false,
+    recurrence: 'none', // Una sola vez por defecto
+    socid: null,
+    contactid: null,
+    projectid: null,
+    taskid: null,
     location: '',
     status: '0',
     percentage: 0,
-    note: ''
+    note: '',
+    userownerid: authStore.user?.id || null // Usuario actual por defecto
   }
+  
+  // Resetear listas relacionadas
+  companyContacts.value = []
+  companyProjects.value = []
+  projectTasks.value = []
+  
+  // Resetear buscador de empresas
+  selectedCompany.value = null
+  companySearchTerm.value = ''
+  companySearchResults.value = []
+  showCompanyDropdown.value = false
   
   showCreateEventModal.value = true
    // console.log('📅 Abriendo modal para crear evento:', { date: formattedDate, hour })
@@ -1790,81 +1958,118 @@ const createEvent = async () => {
   try {
      // console.log('🔄 Creando evento...', newEvent.value)
     
-    // Preparar los datos del evento para la API de Dolibarr
-    // Basado en la estructura de eventos existentes de Dolibarr
-    const eventData = {
-      type_code: newEvent.value.type, // AC_OTH, AC_RDV, etc.
-      label: newEvent.value.label,
-      note_private: newEvent.value.note, // Dolibarr usa note_private
-      location: newEvent.value.location,
-      status: parseInt(newEvent.value.status),
-      percentage: parseInt(newEvent.value.percentage),
-      userownerid: parseInt(authStore.user?.id) || 1,
-      transparency: "0",
-      priority: "0",
-      fulldayevent: newEvent.value.allDay ? "1" : "0",
-      ponctuel: "1", // Evento puntual
-      entity: "1" // Entidad por defecto
+    // Determinar cuántos eventos crear según la recurrencia
+    const eventsToCreate = []
+    const baseDate = new Date(newEvent.value.date)
+    
+    if (newEvent.value.recurrence === 'none') {
+      // Un solo evento
+      eventsToCreate.push(new Date(baseDate))
+    } else {
+      // Eventos recurrentes - crear los próximos 12 eventos
+      const occurrences = 12
+      for (let i = 0; i < occurrences; i++) {
+        const eventDate = new Date(baseDate)
+        
+        switch (newEvent.value.recurrence) {
+          case 'daily':
+            eventDate.setDate(baseDate.getDate() + i)
+            break
+          case 'weekly':
+            eventDate.setDate(baseDate.getDate() + (i * 7))
+            break
+          case 'monthly':
+            eventDate.setMonth(baseDate.getMonth() + i)
+            break
+        }
+        
+        eventsToCreate.push(eventDate)
+      }
     }
+    
+    // Crear cada evento
+    for (const eventDate of eventsToCreate) {
+      const formattedDate = eventDate.toISOString().split('T')[0]
+      
+      // Preparar los datos del evento para la API de Dolibarr
+      const eventData = {
+        type_code: newEvent.value.type, // AC_OTH, AC_RDV, etc.
+        label: newEvent.value.label,
+        note_private: newEvent.value.note, // Dolibarr usa note_private
+        location: newEvent.value.location,
+        status: parseInt(newEvent.value.status),
+        percentage: parseInt(newEvent.value.percentage),
+        userownerid: parseInt(newEvent.value.userownerid) || parseInt(authStore.user?.id) || 1,
+        transparency: "0",
+        priority: "0",
+        fulldayevent: newEvent.value.allDay ? "1" : "0",
+        ponctuel: "1", // Evento puntual
+        entity: "1" // Entidad por defecto
+      }
     
      // console.log('📤 Datos del evento preparados:', eventData)
      // console.log('🔍 type_code específicamente:', eventData.type_code)
     
-    // Calcular timestamp para datep
-    if (newEvent.value.allDay) {
-      // Para eventos de todo el día, usar medianoche
-      const eventDate = new Date(newEvent.value.date + 'T00:00:00')
-      eventData.datep = Math.floor(eventDate.getTime() / 1000)
-      eventData.datef = eventData.datep + 86400 // +24 horas
-    } else {
-      // Para eventos con hora específica
-      const startDateTime = new Date(newEvent.value.date + 'T' + newEvent.value.startTime)
-      eventData.datep = Math.floor(startDateTime.getTime() / 1000)
-      
-      if (newEvent.value.endTime) {
-        const endDateTime = new Date(newEvent.value.date + 'T' + newEvent.value.endTime)
-        eventData.datef = Math.floor(endDateTime.getTime() / 1000)
+      // Calcular timestamp para datep usando la fecha del evento actual
+      if (newEvent.value.allDay) {
+        // Para eventos de todo el día, usar medianoche
+        const eventDateTime = new Date(formattedDate + 'T00:00:00')
+        eventData.datep = Math.floor(eventDateTime.getTime() / 1000)
+        eventData.datef = eventData.datep + 86400 // +24 horas
       } else {
-        eventData.datef = eventData.datep + 3600 // +1 hora por defecto
+        // Para eventos con hora específica
+        const startDateTime = new Date(formattedDate + 'T' + newEvent.value.startTime)
+        eventData.datep = Math.floor(startDateTime.getTime() / 1000)
+        
+        if (newEvent.value.endTime) {
+          const endDateTime = new Date(formattedDate + 'T' + newEvent.value.endTime)
+          eventData.datef = Math.floor(endDateTime.getTime() / 1000)
+        } else {
+          eventData.datef = eventData.datep + 3600 // +1 hora por defecto
+        }
       }
-    }
-    
-     // console.log('📤 Enviando datos del evento:', eventData)
-    
-    // Llamar a la API de Dolibarr para crear el evento
-    const response = await http.post('/api/doli/agendaevents', eventData)
-    
-     // console.log('✅ Evento creado exitosamente:', response.data)
-    
-    // Agregar el evento creado a la lista local
-    const createdEvent = {
-      id: response.data.id || Date.now(),
-      label: eventData.label,
-      note: eventData.note,
-      datep: eventData.datep,
-      location: eventData.location,
-      status: eventData.status,
-      percentage: eventData.percentage,
-      type: eventData.type
-    }
-    
-    eventos.value.push(createdEvent)
-    
-    // Si el evento es del día actual y futuro, incrementar el contador
-    const today = new Date()
-    const eventDateTime = new Date(eventData.datep * 1000)
-    const isToday = eventDateTime.toDateString() === today.toDateString()
-    
-    if (isToday) {
-      // Pasar el timestamp directamente al contador
-      incrementTodayCount(eventData.datep)
+      
+       // console.log('📤 Enviando datos del evento:', eventData)
+      
+      // Llamar a la API de Dolibarr para crear el evento
+      const response = await http.post('/api/doli/agendaevents', eventData)
+      
+       // console.log('✅ Evento creado exitosamente:', response.data)
+      
+      // Agregar el evento creado a la lista local
+      const createdEvent = {
+        id: response.data.id || Date.now(),
+        label: eventData.label,
+        note: eventData.note,
+        datep: eventData.datep,
+        location: eventData.location,
+        status: eventData.status,
+        percentage: eventData.percentage,
+        type: eventData.type
+      }
+      
+      eventos.value.push(createdEvent)
+      
+      // Si el evento es del día actual y futuro, incrementar el contador
+      const today = new Date()
+      const eventDateTime = new Date(eventData.datep * 1000)
+      const isToday = eventDateTime.toDateString() === today.toDateString()
+      
+      if (isToday) {
+        // Pasar el timestamp directamente al contador
+        incrementTodayCount(eventData.datep)
+      }
     }
     
     // Cerrar el modal
     closeCreateEventModal()
     
     // Mostrar mensaje de éxito
-     // console.log('🎉 Evento agregado al calendario')
+    const eventCount = eventsToCreate.length
+    const message = eventCount === 1 
+      ? '🎉 Evento creado exitosamente' 
+      : `🎉 ${eventCount} eventos recurrentes creados exitosamente`
+    notificationStore.success(message)
     
   } catch (error) {
     // console.error('❌ Error creando evento:', error)
@@ -1994,11 +2199,168 @@ const openOverdueEventDetail = (event) => {
   showEventDetail(event)
 }
 
+// Función para buscar empresas
+const onCompanySearch = async () => {
+  if (companySearchTerm.value.length < 3) {
+    companySearchResults.value = []
+    showCompanyDropdown.value = false
+    return
+  }
+  
+  const results = await searchThirdparties(companySearchTerm.value)
+  companySearchResults.value = results
+  showCompanyDropdown.value = true
+}
+
+// Función para seleccionar una empresa
+const selectCompany = async (company) => {
+  selectedCompany.value = company
+  newEvent.value.socid = company.id
+  companySearchTerm.value = company.name
+  showCompanyDropdown.value = false
+  
+  // Cargar contactos y proyectos de la empresa
+  await onCompanyChange()
+}
+
+// Función para limpiar la selección de empresa
+const clearCompanySelection = () => {
+  selectedCompany.value = null
+  newEvent.value.socid = null
+  companySearchTerm.value = ''
+  companySearchResults.value = []
+  showCompanyDropdown.value = false
+  
+  // Resetear campos dependientes
+  newEvent.value.contactid = null
+  newEvent.value.projectid = null
+  newEvent.value.taskid = null
+  companyContacts.value = []
+  companyProjects.value = []
+  projectTasks.value = []
+}
+
+// Función cuando cambia la empresa seleccionada
+const onCompanyChange = async () => {
+  // Resetear campos dependientes
+  newEvent.value.contactid = null
+  newEvent.value.projectid = null
+  newEvent.value.taskid = null
+  companyContacts.value = []
+  companyProjects.value = []
+  projectTasks.value = []
+  
+  if (!newEvent.value.socid) return
+  
+  // Cargar contactos y proyectos de la empresa en paralelo
+  await Promise.all([
+    loadCompanyContacts(newEvent.value.socid),
+    loadCompanyProjects(newEvent.value.socid)
+  ])
+}
+
+// Cargar contactos de una empresa
+const loadCompanyContacts = async (socid) => {
+  try {
+    loadingContacts.value = true
+    const response = await http.get('/api/doli/contacts', {
+      params: {
+        sortfield: 'lastname',
+        sortorder: 'ASC',
+        sqlfilters: `(t.fk_soc:=:${socid})`
+      }
+    })
+    companyContacts.value = response.data || []
+    console.log(`✅ Contactos cargados para empresa ${socid}:`, companyContacts.value.length)
+  } catch (error) {
+    console.error('❌ Error cargando contactos:', error)
+  } finally {
+    loadingContacts.value = false
+  }
+}
+
+// Cargar proyectos de una empresa
+const loadCompanyProjects = async (socid) => {
+  try {
+    loadingProjects.value = true
+    const response = await http.get('/api/doli/projects', {
+      params: {
+        sortfield: 'ref',
+        sortorder: 'ASC',
+        sqlfilters: `(t.fk_soc:=:${socid})`
+      }
+    })
+    companyProjects.value = response.data || []
+    console.log(`✅ Proyectos cargados para empresa ${socid}:`, companyProjects.value.length)
+  } catch (error) {
+    console.error('❌ Error cargando proyectos:', error)
+  } finally {
+    loadingProjects.value = false
+  }
+}
+
+// Cargar tareas de un proyecto
+const loadProjectTasks = async (projectid) => {
+  try {
+    loadingTasks.value = true
+    const response = await http.get('/api/doli/tasks', {
+      params: {
+        sortfield: 'ref',
+        sortorder: 'ASC',
+        sqlfilters: `(t.fk_projet:=:${projectid})`
+      }
+    })
+    projectTasks.value = response.data || []
+    console.log(`✅ Tareas cargadas para proyecto ${projectid}:`, projectTasks.value.length)
+  } catch (error) {
+    console.error('❌ Error cargando tareas:', error)
+  } finally {
+    loadingTasks.value = false
+  }
+}
+
+// Cargar usuarios disponibles
+const loadUsers = async () => {
+  try {
+    loadingUsers.value = true
+    const response = await http.get('/api/doli/users', {
+      params: {
+        sortfield: 'lastname',
+        sortorder: 'ASC',
+        limit: 100
+      }
+    })
+    
+    availableUsers.value = response.data || []
+    
+    // Establecer el usuario actual por defecto
+    if (authStore.user?.id && !newEvent.value.userownerid) {
+      newEvent.value.userownerid = authStore.user.id
+    }
+    
+    console.log('✅ Usuarios cargados:', availableUsers.value.length)
+  } catch (error) {
+    console.error('❌ Error cargando usuarios:', error)
+  } finally {
+    loadingUsers.value = false
+  }
+}
+
+// Watcher para cargar tareas cuando se selecciona un proyecto
+watch(() => newEvent.value.projectid, async (newProjectId, oldProjectId) => {
+  if (newProjectId && newProjectId !== oldProjectId) {
+    newEvent.value.taskid = null
+    projectTasks.value = []
+    await loadProjectTasks(newProjectId)
+  }
+})
+
 onMounted(async () => {
-  // Cargar terceros primero (en paralelo con eventos)
+  // Cargar terceros, eventos y usuarios en paralelo
   await Promise.all([
     fetchTerceros(),
-    loadEventos()
+    loadEventos(),
+    loadUsers()
   ])
 })
 </script>

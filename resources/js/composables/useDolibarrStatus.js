@@ -18,8 +18,14 @@ export function useDolibarrStatus() {
         console.log('✅ Dolibarr status cargado:', statusData.value)
       }
     } catch (err) {
-      console.error('❌ Error cargando status de Dolibarr:', err)
-      error.value = err
+      // Si es un error 401, es esperado cuando no hay sesión activa
+      if (err.response?.status === 401) {
+        // Silencioso - no mostrar nada, es normal en la página de login
+        statusData.value = null
+      } else {
+        console.error('❌ Error cargando status de Dolibarr:', err)
+        error.value = err
+      }
     } finally {
       loading.value = false
     }

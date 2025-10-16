@@ -90,8 +90,11 @@ http.interceptors.response.use(
       
       switch (status) {
         case 401:
-          // Evitar múltiples redirecciones simultáneas
-          if (!isRedirecting) {
+          // No redirigir si estamos en la página de login o si es una llamada a /api/doli/status
+          const isLoginPage = window.location.pathname === '/login'
+          const isStatusCheck = error.config?.url?.includes('/api/doli/status')
+          
+          if (!isLoginPage && !isStatusCheck && !isRedirecting) {
             isRedirecting = true
             notificationStore.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
             authStore.logout()
