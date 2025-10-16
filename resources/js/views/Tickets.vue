@@ -1574,6 +1574,50 @@
                     
                     <!-- Comment Editor -->
                     <div v-if="commentType === 'email'">
+                      <!-- Selector de Plantillas de Email -->
+                      <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                          <svg class="w-4 h-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Plantilla de Email
+                        </label>
+                        <div class="flex space-x-2">
+                          <select 
+                            v-model="selectedTemplate" 
+                            @change="applyEmailTemplate"
+                            class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-no-repeat bg-right pr-10"
+                            :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+                            style="background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 4 5&quot;><path fill=&quot;%23666&quot; d=&quot;M2 0L0 2h4zm0 5L0 3h4z&quot;/></svg>'); background-position: right 0.7rem center; background-size: 0.65rem auto;"
+                            :disabled="loadingTemplates"
+                          >
+                            <option value="">{{ loadingTemplates ? 'Cargando plantillas...' : 'Seleccionar plantilla...' }}</option>
+                            <option 
+                              v-for="(template, index) in emailTemplates" 
+                              :key="template.id || index" 
+                              :value="template.id || index"
+                            >
+                              {{ template.label || template.name || template.topic || template.title || template.subject || template.libelle || template.description || (template.id ? `Plantilla ID: ${template.id}` : `Plantilla ${index + 1}`) }}
+                            </option>
+                          </select>
+                          <button
+                            v-if="selectedTemplate"
+                            @click="selectedTemplate = ''"
+                            type="button"
+                            class="px-3 py-2 border rounded-lg transition-colors"
+                            :class="isDark ? 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
+                            title="Limpiar selección"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                        <p class="text-xs mt-1" :class="isDark ? 'text-gray-500' : 'text-gray-500'">
+                          Las variables como __TICKET_REF__, __TICKET_SUBJECT__, etc. serán reemplazadas automáticamente
+                        </p>
+                      </div>
+                      
                       <!-- Editor WYSIWYG para Email -->
                       <div class="border rounded-lg" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
                         <!-- Barra de herramientas del editor -->
@@ -3650,6 +3694,7 @@ import { useTicketTimer } from '@/composables/useTicketTimer'
 import { useAuthStore } from '../stores/auth'
 import { useTicketReferences } from '@/composables/useTicketReferences'
 import { useTicketDetails } from '@/composables/useTicketDetails'
+import { useEmailTemplates } from '@/composables/useEmailTemplates'
 import TimerButton from '@/components/TimerButton.vue'
 import ThirdpartySearchInput from '@/components/ThirdpartySearchInput.vue'
 import TicketDetailModal from '@/components/TicketDetailModal.vue'
@@ -3723,6 +3768,20 @@ const sendingComment = ref(false)
 const messagesKey = ref(0) // Key to force re-render of messages
 const commentAttachments = ref([]) // Archivos adjuntos para comentarios por email
 const showInterventions = ref(false) // Control visibility of interventions list
+
+// Email templates state
+const { loading: loadingTemplates, getEmailTemplates, getSubstitutionVariables } = useEmailTemplates()
+const emailTemplates = ref([])
+const selectedTemplate = ref('')
+const substitutionVariables = ref([])
+const loadingVariables = ref(false)
+
+// Watch commentType para debugging
+watch(commentType, (newValue) => {
+  console.log('📝 Tipo de comentario cambiado a:', newValue)
+  console.log('📧 Plantillas disponibles:', emailTemplates.value.length)
+  console.log('🔄 Loading templates:', loadingTemplates.value)
+})
 
 // Followers state (internally intervinientes/contacts)
 const ticketFollowers = ref([])
@@ -5810,6 +5869,167 @@ const sendComment = async () => {
     sendingComment.value = false
   }
 }
+
+// Email templates functions
+const loadEmailTemplates = async () => {
+  try {
+    console.log('📧 Cargando plantillas de email para tickets...')
+    // Cargar plantillas con filtros: tipo ticket_send, habilitadas y públicas
+    emailTemplates.value = await getEmailTemplates({ 
+      type_template: 'ticket_send',
+      enabled: 1,
+      private: 0
+    })
+    console.log(`✅ ${emailTemplates.value.length} plantillas cargadas`)
+    console.log('📋 Plantillas:', emailTemplates.value)
+  } catch (error) {
+    console.error('❌ Error cargando plantillas:', error)
+    emailTemplates.value = []
+  }
+}
+
+const loadSubstitutionVariables = async () => {
+  try {
+    loadingVariables.value = true
+    console.log('🔄 Cargando variables de sustitución...')
+    substitutionVariables.value = await getSubstitutionVariables('ticket')
+    console.log(`✅ ${substitutionVariables.value.length} variables cargadas`)
+  } catch (error) {
+    console.error('❌ Error cargando variables:', error)
+    substitutionVariables.value = []
+  } finally {
+    loadingVariables.value = false
+  }
+}
+
+const applyEmailTemplate = async () => {
+  if (!selectedTemplate.value) return
+  
+  try {
+    console.log('📝 Aplicando plantilla:', selectedTemplate.value)
+    console.log('📧 Plantillas disponibles:', emailTemplates.value)
+    
+    // Buscar la plantilla seleccionada (por ID o por índice)
+    let template = emailTemplates.value.find(t => String(t.id) === String(selectedTemplate.value))
+    
+    // Si no se encuentra por ID, buscar por índice
+    if (!template) {
+      const index = parseInt(selectedTemplate.value)
+      if (!isNaN(index) && emailTemplates.value[index]) {
+        template = emailTemplates.value[index]
+      }
+    }
+    
+    if (!template) {
+      console.error('❌ Plantilla no encontrada')
+      alert('No se pudo cargar la plantilla seleccionada')
+      return
+    }
+    
+    console.log('✅ Plantilla encontrada:', template)
+    
+    // Obtener el contenido de la plantilla (puede estar en diferentes campos)
+    let templateContent = template.content || template.content_lines || template.message || template.body || template.text || ''
+    
+    if (!templateContent) {
+      console.warn('⚠️ La plantilla no tiene contenido')
+      alert('La plantilla seleccionada está vacía')
+      return
+    }
+    
+    console.log('📄 Contenido de plantilla:', templateContent.substring(0, 100) + '...')
+    
+    // Reemplazar variables de sustitución
+    templateContent = await replaceSubstitutionVariables(templateContent)
+    
+    // Aplicar el contenido al editor
+    if (commentEditor.value) {
+      commentEditor.value.innerHTML = templateContent
+      newComment.value = templateContent
+      console.log('✅ Plantilla aplicada al editor')
+    } else {
+      console.error('❌ Editor no encontrado')
+    }
+  } catch (error) {
+    console.error('❌ Error aplicando plantilla:', error)
+    alert('Error al aplicar la plantilla: ' + error.message)
+  }
+}
+
+const replaceSubstitutionVariables = async (content) => {
+  if (!content || !ticketDetails.value) return content
+  
+  let replacedContent = content
+  
+  try {
+    // Variables del ticket
+    const ticketVars = {
+      '__TICKET_ID__': ticketDetails.value.id || '',
+      '__TICKET_REF__': ticketDetails.value.ref || '',
+      '__TICKET_TRACK_ID__': ticketDetails.value.track_id || '',
+      '__TICKET_SUBJECT__': ticketDetails.value.subject || '',
+      '__TICKET_MESSAGE__': ticketDetails.value.message || '',
+      '__TICKET_TYPE__': ticketDetails.value.type_label || '',
+      '__TICKET_CATEGORY__': ticketDetails.value.category_label || '',
+      '__TICKET_SEVERITY__': ticketDetails.value.severity_label || '',
+      '__TICKET_STATUS__': getStatusText(ticketDetails.value.fk_statut) || '',
+      '__TICKET_DATE_CREATION__': formatDate(ticketDetails.value.datec) || '',
+      '__TICKET_DATE_READ__': formatDate(ticketDetails.value.date_read) || '',
+      '__TICKET_DATE_CLOSE__': formatDate(ticketDetails.value.date_close) || '',
+      '__TICKET_URL__': `${window.location.origin}/tickets/${ticketDetails.value.id}` || ''
+    }
+    
+    // Variables del tercero/cliente
+    if (currentCompany.value) {
+      ticketVars['__THIRDPARTY_NAME__'] = currentCompany.value.name || ''
+      ticketVars['__THIRDPARTY_EMAIL__'] = currentCompany.value.email || ''
+      ticketVars['__THIRDPARTY_PHONE__'] = currentCompany.value.phone || ''
+      ticketVars['__THIRDPARTY_ADDRESS__'] = currentCompany.value.address || ''
+      ticketVars['__THIRDPARTY_ZIP__'] = currentCompany.value.zip || ''
+      ticketVars['__THIRDPARTY_TOWN__'] = currentCompany.value.town || ''
+    }
+    
+    // Variables del usuario asignado
+    if (ticketDetails.value.fk_user_assign) {
+      const assignedUser = users.value.find(u => String(u.id) === String(ticketDetails.value.fk_user_assign))
+      if (assignedUser) {
+        ticketVars['__USER_ASSIGNED_FIRSTNAME__'] = assignedUser.firstname || ''
+        ticketVars['__USER_ASSIGNED_LASTNAME__'] = assignedUser.lastname || ''
+        ticketVars['__USER_ASSIGNED_EMAIL__'] = assignedUser.email || ''
+        ticketVars['__USER_ASSIGNED_PHONE__'] = assignedUser.office_phone || ''
+      }
+    }
+    
+    // Variables del usuario actual
+    if (authStore.user) {
+      ticketVars['__USER_FIRSTNAME__'] = authStore.user.firstname || ''
+      ticketVars['__USER_LASTNAME__'] = authStore.user.lastname || ''
+      ticketVars['__USER_EMAIL__'] = authStore.user.email || ''
+      ticketVars['__USER_PHONE__'] = authStore.user.office_phone || ''
+      ticketVars['__USER_SIGNATURE__'] = authStore.user.signature || ''
+    }
+    
+    // Variables de fecha actual
+    const now = new Date()
+    ticketVars['__DATE__'] = now.toLocaleDateString('es-ES')
+    ticketVars['__TIME__'] = now.toLocaleTimeString('es-ES')
+    ticketVars['__DATETIME__'] = now.toLocaleString('es-ES')
+    
+    // Reemplazar todas las variables
+    for (const [variable, value] of Object.entries(ticketVars)) {
+      const regex = new RegExp(variable.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')
+      replacedContent = replacedContent.replace(regex, value)
+    }
+    
+    console.log('✅ Variables de sustitución reemplazadas')
+    
+  } catch (error) {
+    console.error('❌ Error reemplazando variables:', error)
+  }
+  
+  return replacedContent
+}
+
  // console.log('fetchUserInterventions:', fetchUserInterventions)
  // console.log('getInterventionsForTicket:', getInterventionsForTicket)
 
@@ -6940,13 +7160,15 @@ const viewTicketDetails = async (ticket) => {
     // Cargar todas las intervenciones del ticket
     await fetchAllTicketInterventions(ticket.id)
     
-    // Load followers, users/contacts, reminders, and company info
+    // Load followers, users/contacts, reminders, company info, and email templates
     await Promise.all([
       fetchTicketFollowers(ticket.id),
       fetchTicketReminders(ticket.id),
       fetchAvailableUsers(),
       fetchAvailableContacts(response.data.fk_soc),
-      fetchCompanyInfo(response.data.fk_soc)
+      fetchCompanyInfo(response.data.fk_soc),
+      loadEmailTemplates(),
+      loadSubstitutionVariables()
     ])
     
     // Log summary of loaded data
@@ -7068,6 +7290,11 @@ const closeModal = async () => {
     
     // Lógica adicional específica de la página Tickets
     allTicketInterventions.value = [] // Limpiar intervenciones
+    
+    // Limpiar plantillas de email
+    selectedTemplate.value = ''
+    emailTemplates.value = []
+    substitutionVariables.value = []
     
     // Force refresh tickets after closing modal
      // console.log('🔄 Refreshing data after modal close...')
