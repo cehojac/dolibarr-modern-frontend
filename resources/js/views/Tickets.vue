@@ -1336,13 +1336,39 @@
                   
                   <!-- Description editing mode -->
                   <div v-if="editingDescription" class="space-y-3">
-                    <textarea
-                      v-model="editedDescription"
-                      rows="8"
-                      class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                      :class="isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'"
-                      placeholder="Descripción del ticket"
-                    ></textarea>
+                    <!-- Editor WYSIWYG -->
+                    <div class="border rounded-lg overflow-hidden" :class="isDark ? 'border-gray-600' : 'border-gray-300'">
+                      <!-- Barra de herramientas -->
+                      <div class="flex items-center space-x-1 p-2 border-b" :class="isDark ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-300'">
+                        <button @click="formatDescriptionText('bold')" type="button" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="Negrita">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M12.5 4h-5v12h5a4 4 0 000-8 4 4 0 000-8zm-2 6V6h2a2 2 0 110 4h-2zm0 2h2a2 2 0 110 4h-2v-4z"/></svg>
+                        </button>
+                        <button @click="formatDescriptionText('italic')" type="button" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="Cursiva">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 4h6v2h-2l-4 8h2v2H6v-2h2l4-8H10V4z"/></svg>
+                        </button>
+                        <button @click="formatDescriptionText('underline')" type="button" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="Subrayado">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v4a6 6 0 0012 0V8a6 6 0 00-6-6zM4 8a4 4 0 118 0v4a4 4 0 11-8 0V8zm0 10h12v2H4v-2z"/></svg>
+                        </button>
+                        <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                        <button @click="formatDescriptionText('insertUnorderedList')" type="button" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="Lista">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/></svg>
+                        </button>
+                        <button @click="formatDescriptionText('insertOrderedList')" type="button" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700" title="Lista numerada">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M3 4h14v2H3V4zm0 4h14v2H3V8zm0 4h14v2H3v-2zm0 4h14v2H3v-2z"/></svg>
+                        </button>
+                      </div>
+                      
+                      <!-- Área de contenido editable -->
+                      <div
+                        ref="descriptionEditor"
+                        contenteditable="true"
+                        @input="updateDescriptionContent"
+                        class="p-3 min-h-[200px] focus:outline-none"
+                        :class="isDark ? 'bg-gray-700 text-white' : 'bg-white text-gray-900'"
+                        placeholder="Descripción del ticket"
+                      ></div>
+                    </div>
+                    
                     <div class="flex items-center space-x-2">
                       <button
                         @click="saveDescription"
@@ -1362,17 +1388,19 @@
                   
                   <!-- Description view mode -->
                   <div v-else class="prose max-w-none" :class="isDark ? 'prose-invert' : ''">
-                    <div v-if="ticketDetails.message" class="text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-700'">
+                    <div v-if="ticketDetails.message" class="text-sm">
                       <!-- Descripción truncada o completa -->
                       <div 
                         v-if="!showFullDescription && ticketDetails.message.length > 300"
                         v-html="ticketDetails.message.substring(0, 300) + '...'"
-                        class="mb-2"
+                        class="mb-2 whitespace-pre-wrap ticket-description-content"
+                        :class="isDark ? '' : 'light-theme'"
                       ></div>
                       <div 
                         v-else
                         v-html="ticketDetails.message"
-                        class="mb-2"
+                        class="mb-2 whitespace-pre-wrap ticket-description-content"
+                        :class="isDark ? '' : 'light-theme'"
                       ></div>
                       
                       <!-- Botón Leer más / Leer menos -->
@@ -5629,8 +5657,8 @@ const sendComment = async () => {
 
       response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
       
-      // Enviar mensaje privado al ticket para registro
-      const privateMessage = `Email enviado a: ${recipients.join(', ')}\nAsunto: ${emailData.subject}\n\n${emailMessage}`
+      // Enviar mensaje privado con el contenido del email (sin la firma)
+      const privateMessage = `📧 Email enviado a: ${recipients.join(', ')}\n\n${newComment.value.trim()}`
       await sendPrivateMessage(ticketId, privateMessage)
       
     } else {
@@ -7710,9 +7738,28 @@ const saveSubject = async () => {
 }
 
 // Description editing functions
+const descriptionEditor = ref(null)
+
 const startEditDescription = () => {
   editingDescription.value = true
   editedDescription.value = ticketDetails.value?.message || ''
+  
+  // Esperar a que el DOM se actualice
+  nextTick(() => {
+    if (descriptionEditor.value) {
+      descriptionEditor.value.innerHTML = ticketDetails.value?.message || ''
+      descriptionEditor.value.focus()
+    }
+  })
+}
+
+const updateDescriptionContent = (event) => {
+  editedDescription.value = event.target.innerHTML
+}
+
+const formatDescriptionText = (command) => {
+  document.execCommand(command, false, null)
+  descriptionEditor.value?.focus()
 }
 
 const cancelEditDescription = () => {
@@ -8135,5 +8182,28 @@ onUnmounted(cleanup)
 
 .kanban-container::-webkit-scrollbar-thumb:hover {
   background-color: rgba(107, 114, 128, 0.7);
+}
+
+/* Estilos para descripción del ticket - forzar colores según tema */
+.ticket-description-content * {
+  color: inherit !important;
+}
+
+.ticket-description-content {
+  color: rgb(209, 213, 219) !important;
+}
+
+.ticket-description-content.light-theme {
+  color: rgb(55, 65, 81) !important;
+}
+
+.ticket-description-content p,
+.ticket-description-content div,
+.ticket-description-content span,
+.ticket-description-content li,
+.ticket-description-content strong,
+.ticket-description-content em,
+.ticket-description-content u {
+  color: inherit !important;
 }
 </style>

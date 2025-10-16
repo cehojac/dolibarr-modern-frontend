@@ -20,9 +20,19 @@ class DoliProxyController extends Controller
     public function handle(Request $request, string $path)
     {
         $baseUrl = rtrim(config('services.dolibarr.base_url'), '/');
-        $token = $request->session()->get('dolibarr_token');
-        if (!$token) {
-            return response()->json(['message' => 'No autenticado'], 401);
+        
+        // Rutas públicas que no requieren autenticación
+        $publicRoutes = ['status'];
+        $isPublicRoute = in_array($path, $publicRoutes);
+        
+        // Para rutas públicas, usar el token de la configuración
+        if ($isPublicRoute) {
+            $token = config('services.dolibarr.api_key');
+        } else {
+            $token = $request->session()->get('dolibarr_token');
+            if (!$token) {
+                return response()->json(['message' => 'No autenticado'], 401);
+            }
         }
 
         // Debug: verificar qué contiene baseUrl
