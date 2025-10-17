@@ -2195,7 +2195,7 @@
                         <input
                           v-model="assignmentSearchTerm"
                           @focus="showAssignmentDropdown = true"
-                          @blur="setTimeout(() => showAssignmentDropdown = false, 200)"
+                          @blur="() => window.setTimeout(() => showAssignmentDropdown = false, 200)"
                           type="text"
                           placeholder="Buscar usuario..."
                           class="w-full p-2 border rounded-lg text-sm pr-8"
@@ -2310,7 +2310,7 @@
                         <input
                           v-model="followersSearchTerm"
                           @focus="showFollowersDropdown = true"
-                          @blur="setTimeout(() => showFollowersDropdown = false, 200)"
+                          @blur="() => window.setTimeout(() => showFollowersDropdown = false, 200)"
                           type="text"
                           placeholder="Buscar seguidor..."
                           class="w-full p-2 border rounded-lg text-xs pr-8"
@@ -3374,7 +3374,7 @@
                 <input
                   v-model="thirdpartySearch"
                   @focus="showThirdpartyDropdown = true"
-                  @blur="setTimeout(() => showThirdpartyDropdown = false, 200)"
+                  @blur="() => window.setTimeout(() => showThirdpartyDropdown = false, 200)"
                   type="text"
                   placeholder="Buscar tercero..."
                   class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -3420,7 +3420,7 @@
                 <input
                   v-model="contactSearch"
                   @focus="showContactDropdown = true"
-                  @blur="setTimeout(() => showContactDropdown = false, 200)"
+                  @blur="() => window.setTimeout(() => showContactDropdown = false, 200)"
                   type="text"
                   placeholder="Buscar contacto..."
                   class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -3477,7 +3477,7 @@
                 <input
                   v-model="userSearch"
                   @focus="showUserDropdown = true"
-                  @blur="setTimeout(() => showUserDropdown = false, 200)"
+                  @blur="() => window.setTimeout(() => showUserDropdown = false, 200)"
                   type="text"
                   placeholder="Buscar usuario..."
                   class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -3525,7 +3525,7 @@
                 <input
                   v-model="projectSearch"
                   @focus="showProjectDropdown = true"
-                  @blur="setTimeout(() => showProjectDropdown = false, 200)"
+                  @blur="() => window.setTimeout(() => showProjectDropdown = false, 200)"
                   type="text"
                   placeholder="Buscar proyecto..."
                   :disabled="!newTicket.thirdparty"
@@ -3590,7 +3590,7 @@
                 <input
                   v-model="contractSearch"
                   @focus="showContractDropdown = true"
-                  @blur="setTimeout(() => showContractDropdown = false, 200)"
+                  @blur="() => window.setTimeout(() => showContractDropdown = false, 200)"
                   type="text"
                   placeholder="Buscar contrato..."
                   class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -7718,43 +7718,61 @@ const cancelEditStatus = () => {
 
 const saveStatus = async () => {
   try {
-    // console.log('💾 Guardando estado del ticket:', {
-    //   ticketId: ticketDetails.value?.id,
-    //   estadoAnterior: ticketDetails.value?.fk_statut,
-    //   estadoNuevo: selectedStatus.value
-    // })
+    console.log('💾 Guardando estado del ticket:', {
+      ticketId: ticketDetails.value?.id,
+      estadoAnterior: ticketDetails.value?.fk_statut,
+      estadoNuevo: selectedStatus.value
+    })
 
     if (!ticketDetails.value?.id) {
       alert('Error: No se encontró el ID del ticket')
       return
     }
 
+    const newStatus = String(selectedStatus.value)
+    
     const updateData = {
-      fk_statut: parseInt(selectedStatus.value)
+      fk_statut: newStatus,
+      status: newStatus
     }
 
     const response = await http.put(`/api/doli/tickets/${ticketDetails.value.id}`, updateData)
     
-    // console.log('✅ Estado actualizado:', response.data)
+    console.log('✅ Respuesta del servidor:', response.data)
     
-    // Actualizar el estado local
-    ticketDetails.value.fk_statut = parseInt(selectedStatus.value)
+    // Cerrar modo edición primero
+    editingStatus.value = false
     
     // Actualizar también en la lista de tickets si existe
     const ticketIndex = tickets.value.findIndex(t => t.id === ticketDetails.value.id)
     if (ticketIndex !== -1) {
-      tickets.value[ticketIndex].fk_statut = parseInt(selectedStatus.value)
+      tickets.value[ticketIndex].fk_statut = newStatus
+      console.log('✅ Estado actualizado en la lista de tickets')
     }
     
-    // Cerrar modo edición
-    editingStatus.value = false
+    // Recargar detalles del ticket para asegurar sincronización
+    await refreshTicketDetails()
+    
+    // Esperar a que Vue actualice el DOM
+    await nextTick()
+    
+    console.log('✅ Estado después de refresh:', ticketDetails.value?.fk_statut)
+    console.log('🔍 Tipo de fk_statut:', typeof ticketDetails.value?.fk_statut)
+    console.log('📋 ticketDetails completo:', ticketDetails.value)
+    console.log('🎯 Estado esperado era:', newStatus)
     
     // Actualizar contador de tickets
     await updateTicketsCounter()
     
-    // console.log('✅ Estado del ticket actualizado exitosamente')
+    // Recargar lista de tickets
+    await fetchTickets()
+    
+    console.log('✅ Estado del ticket actualizado exitosamente')
+    
+    // Mostrar notificación de éxito
+    showNotification('Estado del ticket actualizado correctamente', 'success')
   } catch (error) {
-    // console.error('❌ Error actualizando estado:', error)
+    console.error('❌ Error actualizando estado:', error)
     alert('Error al actualizar el estado del ticket: ' + (error.response?.data?.message || error.message))
   }
 }

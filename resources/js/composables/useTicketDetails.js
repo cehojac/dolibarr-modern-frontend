@@ -51,9 +51,14 @@ export function useTicketDetails() {
 
     loadingDetails.value = true
     try {
-      const response = await http.get(`/api/doli/tickets/${selectedTicket.value.id}`)
-      ticketDetails.value = response.data
+      // Agregar timestamp para evitar caché
+      const response = await http.get(`/api/doli/tickets/${selectedTicket.value.id}?_t=${Date.now()}`)
+      
+      // Forzar actualización completa del objeto
+      ticketDetails.value = { ...response.data }
+      
       console.log('🔄 Detalles del ticket actualizados')
+      console.log('🔍 Nuevo estado:', ticketDetails.value.fk_statut)
     } catch (error) {
       console.error('❌ Error actualizando detalles del ticket:', error)
     } finally {
