@@ -22,8 +22,76 @@ class DoliProxyController extends Controller
         $baseUrl = rtrim(config('services.dolibarr.base_url'), '/');
         
         // Rutas públicas que no requieren autenticación
-        $publicRoutes = ['status'];
-        $isPublicRoute = in_array($path, $publicRoutes);
+        $publicRoutes = ['status', 'setup/company'];
+        
+        // Verificar si es una ruta pública de tickets (track_id)
+        $isPublicTicketRoute = str_contains($path, 'tickets/track_id/');
+        
+        // Verificar si es una búsqueda pública de terceros, contactos o usuarios
+        $isPublicThirdpartyRoute = (str_starts_with($path, 'thirdparties') || str_starts_with($path, 'contacts') || str_starts_with($path, 'users')) 
+            && ($request->has('email') || $request->has('thirdparty_ids') || $request->header('X-Public-Request') === 'true');
+        
+        // Verificar si es una búsqueda de contacto por email específico
+        $isPublicContactEmailRoute = preg_match('/contacts\/email\//', $path) 
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud de tickets con socid (después de validar email)
+        $isPublicTicketsListRoute = str_starts_with($path, 'tickets') 
+            && $request->has('socid') 
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud de mensajes o envío de mensaje público
+        // Permite GET /tickets/{id}/messages y POST /tickets/{id}/messages
+        $isPublicMessagesRoute = preg_match('/tickets\/\d+\/messages\/?$/', $path) 
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud de envío de nuevo mensaje
+        $isPublicNewMessageRoute = str_starts_with($path, 'tickets/newmessage')
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud al módulo personalizado dolibarmodernfrontendapi
+        $isPublicModuleRoute = str_contains($path, 'dolibarmodernfrontendapi/tickets')
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud para crear un ticket público (POST /tickets)
+        $isPublicCreateTicketRoute = $path === 'tickets' 
+            && $request->isMethod('POST')
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud para subir documentos públicos (POST /documents/upload)
+        $isPublicUploadDocumentRoute = $path === 'documents/upload'
+            && $request->isMethod('POST')
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud para obtener un ticket por ID (GET /tickets/{id})
+        $isPublicGetTicketRoute = preg_match('/^tickets\/\d+$/', $path)
+            && $request->isMethod('GET')
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud para subir documentos al módulo personalizado
+        $isPublicModuleUploadRoute = preg_match('/dolibarmodernfrontendapi\/ticket\/\d+\/documents/', $path)
+            && $request->isMethod('POST')
+            && $request->header('X-Public-Request') === 'true';
+        
+        // Verificar si es una solicitud para obtener proyectos (GET /projects)
+        $isPublicProjectsRoute = $path === 'projects'
+            && $request->isMethod('GET')
+            && $request->has('thirdparty_ids')
+            && $request->header('X-Public-Request') === 'true';
+        
+        $isPublicRoute = in_array($path, $publicRoutes) 
+            || $isPublicTicketRoute 
+            || $isPublicThirdpartyRoute 
+            || $isPublicContactEmailRoute
+            || $isPublicTicketsListRoute
+            || $isPublicMessagesRoute
+            || $isPublicNewMessageRoute
+            || $isPublicModuleRoute
+            || $isPublicCreateTicketRoute
+            || $isPublicUploadDocumentRoute
+            || $isPublicGetTicketRoute
+            || $isPublicModuleUploadRoute
+            || $isPublicProjectsRoute;
         
         // Para rutas públicas, usar el token de la configuración
         if ($isPublicRoute) {
