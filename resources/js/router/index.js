@@ -8,6 +8,31 @@ const routes = [
     component: () => import('../views/Login.vue'),
     meta: { requiresGuest: true }
   },
+  // Rutas públicas para tickets (sin autenticación)
+  {
+    path: '/new-ticket',
+    name: 'NewTicketHome',
+    component: () => import('../views/public/NewTicket.vue'),
+    meta: { public: true }
+  },
+  {
+    path: '/new-ticket/create',
+    name: 'CreatePublicTicket',
+    component: () => import('../views/public/CreateTicket.vue'),
+    meta: { public: true }
+  },
+  {
+    path: '/new-ticket/list',
+    name: 'ListPublicTickets',
+    component: () => import('../views/public/ListTickets.vue'),
+    meta: { public: true }
+  },
+  {
+    path: '/new-ticket/track',
+    name: 'TrackPublicTicket',
+    component: () => import('../views/public/TrackTicket.vue'),
+    meta: { public: true }
+  },
   {
     path: '/',
     component: () => import('../layouts/AppLayout.vue'),
@@ -144,6 +169,12 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  
+  // Permitir acceso a rutas públicas sin autenticación
+  if (to.meta.public) {
+    next()
+    return
+  }
   
   // Inicializar desde localStorage si no está autenticado
   if (!authStore.isAuthenticated) {
