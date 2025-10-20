@@ -3,9 +3,15 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DoliProxyController;
+use App\Http\Controllers\DoliImageProxyController;
 
 // SPA entry
 Route::view('/', 'app')->name('home');
+
+// Proxy para imágenes de Dolibarr (público, sin force.json porque devuelve imagen)
+Route::prefix('api')->middleware(['web'])->group(function () {
+    Route::get('/doli-image', [DoliImageProxyController::class, 'getImage']);
+});
 
 // API routes - con middleware web para sesiones y force.json para respuestas JSON
 Route::prefix('api')->middleware(['web', 'force.json'])->group(function () {
