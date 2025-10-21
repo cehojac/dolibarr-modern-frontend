@@ -11,24 +11,27 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            <span>Volver</span>
+            <span>{{ $t('public.common.back') }}</span>
           </button>
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center overflow-hidden">
-              <img 
-                v-if="companyLogo" 
-                :src="companyLogo" 
-                :alt="companyName"
-                class="w-full h-full object-contain"
-                @error="(e) => { console.error('❌ Error al cargar imagen:', companyLogo, e); companyLogo = null }"
-                @load="() => console.log('✅ Imagen cargada exitosamente')"
-              />
-              <span v-else class="text-white font-bold">{{ companyInitials }}</span>
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center overflow-hidden">
+                <img 
+                  v-if="companyLogo" 
+                  :src="companyLogo" 
+                  :alt="companyName"
+                  class="w-full h-full object-contain"
+                  @error="(e) => { console.error('❌ Error al cargar imagen:', companyLogo, e); companyLogo = null }"
+                  @load="() => console.log('✅ Imagen cargada exitosamente')"
+                />
+                <span v-else class="text-white font-bold">{{ companyInitials }}</span>
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ $t('public.tickets.title') }}</h1>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ companyName }}</p>
+              </div>
             </div>
-            <div>
-              <h1 class="text-xl font-bold text-gray-900 dark:text-white">Sistema de Tickets</h1>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ companyName }}</p>
-            </div>
+            <LanguageSelector />
           </div>
         </div>
       </div>
@@ -39,9 +42,9 @@
       <!-- Header con botón de cerrar sesión -->
       <div v-if="tickets.length > 0" class="flex justify-between items-center mb-6">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Mis Tickets</h2>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $t('public.tickets.list.title') }}</h2>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Sesión de: <span class="font-medium">{{ searchEmail || 'ID: ' + trackingId }}</span>
+            {{ $t('public.tickets.list.sessionOf') }} <span class="font-medium">{{ searchEmail || 'ID: ' + trackingId }}</span>
           </p>
         </div>
         <button
@@ -51,15 +54,15 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          <span>Cerrar Sesión</span>
+          <span>{{ $t('public.tickets.list.logout') }}</span>
         </button>
       </div>
 
       <!-- Search Form -->
       <div v-if="tickets.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-6">
         <div class="text-center mb-6">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Ingrese el ID de seguimiento del ticket</h2>
-          <p class="text-gray-600 dark:text-gray-400">o su correo electrónico para ver todos sus tickets</p>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ $t('public.tickets.list.searchTitle') }}</h2>
+          <p class="text-gray-600 dark:text-gray-400">{{ $t('public.tickets.list.searchSubtitle') }}</p>
         </div>
         
         <div class="max-w-2xl mx-auto space-y-4">
@@ -68,12 +71,12 @@
               <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Una de sus ID de seguimiento
+              {{ $t('public.tickets.list.trackingIdLabel') }}
             </label>
             <input
               v-model="trackingId"
               type="text"
-              placeholder="TK12345678"
+              :placeholder="$t('public.tickets.list.trackingIdPlaceholder')"
               class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-mono"
               @keyup.enter="searchTickets"
             />
@@ -84,12 +87,12 @@
               <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
               </svg>
-              Correo
+              {{ $t('public.tickets.list.emailLabel') }}
             </label>
             <input
               v-model="searchEmail"
               type="email"
-              placeholder="correo@ejemplo.com"
+              :placeholder="$t('public.tickets.list.emailPlaceholder')"
               class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               @keyup.enter="searchTickets"
             />
@@ -105,13 +108,13 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span>{{ isLoading ? 'Buscando...' : 'VER MI LISTA DE TICKETS' }}</span>
+              <span>{{ isLoading ? $t('public.common.loading') : $t('public.tickets.list.viewListButton') }}</span>
             </button>
             <button
               @click="clearSearch"
               class="px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
             >
-              ANULAR
+              {{ $t('public.tickets.list.cancelButton') }}
             </button>
           </div>
         </div>
@@ -126,43 +129,43 @@
               <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Buscar en tickets
+              {{ $t('public.tickets.list.searchPlaceholder').split('...')[0] }}
             </label>
             <input
               v-model="searchFilter"
               type="text"
-              placeholder="Buscar por asunto, ID o descripción..."
+              :placeholder="$t('public.tickets.list.searchPlaceholder')"
               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
           </div>
 
           <!-- Filtro de Estado -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('public.tickets.list.filterByStatus') }}</label>
             <select
               v-model="statusFilter"
               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             >
-              <option value="all">Todos</option>
-              <option value="open">Abierto</option>
-              <option value="in_progress">En Progreso</option>
-              <option value="pending">Pendiente</option>
-              <option value="closed">Cerrado</option>
+              <option value="all">{{ $t('public.tickets.list.allStatuses') }}</option>
+              <option value="open">{{ $t('public.tickets.list.statuses.open') }}</option>
+              <option value="in_progress">{{ $t('public.tickets.list.statuses.in_progress') }}</option>
+              <option value="pending">{{ $t('public.tickets.list.statuses.pending') }}</option>
+              <option value="closed">{{ $t('public.tickets.list.statuses.closed') }}</option>
             </select>
           </div>
 
           <!-- Filtro de Prioridad -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Prioridad</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('public.tickets.list.filterByPriority') }}</label>
             <select
               v-model="priorityFilter"
               class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             >
-              <option value="all">Todas</option>
-              <option value="low">Baja</option>
-              <option value="normal">Normal</option>
-              <option value="high">Alta</option>
-              <option value="urgent">Urgente</option>
+              <option value="all">{{ $t('public.tickets.list.allPriorities') }}</option>
+              <option value="low">{{ $t('public.tickets.list.severities.LOW') }}</option>
+              <option value="normal">{{ $t('public.tickets.list.severities.NORMAL') }}</option>
+              <option value="high">{{ $t('public.tickets.list.severities.HIGH') }}</option>
+              <option value="urgent">{{ $t('public.tickets.list.severities.URGENT') }}</option>
             </select>
           </div>
         </div>
@@ -176,10 +179,10 @@
             class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
           <label for="showClosed" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-            Mostrar tickets cerrados
+            {{ $t('public.tickets.list.showClosed') }}
           </label>
           <span class="ml-auto text-sm text-gray-500 dark:text-gray-400">
-            {{ filteredTickets.length }} de {{ tickets.length }} tickets
+            {{ filteredTickets.length }} {{ $t('public.tickets.list.ticketsCount') }} {{ tickets.length }} {{ $t('public.tickets.list.ticketsLabel') }}
           </span>
         </div>
       </div>
@@ -190,12 +193,12 @@
           <table class="w-full">
             <thead class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Ref</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Asunto</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Tipo</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Gravedad</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Estado</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.date') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.ref') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.subject') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.type') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.severity') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.status') }}</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -256,16 +259,16 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
         <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          No hay tickets que coincidan con los filtros
+          {{ $t('public.tickets.list.noMatchingTickets') }}
         </h3>
         <p class="text-gray-600 dark:text-gray-400 mb-4">
-          Intenta ajustar los filtros o mostrar tickets cerrados
+          {{ $t('public.tickets.list.adjustFilters') }}
         </p>
         <button
           @click="searchFilter = ''; statusFilter = 'all'; priorityFilter = 'all'"
           class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
         >
-          Limpiar filtros
+          {{ $t('public.tickets.list.clearFilters') }}
         </button>
       </div>
 
@@ -275,10 +278,10 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
         <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          No se encontraron tickets
+          {{ $t('public.tickets.list.noTicketsFound') }}
         </h3>
         <p class="text-gray-600 dark:text-gray-400">
-          No hay tickets asociados a este email
+          {{ $t('public.tickets.list.noTicketsMessage') }}
         </p>
       </div>
 
@@ -288,10 +291,10 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-          Busque sus tickets
+          {{ $t('public.tickets.list.searchTitle') }}
         </h3>
         <p class="text-gray-600 dark:text-gray-400">
-          Ingrese su email o ID de seguimiento para ver sus tickets de soporte
+          {{ $t('public.tickets.list.searchSubtitle') }}
         </p>
       </div>
     </div>
@@ -325,7 +328,7 @@
           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">ID de Seguimiento</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">{{ $t('public.tickets.list.trackingIdLabel') }}</p>
                 <p class="text-2xl font-mono font-bold text-gray-900 dark:text-white">{{ selectedTicket?.trackingId }}</p>
               </div>
               <div class="flex items-center gap-3">
@@ -348,15 +351,15 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
               <div>
-                <p class="text-gray-500 dark:text-gray-400">Tipo</p>
+                <p class="text-gray-500 dark:text-gray-400">{{ $t('public.tickets.list.table.type') }}</p>
                 <p class="font-medium text-gray-900 dark:text-white mt-1">{{ getTypeLabel(selectedTicket?.type) }}</p>
               </div>
               <div>
-                <p class="text-gray-500 dark:text-gray-400">Creado</p>
+                <p class="text-gray-500 dark:text-gray-400">{{ $t('public.tickets.list.modal.created') }}</p>
                 <p class="font-medium text-gray-900 dark:text-white mt-1">{{ formatRelativeDate(selectedTicket?.createdAt) }}</p>
               </div>
               <div>
-                <p class="text-gray-500 dark:text-gray-400">Última Actualización</p>
+                <p class="text-gray-500 dark:text-gray-400">{{ $t('public.tickets.list.modal.lastUpdate') }}</p>
                 <p class="font-medium text-gray-900 dark:text-white mt-1">{{ formatRelativeDate(selectedTicket?.createdAt) }}</p>
               </div>
             </div>
@@ -368,7 +371,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Descripción
+              {{ $t('public.tickets.list.modal.description') }}
             </h3>
             <div class="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none" v-html="selectedTicket?.description"></div>
           </div>
@@ -379,7 +382,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Historial
+              {{ $t('public.tickets.list.modal.messages') }}
             </h3>
 
             <div class="space-y-6">
@@ -437,9 +440,9 @@
                   </div>
                 </div>
                 <div class="flex-1 pb-6">
-                  <p class="font-medium text-gray-900 dark:text-white mb-1">Ticket creado</p>
+                  <p class="font-medium text-gray-900 dark:text-white mb-1">{{ $t('public.tickets.list.modal.ticketCreated') }}</p>
                   <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                    Ticket {{ selectedTicket?.ref }} registrado en el sistema
+                    {{ $t('public.tickets.list.modal.ticketRegistered', { ref: selectedTicket?.ref }) }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-500">
                     {{ formatRelativeDate(selectedTicket?.createdAt) }}
@@ -455,12 +458,12 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
-              Enviar Mensaje Privado
+              {{ $t('public.tickets.list.modal.sendMessage') }}
             </h3>
             <textarea
               v-model="newMessage"
               rows="4"
-              placeholder="Escriba su mensaje aquí..."
+              :placeholder="$t('public.tickets.list.modal.messagePlaceholder')"
               class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none mb-4"
             ></textarea>
             <div class="flex justify-end">
@@ -473,7 +476,7 @@
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>{{ isSending ? 'Enviando...' : 'Enviar Mensaje' }}</span>
+                <span>{{ isSending ? $t('public.tickets.list.modal.sending') : $t('public.tickets.list.modal.send') }}</span>
               </button>
             </div>
           </div>
@@ -491,8 +494,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
         <div>
-          <p class="font-semibold">Mensaje enviado</p>
-          <p class="text-sm text-green-100">Tu mensaje ha sido enviado correctamente</p>
+          <p class="font-semibold">{{ $t('public.tickets.list.modal.messageSent') }}</p>
+          <p class="text-sm text-green-100">{{ $t('public.tickets.list.modal.messageSentSuccess') }}</p>
         </div>
       </div>
     </div>
@@ -503,6 +506,10 @@
 import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/utils/http'
+import LanguageSelector from '@/components/LanguageSelector.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const router = useRouter()
 
@@ -1370,10 +1377,10 @@ const formatDateTime = (dateString) => {
 
 const getStatusLabel = (status) => {
   const labels = {
-    open: 'Abierto',
-    in_progress: 'En Progreso',
-    closed: 'Cerrado',
-    pending: 'Pendiente'
+    open: t('public.tickets.list.statuses.open'),
+    in_progress: t('public.tickets.list.statuses.in_progress'),
+    closed: t('public.tickets.list.statuses.closed'),
+    pending: t('public.tickets.list.statuses.pending')
   }
   return labels[status] || status
 }
@@ -1390,10 +1397,10 @@ const getStatusClass = (status) => {
 
 const getPriorityLabel = (priority) => {
   const labels = {
-    low: 'Baja',
-    normal: 'Normal',
-    high: 'Alta',
-    urgent: 'Urgente'
+    low: t('public.tickets.list.severities.LOW'),
+    normal: t('public.tickets.list.severities.NORMAL'),
+    high: t('public.tickets.list.severities.HIGH'),
+    urgent: t('public.tickets.list.severities.URGENT')
   }
   return labels[priority] || priority
 }
@@ -1456,10 +1463,14 @@ loadCompanyInfo()
 
 const getTypeLabel = (type) => {
   const types = {
-    question: 'Pregunta',
-    problem: 'Problema',
-    request: 'Solicitud',
-    other: 'Otro'
+    QUESTION: t('public.tickets.list.types.QUESTION'),
+    PROBLEM: t('public.tickets.list.types.PROBLEM'),
+    REQUEST: t('public.tickets.list.types.REQUEST'),
+    OTHER: t('public.tickets.list.types.OTHER'),
+    question: t('public.tickets.list.types.QUESTION'),
+    problem: t('public.tickets.list.types.PROBLEM'),
+    request: t('public.tickets.list.types.REQUEST'),
+    other: t('public.tickets.list.types.OTHER')
   }
   return types[type] || type
 }
