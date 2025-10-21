@@ -1,0 +1,201 @@
+{
+  "public": {
+    "tickets": {
+      "title": "Portal de Tiquets",
+      "subtitle": "Gestiona les teves sol·licituds de suport",
+      "welcome": "Benvingut al Portal de Suport",
+      "welcomeSubtitle": "Pots crear un tiquet de suport o comprovar un ID existent",
+      "newTicket": "Nou Tiquet",
+      "newTicketDesc": "Crea un nou tiquet de suport",
+      "trackTicket": "Seguiment",
+      "trackTicketDesc": "Cerca per ID de seguiment",
+      "listTickets": "Els Meus Tiquets",
+      "listTicketsDesc": "Consulta tots els teus tiquets",
+      "needHelp": "Necessites ajuda?",
+      "needHelpDesc": "Si tens algun dubte sobre com utilitzar aquest sistema, no dubtis en contactar-nos. El nostre equip de suport està disponible per ajudar-te.",
+      "list": {
+        "title": "Els Meus Tiquets",
+        "subtitle": "Consulta tots els teus tiquets",
+        "sessionOf": "Sessió de:",
+        "logout": "Tancar Sessió",
+        "searchTitle": "Introdueix l'ID de seguiment del tiquet",
+        "searchSubtitle": "o el teu correu electrònic per veure tots els teus tiquets",
+        "trackingIdLabel": "Un dels teus IDs de seguiment",
+        "trackingIdPlaceholder": "TK12345678",
+        "emailLabel": "Correu",
+        "emailPlaceholder": "correu@exemple.com",
+        "viewListButton": "VEURE LA MEVA LLISTA DE TIQUETS",
+        "cancelButton": "ANUL·LAR",
+        "showClosed": "Mostrar tiquets tancats",
+        "searchPlaceholder": "Cercar per assumpte, ID o descripció...",
+        "filterByStatus": "Filtrar per estat",
+        "filterByPriority": "Filtrar per prioritat",
+        "allStatuses": "Tots",
+        "allPriorities": "Totes",
+        "ticketsCount": "de",
+        "ticketsLabel": "tiquets",
+        "noTicketsFound": "No s'han trobat tiquets",
+        "noTicketsMessage": "No hi ha tiquets associats a aquest correu",
+        "noMatchingTickets": "No hi ha tiquets que coincideixin amb els filtres",
+        "adjustFilters": "Prova d'ajustar els filtres o mostrar tiquets tancats",
+        "clearFilters": "Netejar filtres",
+        "table": {
+          "date": "Data",
+          "ref": "Ref",
+          "subject": "Assumpte",
+          "type": "Tipus",
+          "severity": "Gravetat",
+          "status": "Estat",
+          "actions": "Accions",
+          "viewDetails": "Veure detalls"
+        },
+        "types": {
+          "QUESTION": "Pregunta",
+          "PROBLEM": "Problema",
+          "REQUEST": "Sol·licitud",
+          "OTHER": "Altre"
+        },
+        "severities": {
+          "LOW": "Baixa",
+          "NORMAL": "Normal",
+          "HIGH": "Alta",
+          "URGENT": "Urgent"
+        },
+        "statuses": {
+          "open": "Obert",
+          "in_progress": "En Progrés",
+          "pending": "Pendent",
+          "closed": "Tancat"
+        },
+        "modal": {
+          "title": "Detalls del Tiquet",
+          "info": "Informació del Tiquet",
+          "description": "Descripció",
+          "messages": "Historial",
+          "noMessages": "Encara no hi ha missatges",
+          "private": "Privat",
+          "sendMessage": "Enviar Missatge Privat",
+          "messagePlaceholder": "Escriu el teu missatge aquí...",
+          "send": "Enviar Missatge",
+          "sending": "Enviant...",
+          "close": "Tancar",
+          "created": "Creat",
+          "lastUpdate": "Última Actualització",
+          "ticketCreated": "Tiquet creat",
+          "ticketRegistered": "Tiquet {ref} registrat al sistema",
+          "messageSent": "Missatge enviat",
+          "messageSentSuccess": "El teu missatge s'ha enviat correctament"
+        }
+      },
+      "createTicket": {
+        "title": "Crear Nou Tiquet",
+        "steps": {
+          "email": "Email",
+          "company": "Empresa",
+          "details": "Detalls",
+          "files": "Arxius"
+        },
+        "step1": {
+          "title": "Quin és el teu email?",
+          "subtitle": "Introdueix el teu email per continuar",
+          "placeholder": "el.teu@email.com",
+          "invalidEmail": "Si us plau, introdueix un email vàlid",
+          "verifying": "Verificant...",
+          "notFound": "No s'ha trobat cap contacte registrat amb aquest email. Si us plau, contacta amb l'administrador per registrar-te.",
+          "noActiveCompanies": "No s'han trobat empreses actives associades a aquest email. Si us plau, contacta amb l'administrador.",
+          "error": "Error en verificar l'email. Si us plau, torna-ho a intentar."
+        },
+        "step2": {
+          "title": "Selecciona la teva empresa",
+          "subtitle": "Empreses associades al teu email",
+          "noCompanies": "No s'han trobat empreses associades",
+          "autoSelected": "Empresa seleccionada automàticament",
+          "selectCompany": "Selecciona una empresa",
+          "project": {
+            "title": "Projecte (opcional)",
+            "loading": "Carregant projectes...",
+            "noProjects": "No hi ha projectes actius per aquesta empresa",
+            "autoSelected": "Projecte seleccionat automàticament",
+            "selectProject": "Sense projecte específic"
+          }
+        },
+        "step3": {
+          "title": "Detalls del Tiquet",
+          "subtitle": "Descriu la teva sol·licitud",
+          "category": {
+            "label": "Categoria *",
+            "select": "Selecciona una categoria",
+            "question": "Pregunta / Consulta",
+            "problem": "Problema / Error",
+            "request": "Sol·licitud / Millora",
+            "other": "Altre"
+          },
+          "priority": {
+            "label": "Prioritat *",
+            "low": "Baixa",
+            "normal": "Normal",
+            "high": "Alta",
+            "urgent": "Urgent"
+          },
+          "subject": {
+            "label": "Assumpte *",
+            "placeholder": "Resum breu de la teva sol·licitud"
+          },
+          "message": {
+            "label": "Missatge / Descripció *",
+            "placeholder": "Descriu la teva sol·licitud amb el màxim detall possible..."
+          }
+        },
+        "step4": {
+          "title": "Arxius Adjunts",
+          "subtitle": "Afegeix captures de pantalla o documents (opcional)",
+          "dropzone": "Arrossega arxius aquí o fes clic per seleccionar",
+          "maxSize": "Mida màxima: 10MB per arxiu",
+          "remove": "Eliminar",
+          "noFiles": "No hi ha arxius adjunts"
+        },
+        "buttons": {
+          "continue": "Continuar →",
+          "back": "Anterior",
+          "create": "Crear Tiquet",
+          "creating": "Creant..."
+        },
+        "success": {
+          "title": "Tiquet Creat!",
+          "subtitle": "La teva sol·licitud s'ha registrat correctament",
+          "trackingId": "ID de Seguiment",
+          "message": "Hem rebut la teva sol·licitud i et respondrem aviat.",
+          "buttons": {
+            "viewTicket": "Veure el Meu Tiquet",
+            "newTicket": "Crear Un Altre Tiquet",
+            "backHome": "Tornar a l'Inici"
+          }
+        },
+        "errors": {
+          "create": "Error en crear el tiquet. Si us plau, torna-ho a intentar.",
+          "upload": "Error en pujar l'arxiu"
+        }
+      },
+      "track": {
+        "title": "Seguiment de Tiquet",
+        "enterTracking": "Introdueix el teu ID de seguiment",
+        "placeholder": "Ex: abc123xyz",
+        "search": "Cercar Tiquet",
+        "searching": "Cercant...",
+        "notFound": "No s'ha trobat el tiquet",
+        "error": "Error en cercar el tiquet"
+      }
+    },
+    "common": {
+      "loading": "Carregant...",
+      "error": "Error",
+      "success": "Èxit",
+      "cancel": "Cancel·lar",
+      "save": "Desar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "close": "Tancar",
+      "back": "Tornar"
+    }
+  }
+}

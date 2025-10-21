@@ -11,13 +11,16 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            <span>Volver</span>
+            <span>{{ $t('public.common.back') }}</span>
           </button>
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold">CH</span>
+          <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                <span class="text-white font-bold">CH</span>
+              </div>
+              <h1 class="text-xl font-bold text-gray-900 dark:text-white">{{ $t('public.tickets.createTicket.title') }}</h1>
             </div>
-            <h1 class="text-xl font-bold text-gray-900 dark:text-white">Crear Ticket</h1>
+            <LanguageSelector />
           </div>
         </div>
       </div>
@@ -81,8 +84,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">¿Cuál es tu correo electrónico?</h2>
-            <p class="text-gray-600 dark:text-gray-400">Lo usaremos para enviarte actualizaciones sobre tu ticket</p>
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ $t('public.tickets.createTicket.step1.title') }}</h2>
+            <p class="text-gray-600 dark:text-gray-400">{{ $t('public.tickets.createTicket.step1.subtitle') }}</p>
           </div>
           
           <div class="max-w-xl mx-auto">
@@ -92,11 +95,11 @@
               required
               autofocus
               class="w-full px-6 py-4 text-lg rounded-xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              placeholder="tu@email.com"
+              :placeholder="$t('public.tickets.createTicket.step1.placeholder')"
               @keyup.enter="nextStep"
             />
             <p v-if="formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)" class="mt-2 text-sm text-red-500">
-              Por favor, ingresa un email válido
+              {{ $t('public.tickets.createTicket.step1.invalidEmail') }}
             </p>
           </div>
         </div>
@@ -516,10 +519,18 @@ import { useRouter } from 'vue-router'
 import http from '@/utils/http'
 import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
+import LanguageSelector from '@/components/LanguageSelector.vue'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const { t, locale } = useI18n()
 
-const steps = ['Email', 'Empresa', 'Detalles', 'Archivos']
+const steps = computed(() => [
+  t('public.tickets.createTicket.steps.email'),
+  t('public.tickets.createTicket.steps.company'),
+  t('public.tickets.createTicket.steps.details'),
+  t('public.tickets.createTicket.steps.files')
+])
 const currentStep = ref(0)
 const submitted = ref(false)
 const isSubmitting = ref(false)
@@ -674,6 +685,39 @@ const checkEmailAndLoadCompanies = async () => {
         
         // Cargar proyectos de la empresa seleccionada
         await loadCompanyProjects(formData.value.socid)
+      }
+      
+      // Cargar idioma por defecto de la primera empresa
+      if (relatedCompanies.value.length > 0) {
+        const savedLocale = localStorage.getItem('locale')
+        if (!savedLocale) {
+          try {
+            const companyId = relatedCompanies.value[0].id
+            const companyResponse = await http.get(`/api/doli/thirdparties/${companyId}`, {
+              headers: {
+                'X-Public-Request': 'true'
+              }
+            })
+            
+            if (companyResponse.data && companyResponse.data.default_lang) {
+              const langMap = {
+                'es_ES': 'es',
+                'en_US': 'en',
+                'ca_ES': 'ca',
+                'es': 'es',
+                'en': 'en',
+                'ca': 'ca'
+              }
+              
+              const mappedLang = langMap[companyResponse.data.default_lang] || 'es'
+              locale.value = mappedLang
+              localStorage.setItem('locale', mappedLang)
+              console.log('🌍 Idioma establecido desde empresa:', mappedLang, '(desde', companyResponse.data.default_lang + ')')
+            }
+          } catch (error) {
+            console.error('⚠️ Error al cargar idioma de empresa:', error)
+          }
+        }
       }
       
       // console.log('📋 Empresas disponibles:', relatedCompanies.value)

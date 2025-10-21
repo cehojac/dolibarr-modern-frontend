@@ -1,0 +1,201 @@
+{
+  "public": {
+    "tickets": {
+      "title": "Portal de Tickets",
+      "subtitle": "Gestiona tus solicitudes de soporte",
+      "welcome": "Bienvenido al Portal de Soporte",
+      "welcomeSubtitle": "Puede crear un ticket de soporte o comprobar un ID existente",
+      "newTicket": "Nuevo Ticket",
+      "newTicketDesc": "Cree un nuevo ticket de soporte",
+      "trackTicket": "Seguimiento",
+      "trackTicketDesc": "Busque por ID de seguimiento",
+      "listTickets": "Mis Tickets",
+      "listTicketsDesc": "Consulte todos sus tickets",
+      "needHelp": "¿Necesita ayuda?",
+      "needHelpDesc": "Si tiene alguna duda sobre cómo usar este sistema, no dude en contactarnos. Nuestro equipo de soporte está disponible para ayudarle.",
+      "list": {
+        "title": "Mis Tickets",
+        "subtitle": "Consulte todos sus tickets",
+        "sessionOf": "Sesión de:",
+        "logout": "Cerrar Sesión",
+        "searchTitle": "Ingrese el ID de seguimiento del ticket",
+        "searchSubtitle": "o su correo electrónico para ver todos sus tickets",
+        "trackingIdLabel": "Una de sus ID de seguimiento",
+        "trackingIdPlaceholder": "TK12345678",
+        "emailLabel": "Correo",
+        "emailPlaceholder": "correo@ejemplo.com",
+        "viewListButton": "VER MI LISTA DE TICKETS",
+        "cancelButton": "ANULAR",
+        "showClosed": "Mostrar tickets cerrados",
+        "searchPlaceholder": "Buscar por asunto, ID o descripción...",
+        "filterByStatus": "Filtrar por estado",
+        "filterByPriority": "Filtrar por prioridad",
+        "allStatuses": "Todos",
+        "allPriorities": "Todas",
+        "ticketsCount": "de",
+        "ticketsLabel": "tickets",
+        "noTicketsFound": "No se encontraron tickets",
+        "noTicketsMessage": "No hay tickets asociados a este email",
+        "noMatchingTickets": "No hay tickets que coincidan con los filtros",
+        "adjustFilters": "Intenta ajustar los filtros o mostrar tickets cerrados",
+        "clearFilters": "Limpiar filtros",
+        "table": {
+          "date": "Fecha",
+          "ref": "Ref",
+          "subject": "Asunto",
+          "type": "Tipo",
+          "severity": "Gravedad",
+          "status": "Estado",
+          "actions": "Acciones",
+          "viewDetails": "Ver detalles"
+        },
+        "types": {
+          "QUESTION": "Pregunta",
+          "PROBLEM": "Problema",
+          "REQUEST": "Solicitud",
+          "OTHER": "Otro"
+        },
+        "severities": {
+          "LOW": "Baja",
+          "NORMAL": "Normal",
+          "HIGH": "Alta",
+          "URGENT": "Urgente"
+        },
+        "statuses": {
+          "open": "Abierto",
+          "in_progress": "En Progreso",
+          "pending": "Pendiente",
+          "closed": "Cerrado"
+        },
+        "modal": {
+          "title": "Detalles del Ticket",
+          "info": "Información del Ticket",
+          "description": "Descripción",
+          "messages": "Historial",
+          "noMessages": "No hay mensajes aún",
+          "private": "Privado",
+          "sendMessage": "Enviar Mensaje Privado",
+          "messagePlaceholder": "Escriba su mensaje aquí...",
+          "send": "Enviar Mensaje",
+          "sending": "Enviando...",
+          "close": "Cerrar",
+          "created": "Creado",
+          "lastUpdate": "Última Actualización",
+          "ticketCreated": "Ticket creado",
+          "ticketRegistered": "Ticket {ref} registrado en el sistema",
+          "messageSent": "Mensaje enviado",
+          "messageSentSuccess": "Tu mensaje ha sido enviado correctamente"
+        }
+      },
+      "createTicket": {
+        "title": "Crear Nuevo Ticket",
+        "steps": {
+          "email": "Email",
+          "company": "Empresa",
+          "details": "Detalles",
+          "files": "Archivos"
+        },
+        "step1": {
+          "title": "¿Cuál es tu email?",
+          "subtitle": "Ingresa tu email para continuar",
+          "placeholder": "tu@email.com",
+          "invalidEmail": "Por favor, ingresa un email válido",
+          "verifying": "Verificando...",
+          "notFound": "No se encontró un contacto registrado con ese email. Por favor, contacte con el administrador para registrarse.",
+          "noActiveCompanies": "No se encontraron empresas activas asociadas a este email. Por favor, contacte con el administrador.",
+          "error": "Error al verificar el email. Por favor, intente nuevamente."
+        },
+        "step2": {
+          "title": "Selecciona tu empresa",
+          "subtitle": "Empresas asociadas a tu email",
+          "noCompanies": "No se encontraron empresas asociadas",
+          "autoSelected": "Empresa seleccionada automáticamente",
+          "selectCompany": "Selecciona una empresa",
+          "project": {
+            "title": "Proyecto (opcional)",
+            "loading": "Cargando proyectos...",
+            "noProjects": "No hay proyectos activos para esta empresa",
+            "autoSelected": "Proyecto seleccionado automáticamente",
+            "selectProject": "Sin proyecto específico"
+          }
+        },
+        "step3": {
+          "title": "Detalles del Ticket",
+          "subtitle": "Describe tu solicitud",
+          "category": {
+            "label": "Categoría *",
+            "select": "Selecciona una categoría",
+            "question": "Pregunta / Consulta",
+            "problem": "Problema / Error",
+            "request": "Solicitud / Mejora",
+            "other": "Otro"
+          },
+          "priority": {
+            "label": "Prioridad *",
+            "low": "Baja",
+            "normal": "Normal",
+            "high": "Alta",
+            "urgent": "Urgente"
+          },
+          "subject": {
+            "label": "Asunto *",
+            "placeholder": "Resumen breve de tu solicitud"
+          },
+          "message": {
+            "label": "Mensaje / Descripción *",
+            "placeholder": "Describe tu solicitud con el mayor detalle posible..."
+          }
+        },
+        "step4": {
+          "title": "Archivos Adjuntos",
+          "subtitle": "Agrega capturas de pantalla o documentos (opcional)",
+          "dropzone": "Arrastra archivos aquí o haz clic para seleccionar",
+          "maxSize": "Tamaño máximo: 10MB por archivo",
+          "remove": "Eliminar",
+          "noFiles": "No hay archivos adjuntos"
+        },
+        "buttons": {
+          "continue": "Continuar →",
+          "back": "Anterior",
+          "create": "Crear Ticket",
+          "creating": "Creando..."
+        },
+        "success": {
+          "title": "¡Ticket Creado!",
+          "subtitle": "Tu solicitud ha sido registrada exitosamente",
+          "trackingId": "ID de Seguimiento",
+          "message": "Hemos recibido tu solicitud y te responderemos pronto.",
+          "buttons": {
+            "viewTicket": "Ver Mi Ticket",
+            "newTicket": "Crear Otro Ticket",
+            "backHome": "Volver al Inicio"
+          }
+        },
+        "errors": {
+          "create": "Error al crear el ticket. Por favor, intente nuevamente.",
+          "upload": "Error al subir archivo"
+        }
+      },
+      "track": {
+        "title": "Seguimiento de Ticket",
+        "enterTracking": "Ingresa tu ID de seguimiento",
+        "placeholder": "Ej: abc123xyz",
+        "search": "Buscar Ticket",
+        "searching": "Buscando...",
+        "notFound": "No se encontró el ticket",
+        "error": "Error al buscar el ticket"
+      }
+    },
+    "common": {
+      "loading": "Cargando...",
+      "error": "Error",
+      "success": "Éxito",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "close": "Cerrar",
+      "back": "Volver"
+    }
+  }
+}
