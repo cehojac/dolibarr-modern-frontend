@@ -1,0 +1,201 @@
+{
+  "public": {
+    "tickets": {
+      "title": "Ticket Portal",
+      "subtitle": "Manage your support requests",
+      "welcome": "Welcome to Support Portal",
+      "welcomeSubtitle": "You can create a support ticket or check an existing ID",
+      "newTicket": "New Ticket",
+      "newTicketDesc": "Create a new support ticket",
+      "trackTicket": "Track",
+      "trackTicketDesc": "Search by tracking ID",
+      "listTickets": "My Tickets",
+      "listTicketsDesc": "View all your tickets",
+      "needHelp": "Need help?",
+      "needHelpDesc": "If you have any questions about how to use this system, don't hesitate to contact us. Our support team is available to help you.",
+      "list": {
+        "title": "My Tickets",
+        "subtitle": "View all your tickets",
+        "sessionOf": "Session of:",
+        "logout": "Logout",
+        "searchTitle": "Enter the ticket tracking ID",
+        "searchSubtitle": "or your email to view all your tickets",
+        "trackingIdLabel": "One of your tracking IDs",
+        "trackingIdPlaceholder": "TK12345678",
+        "emailLabel": "Email",
+        "emailPlaceholder": "email@example.com",
+        "viewListButton": "VIEW MY TICKET LIST",
+        "cancelButton": "CANCEL",
+        "showClosed": "Show closed tickets",
+        "searchPlaceholder": "Search by subject, ID or description...",
+        "filterByStatus": "Filter by status",
+        "filterByPriority": "Filter by priority",
+        "allStatuses": "All",
+        "allPriorities": "All",
+        "ticketsCount": "of",
+        "ticketsLabel": "tickets",
+        "noTicketsFound": "No tickets found",
+        "noTicketsMessage": "No tickets associated with this email",
+        "noMatchingTickets": "No tickets match the filters",
+        "adjustFilters": "Try adjusting the filters or showing closed tickets",
+        "clearFilters": "Clear filters",
+        "table": {
+          "date": "Date",
+          "ref": "Ref",
+          "subject": "Subject",
+          "type": "Type",
+          "severity": "Severity",
+          "status": "Status",
+          "actions": "Actions",
+          "viewDetails": "View details"
+        },
+        "types": {
+          "QUESTION": "Question",
+          "PROBLEM": "Problem",
+          "REQUEST": "Request",
+          "OTHER": "Other"
+        },
+        "severities": {
+          "LOW": "Low",
+          "NORMAL": "Normal",
+          "HIGH": "High",
+          "URGENT": "Urgent"
+        },
+        "statuses": {
+          "open": "Open",
+          "in_progress": "In Progress",
+          "pending": "Pending",
+          "closed": "Closed"
+        },
+        "modal": {
+          "title": "Ticket Details",
+          "info": "Ticket Information",
+          "description": "Description",
+          "messages": "History",
+          "noMessages": "No messages yet",
+          "private": "Private",
+          "sendMessage": "Send Private Message",
+          "messagePlaceholder": "Write your message here...",
+          "send": "Send Message",
+          "sending": "Sending...",
+          "close": "Close",
+          "created": "Created",
+          "lastUpdate": "Last Update",
+          "ticketCreated": "Ticket created",
+          "ticketRegistered": "Ticket {ref} registered in the system",
+          "messageSent": "Message sent",
+          "messageSentSuccess": "Your message has been sent successfully"
+        }
+      },
+      "createTicket": {
+        "title": "Create New Ticket",
+        "steps": {
+          "email": "Email",
+          "company": "Company",
+          "details": "Details",
+          "files": "Files"
+        },
+        "step1": {
+          "title": "What's your email?",
+          "subtitle": "Enter your email to continue",
+          "placeholder": "your@email.com",
+          "invalidEmail": "Please enter a valid email",
+          "verifying": "Verifying...",
+          "notFound": "No registered contact found with that email. Please contact the administrator to register.",
+          "noActiveCompanies": "No active companies found associated with this email. Please contact the administrator.",
+          "error": "Error verifying email. Please try again."
+        },
+        "step2": {
+          "title": "Select your company",
+          "subtitle": "Companies associated with your email",
+          "noCompanies": "No associated companies found",
+          "autoSelected": "Company automatically selected",
+          "selectCompany": "Select a company",
+          "project": {
+            "title": "Project (optional)",
+            "loading": "Loading projects...",
+            "noProjects": "No active projects for this company",
+            "autoSelected": "Project automatically selected",
+            "selectProject": "No specific project"
+          }
+        },
+        "step3": {
+          "title": "Ticket Details",
+          "subtitle": "Describe your request",
+          "category": {
+            "label": "Category *",
+            "select": "Select a category",
+            "question": "Question / Inquiry",
+            "problem": "Problem / Bug",
+            "request": "Request / Enhancement",
+            "other": "Other"
+          },
+          "priority": {
+            "label": "Priority *",
+            "low": "Low",
+            "normal": "Normal",
+            "high": "High",
+            "urgent": "Urgent"
+          },
+          "subject": {
+            "label": "Subject *",
+            "placeholder": "Brief summary of your request"
+          },
+          "message": {
+            "label": "Message / Description *",
+            "placeholder": "Describe your request in as much detail as possible..."
+          }
+        },
+        "step4": {
+          "title": "Attachments",
+          "subtitle": "Add screenshots or documents (optional)",
+          "dropzone": "Drag files here or click to select",
+          "maxSize": "Max size: 10MB per file",
+          "remove": "Remove",
+          "noFiles": "No attachments"
+        },
+        "buttons": {
+          "continue": "Continue →",
+          "back": "Back",
+          "create": "Create Ticket",
+          "creating": "Creating..."
+        },
+        "success": {
+          "title": "Ticket Created!",
+          "subtitle": "Your request has been successfully registered",
+          "trackingId": "Tracking ID",
+          "message": "We have received your request and will respond soon.",
+          "buttons": {
+            "viewTicket": "View My Ticket",
+            "newTicket": "Create Another Ticket",
+            "backHome": "Back to Home"
+          }
+        },
+        "errors": {
+          "create": "Error creating ticket. Please try again.",
+          "upload": "Error uploading file"
+        }
+      },
+      "track": {
+        "title": "Track Ticket",
+        "enterTracking": "Enter your tracking ID",
+        "placeholder": "Ex: abc123xyz",
+        "search": "Search Ticket",
+        "searching": "Searching...",
+        "notFound": "Ticket not found",
+        "error": "Error searching for ticket"
+      }
+    },
+    "common": {
+      "loading": "Loading...",
+      "error": "Error",
+      "success": "Success",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "close": "Close",
+      "back": "Back"
+    }
+  }
+}

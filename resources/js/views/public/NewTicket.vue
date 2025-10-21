@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div class="flex items-center justify-center">
+        <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3">
             <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center overflow-hidden">
               <img 
@@ -17,10 +17,11 @@
               <span v-else class="text-white font-bold text-xl">{{ companyInitials }}</span>
             </div>
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Sistema de Tickets</h1>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $t('public.tickets.title') }}</h1>
               <p class="text-sm text-gray-500 dark:text-gray-400">{{ companyName }}</p>
             </div>
           </div>
+          <LanguageSelector />
         </div>
       </div>
     </div>
@@ -30,10 +31,10 @@
       <!-- Welcome Message -->
       <div class="text-center mb-12">
         <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          Bienvenido al Portal de Soporte
+          {{ $t('public.tickets.welcome') }}
         </h2>
         <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-          Puede crear un ticket de soporte o comprobar un ID existente
+          {{ $t('public.tickets.welcomeSubtitle') }}
         </p>
       </div>
 
@@ -51,9 +52,9 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Crear Ticket</h3>
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ $t('public.tickets.newTicket') }}</h3>
               <p class="text-gray-600 dark:text-gray-400 text-sm">
-                Cree un nuevo ticket de soporte
+                {{ $t('public.tickets.newTicketDesc') }}
               </p>
             </div>
           </div>
@@ -71,9 +72,9 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Ver Mi Lista de Tickets</h3>
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ $t('public.tickets.listTickets') }}</h3>
               <p class="text-gray-600 dark:text-gray-400 text-sm">
-                Consulte todos sus tickets
+                {{ $t('public.tickets.listTicketsDesc') }}
               </p>
             </div>
           </div>
@@ -91,9 +92,9 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Mostrar Ticket desde ID</h3>
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">{{ $t('public.tickets.trackTicket') }}</h3>
               <p class="text-gray-600 dark:text-gray-400 text-sm">
-                Busque por ID de seguimiento
+                {{ $t('public.tickets.trackTicketDesc') }}
               </p>
             </div>
           </div>
@@ -109,10 +110,9 @@
             </svg>
           </div>
           <div>
-            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">¿Necesita ayuda?</h4>
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ $t('public.tickets.needHelp') }}</h4>
             <p class="text-gray-600 dark:text-gray-300 text-sm">
-              Si tiene alguna duda sobre cómo usar este sistema, no dude en contactarnos. 
-              Nuestro equipo de soporte está disponible para ayudarle.
+              {{ $t('public.tickets.needHelpDesc') }}
             </p>
           </div>
         </div>
@@ -122,11 +122,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/utils/http'
+import LanguageSelector from '@/components/LanguageSelector.vue'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
+const { locale } = useI18n()
 const companyName = ref('CH CONSULTING') // Valor por defecto
 const companyLogo = ref(null) // Logo de la empresa
 const companyInitials = ref('CH') // Iniciales por defecto
@@ -165,6 +168,30 @@ const loadCompanyInfo = async () => {
           companyInitials.value = words[0].substring(0, 2)
         }
         console.log('✅ Iniciales calculadas:', companyInitials.value)
+      }
+      
+      // Cargar idioma por defecto
+      if (response.data.default_lang) {
+        // Solo establecer si no hay idioma guardado en localStorage
+        const savedLocale = localStorage.getItem('locale')
+        if (!savedLocale) {
+          // Mapear el código de idioma de Dolibarr a nuestros códigos
+          const langMap = {
+            'es_ES': 'es',
+            'en_US': 'en',
+            'ca_ES': 'ca',
+            'es': 'es',
+            'en': 'en',
+            'ca': 'ca'
+          }
+          
+          const mappedLang = langMap[response.data.default_lang] || 'es'
+          locale.value = mappedLang
+          localStorage.setItem('locale', mappedLang)
+          console.log('🌍 Idioma por defecto establecido:', mappedLang, '(desde', response.data.default_lang + ')')
+        } else {
+          console.log('🌍 Usando idioma guardado:', savedLocale)
+        }
       }
       
       // Cargar logo
