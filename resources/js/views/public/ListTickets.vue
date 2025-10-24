@@ -442,7 +442,7 @@
                 <div class="flex-1 pb-6">
                   <p class="font-medium text-gray-900 dark:text-white mb-1">{{ $t('public.tickets.list.modal.ticketCreated') }}</p>
                   <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                    {{ $t('public.tickets.list.modal.ticketRegistered', { ref: selectedTicket?.ref }) }}
+                    {{ $t('public.tickets.list.modal.ticketRegistered', [selectedTicket?.ref]) }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-500">
                     {{ formatRelativeDate(selectedTicket?.createdAt) }}
