@@ -23,7 +23,7 @@
         "trackingIdLabel": "One of your tracking IDs",
         "trackingIdPlaceholder": "TK12345678",
         "emailLabel": "Email",
-        "emailPlaceholder": "email@example.com",
+        "emailPlaceholder": "email{'@'}example.com",
         "viewListButton": "VIEW MY TICKET LIST",
         "cancelButton": "CANCEL",
         "showClosed": "Show closed tickets",
@@ -98,7 +98,7 @@
         "step1": {
           "title": "What's your email?",
           "subtitle": "Enter your email to continue",
-          "placeholder": "your@email.com",
+          "placeholder": "your{'@'}email.com",
           "invalidEmail": "Please enter a valid email",
           "verifying": "Verifying...",
           "notFound": "No registered contact found with that email. Please contact the administrator to register.",
