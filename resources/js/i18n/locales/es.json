@@ -82,7 +82,7 @@
           "created": "Creado",
           "lastUpdate": "Última Actualización",
           "ticketCreated": "Ticket creado",
-          "ticketRegistered": "Ticket {0} registrado en el sistema",
+          "ticketRegistered": "Ticket registrado en el sistema",
           "messageSent": "Mensaje enviado",
           "messageSentSuccess": "Tu mensaje ha sido enviado correctamente"
         }
