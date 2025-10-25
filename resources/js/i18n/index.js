@@ -8,8 +8,8 @@ const i18n = createI18n({
   locale: localStorage.getItem('locale') || 'es',
   fallbackLocale: 'es',
   globalInjection: true,
-  missingWarn: false,
-  fallbackWarn: false,
+  warnHtmlMessage: false,
+  escapeParameter: false,
   messages: {
     es,
     en,
