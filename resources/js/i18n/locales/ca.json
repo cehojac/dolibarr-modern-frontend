@@ -82,7 +82,7 @@
           "created": "Creat",
           "lastUpdate": "Última Actualització",
           "ticketCreated": "Tiquet creat",
-          "ticketRegistered": "Tiquet {0} registrat al sistema",
+          "ticketRegistered": "Tiquet registrat al sistema",
           "messageSent": "Missatge enviat",
           "messageSentSuccess": "El teu missatge s'ha enviat correctament"
         }
