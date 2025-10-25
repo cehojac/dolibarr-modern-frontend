@@ -23,7 +23,7 @@
         "trackingIdLabel": "Un dels teus IDs de seguiment",
         "trackingIdPlaceholder": "TK12345678",
         "emailLabel": "Correu",
-        "emailPlaceholder": "correu@exemple.com",
+        "emailPlaceholder": "correu{'@'}exemple.com",
         "viewListButton": "VEURE LA MEVA LLISTA DE TIQUETS",
         "cancelButton": "ANUL·LAR",
         "showClosed": "Mostrar tiquets tancats",
@@ -98,7 +98,7 @@
         "step1": {
           "title": "Quin és el teu email?",
           "subtitle": "Introdueix el teu email per continuar",
-          "placeholder": "el.teu@email.com",
+          "placeholder": "el.teu{'@'}email.com",
           "invalidEmail": "Si us plau, introdueix un email vàlid",
           "verifying": "Verificant...",
           "notFound": "No s'ha trobat cap contacte registrat amb aquest email. Si us plau, contacta amb l'administrador per registrar-te.",

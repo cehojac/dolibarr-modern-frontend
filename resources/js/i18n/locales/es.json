@@ -23,7 +23,7 @@
         "trackingIdLabel": "Una de sus ID de seguimiento",
         "trackingIdPlaceholder": "TK12345678",
         "emailLabel": "Correo",
-        "emailPlaceholder": "correo@ejemplo.com",
+        "emailPlaceholder": "correo{'@'}ejemplo.com",
         "viewListButton": "VER MI LISTA DE TICKETS",
         "cancelButton": "ANULAR",
         "showClosed": "Mostrar tickets cerrados",
@@ -98,7 +98,7 @@
         "step1": {
           "title": "¿Cuál es tu email?",
           "subtitle": "Ingresa tu email para continuar",
-          "placeholder": "tu@email.com",
+          "placeholder": "tu{'@'}email.com",
           "invalidEmail": "Por favor, ingresa un email válido",
           "verifying": "Verificando...",
           "notFound": "No se encontró un contacto registrado con ese email. Por favor, contacte con el administrador para registrarse.",
