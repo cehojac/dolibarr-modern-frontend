@@ -2074,9 +2074,9 @@
                     </div>
                     
                     <div>
-                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Prioridad:</label>
-                      <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getPriorityClass(ticketDetails.severity)">
-                        {{ getPriorityText(ticketDetails.severity) }}
+                      <label class="block text-xs font-medium mb-1" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Gravedad:</label>
+                      <span class="inline-flex px-2 py-1 text-xs font-medium rounded-lg" :class="getPriorityClass(ticketDetails.severity_code || ticketDetails.severity)">
+                        {{ getPriorityText(ticketDetails.severity_code || ticketDetails.severity) }}
                       </span>
                     </div>
                     
