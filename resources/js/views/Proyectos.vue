@@ -414,6 +414,9 @@ const { t } = useI18n()
 const projects = ref([])
 const loading = ref(false)
 const terceros = ref([])
+const tercerosMap = ref({})
+const categories = ref([])
+const categoriesMap = ref({})
 
 // UI state
 const showFilters = ref(false)
@@ -493,35 +496,54 @@ const fetchProjects = async () => {
   try {
     const [projectsResponse, tercerosResponse] = await Promise.all([
       http.get('/api/doli/projects?limit=500&sortfield=datec&sortorder=DESC'),
-      http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] }))
+      http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] })),
+      http.get('/api/doli/categories?type=project&limit=1000').catch(() => ({ data: [] }))
     ])
 
     const projectsData = projectsResponse.data || []
     terceros.value = tercerosResponse.data || []
+    categories.value = Array.isArray(arguments[2]?.data) ? arguments[2].data : (arguments[2]?.data?.data || [])
 
-    // Create terceros lookup map (same as Dashboard)
-    const tercerosMap = {}
+    const tercerosLookup = {}
     terceros.value.forEach(tercero => {
-      // Store with both string and number keys to handle type mismatches
-      tercerosMap[tercero.id] = tercero
-      tercerosMap[String(tercero.id)] = tercero
-      tercerosMap[Number(tercero.id)] = tercero
+      const idVariants = [tercero.id, String(tercero.id), Number(tercero.id)]
+      idVariants.forEach(id => {
+        if (id !== undefined && id !== null && id !== 'undefined' && id !== 'null') {
+          tercerosLookup[id] = tercero
+        }
+      })
     })
-    
-    // Enrich projects with terceros data - check multiple possible field names
+
+    tercerosMap.value = tercerosLookup
+
+    const categoriesLookup = {}
+    categories.value.forEach(category => {
+      const idVariants = [category.id, String(category.id), Number(category.id)]
+      idVariants.forEach(id => {
+        if (id !== undefined && id !== null && id !== 'undefined' && id !== 'null') {
+          categoriesLookup[id] = category
+        }
+      })
+    })
+
+    categoriesMap.value = categoriesLookup
+
+    // Enrich projects with terceros data prioritizing socid
     const enrichedProjects = projectsData.map(project => {
-      const clientId = project.fk_soc || project.socid || project.fk_thirdparty || project.client_id || project.thirdparty_id
-      const tercero = tercerosMap[clientId] || tercerosMap[String(clientId)] || tercerosMap[Number(clientId)] || null
+      const clientId = project.socid ?? project.fk_soc ?? project.fk_thirdparty ?? project.client_id ?? project.thirdparty_id
+      const tercero = resolveThirdparty(clientId)
+      const thirdpartyName = extractThirdpartyName(tercero)
 
       const normalizedStatus = normalizeProjectStatus(project.status ?? project.fk_statut ?? project.statut)
 
       return {
         ...project,
-        thirdparty_name: tercero ? tercero.name : null,
+        thirdparty_name: thirdpartyName,
         client_id: clientId,
         normalizedStatus,
         displayedStartDate: project.date_start || project.dateo,
-        displayedEndDate: project.date_end || project.datee || project.date_close
+        displayedEndDate: project.date_end || project.datee || project.date_close,
+        category_ids: extractCategoryIds(project)
       }
     })
 
@@ -649,10 +671,17 @@ const viewProjectDetails = async (project) => {
   
   try {
     const response = await http.get(`/api/doli/projects/${project.id}`)
-    projectDetails.value = response.data
+    const details = response.data
+    if (!details.thirdparty_name) {
+      details.thirdparty_name = extractThirdpartyName(resolveThirdparty(details.socid ?? details.fk_soc))
+    }
+    projectDetails.value = details
   } catch (error) {
     console.error('Error fetching project details:', error)
-    projectDetails.value = project // Fallback to basic project data
+    projectDetails.value = {
+      ...project,
+      thirdparty_name: project.thirdparty_name || extractThirdpartyName(resolveThirdparty(project.socid ?? project.fk_soc))
+    }
   } finally {
     loadingDetails.value = false
   }
@@ -693,33 +722,17 @@ const getStatusCount = (status) => {
 
 // Funciones para tags y miembros
 const getProjectTags = (project) => {
-  const tags = []
-
-  if (project.array_options?.options_hosting) {
-    tags.push(project.array_options.options_hosting)
-  }
-  if (project.array_options?.options_ip_del_hosting) {
-    tags.push(project.array_options.options_ip_del_hosting)
-  }
-
-  return tags
+  const categoryIds = Array.isArray(project.category_ids) ? project.category_ids : []
+  return categoryIds
+    .map(resolveCategory)
+    .filter(Boolean)
+    .map(category => category.label || category.ref || category.name)
 }
 
 const getTagClass = (tag) => {
-  const tagClasses = {
-    'wordpress': isDark.value
-      ? 'border border-blue-500/40 bg-blue-500/15 text-blue-200'
-      : 'border border-blue-100 bg-blue-50 text-blue-600',
-    'review': isDark.value
-      ? 'border border-amber-500/40 bg-amber-500/15 text-amber-200'
-      : 'border border-amber-100 bg-amber-50 text-amber-600',
-    'design': isDark.value
-      ? 'border border-purple-500/40 bg-purple-500/15 text-purple-200'
-      : 'border border-purple-100 bg-purple-50 text-purple-600'
-  }
-  return tagClasses[tag] || (isDark.value
-    ? 'border border-slate-700 bg-slate-800 text-slate-200'
-    : 'border border-slate-200 bg-slate-50 text-slate-600')
+  return isDark.value
+    ? 'border border-blue-500/40 bg-blue-500/15 text-blue-200'
+    : 'border border-blue-100 bg-blue-50 text-blue-600'
 }
 
 const getProjectMembers = (project) => {
@@ -732,6 +745,61 @@ const getProjectMembers = (project) => {
     name: member.name || member.fullname || member.login || t('projects.members.unknown'),
     initials: getInitials(member.name || member.fullname || member.login || '?')
   }))
+}
+
+const resolveThirdparty = (id) => {
+  if (id === undefined || id === null || id === '' || id === '0') {
+    return null
+  }
+
+  const variants = [id, String(id), Number(id)]
+  for (const variant of variants) {
+    if (tercerosMap.value[variant]) {
+      return tercerosMap.value[variant]
+    }
+  }
+
+  return null
+}
+
+const extractThirdpartyName = (thirdparty) => {
+  if (!thirdparty) return null
+  return thirdparty.name || thirdparty.nom || thirdparty.label || thirdparty.company || thirdparty.firstname || null
+}
+
+const resolveCategory = (id) => {
+  if (id === undefined || id === null || id === '' || id === '0') {
+    return null
+  }
+
+  const variants = [id, String(id), Number(id)]
+  for (const variant of variants) {
+    if (categoriesMap.value[variant]) {
+      return categoriesMap.value[variant]
+    }
+  }
+
+  return null
+}
+
+const extractCategoryIds = (project) => {
+  if (Array.isArray(project.categories)) {
+    return project.categories
+      .map(cat => cat.id || cat.fk_category || cat.category_id)
+      .filter(Boolean)
+  }
+
+  if (Array.isArray(project.categorized)) {
+    return project.categorized
+      .map(cat => cat.id || cat.fk_category || cat.category_id)
+      .filter(Boolean)
+  }
+
+  if (project.array_options?.options_categories && Array.isArray(project.array_options.options_categories)) {
+    return project.array_options.options_categories.filter(Boolean)
+  }
+
+  return []
 }
 
 const normalizeProjectStatus = (value) => {
