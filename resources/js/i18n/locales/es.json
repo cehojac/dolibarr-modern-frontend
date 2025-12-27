@@ -1,4 +1,60 @@
 {
+  "projects": {
+    "title": "Proyectos",
+    "toolbar": {
+      "newProject": "Nuevo Proyecto",
+      "view": "Cambiar vista",
+      "export": "Exportar",
+      "filters": "Filtros"
+    },
+    "status": {
+      "all": "Todos",
+      "inactive": "Inactivo",
+      "active": "Activo",
+      "closed": "Cerrado"
+    },
+    "table": {
+      "projectName": "Nombre del Proyecto",
+      "customer": "Cliente",
+      "tags": "Etiquetas",
+      "startDate": "Fecha de Inicio",
+      "deadline": "Fecha Límite",
+      "members": "Miembros",
+      "status": "Estado",
+      "reference": "Referencia"
+    },
+    "empty": {
+      "title": "No hay proyectos que coincidan con los filtros",
+      "description": "Intenta ajustar los filtros o limpiarlos para ver todos los proyectos"
+    },
+    "pagination": {
+      "showing": "Mostrando",
+      "of": "de",
+      "projects": "proyectos",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "page": "Página",
+      "ofTotal": "de"
+    },
+    "modal": {
+      "title": "Detalles del Proyecto",
+      "reference": "Referencia",
+      "status": "Estado",
+      "createdAt": "Creado",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha Límite",
+      "customer": "Cliente",
+      "budget": "Presupuesto",
+      "usage": "Uso",
+      "titleLabel": "Título",
+      "description": "Descripción",
+      "createdBy": "Creado por",
+      "public": "Público",
+      "opportunity": "Oportunidad",
+      "close": "Cerrar",
+      "edit": "Editar Proyecto"
+    }
+  },
   "public": {
     "tickets": {
       "title": "Portal de Tickets",

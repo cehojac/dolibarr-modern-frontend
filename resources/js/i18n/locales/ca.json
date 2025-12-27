@@ -1,4 +1,60 @@
 {
+  "projects": {
+    "title": "Projectes",
+    "toolbar": {
+      "newProject": "Nou Projecte",
+      "view": "Canviar vista",
+      "export": "Exportar",
+      "filters": "Filtres"
+    },
+    "status": {
+      "all": "Tots",
+      "inactive": "Inactiu",
+      "active": "Actiu",
+      "closed": "Tancat"
+    },
+    "table": {
+      "projectName": "Nom del Projecte",
+      "customer": "Client",
+      "tags": "Etiquetes",
+      "startDate": "Data d'Inici",
+      "deadline": "Data Límit",
+      "members": "Membres",
+      "status": "Estat",
+      "reference": "Referència"
+    },
+    "empty": {
+      "title": "No hi ha projectes que coincideixin amb els filtres",
+      "description": "Prova d'ajustar els filtres o netejar-los per veure tots els projectes"
+    },
+    "pagination": {
+      "showing": "Mostrant",
+      "of": "de",
+      "projects": "projectes",
+      "previous": "Anterior",
+      "next": "Següent",
+      "page": "Pàgina",
+      "ofTotal": "de"
+    },
+    "modal": {
+      "title": "Detalls del Projecte",
+      "reference": "Referència",
+      "status": "Estat",
+      "createdAt": "Creat",
+      "startDate": "Data d'Inici",
+      "endDate": "Data Límit",
+      "customer": "Client",
+      "budget": "Pressupost",
+      "usage": "Ús",
+      "titleLabel": "Títol",
+      "description": "Descripció",
+      "createdBy": "Creat per",
+      "public": "Públic",
+      "opportunity": "Oportunitat",
+      "close": "Tancar",
+      "edit": "Editar Projecte"
+    }
+  },
   "public": {
     "tickets": {
       "title": "Portal de Tiquets",

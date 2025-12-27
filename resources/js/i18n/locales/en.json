@@ -1,4 +1,60 @@
 {
+  "projects": {
+    "title": "Projects",
+    "toolbar": {
+      "newProject": "New Project",
+      "view": "Toggle view",
+      "export": "Export",
+      "filters": "Filters"
+    },
+    "status": {
+      "all": "All",
+      "inactive": "Inactive",
+      "active": "Active",
+      "closed": "Closed"
+    },
+    "table": {
+      "projectName": "Project Name",
+      "customer": "Customer",
+      "tags": "Tags",
+      "startDate": "Start Date",
+      "deadline": "Deadline",
+      "members": "Members",
+      "status": "Status",
+      "reference": "Reference"
+    },
+    "empty": {
+      "title": "No projects match the current filters",
+      "description": "Try adjusting your filters or clearing them to see all projects"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of",
+      "projects": "projects",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page",
+      "ofTotal": "of"
+    },
+    "modal": {
+      "title": "Project Details",
+      "reference": "Reference",
+      "status": "Status",
+      "createdAt": "Created",
+      "startDate": "Start Date",
+      "endDate": "Deadline",
+      "customer": "Customer",
+      "budget": "Budget",
+      "usage": "Usage",
+      "titleLabel": "Title",
+      "description": "Description",
+      "createdBy": "Created by",
+      "public": "Public",
+      "opportunity": "Opportunity",
+      "close": "Close",
+      "edit": "Edit Project"
+    }
+  },
   "public": {
     "tickets": {
       "title": "Ticket Portal",
