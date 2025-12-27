@@ -472,7 +472,7 @@ const statusOptions = computed(() => [
 
 // Filters and search
 const searchQuery = ref('')
-const statusFilter = ref('')
+const statusFilter = ref('1')
 
 // Pagination
 const currentPage = ref(1)
@@ -549,7 +549,7 @@ const filteredProjects = computed(() => {
 
   // Apply status filter
   if (statusFilter.value) {
-    filtered = filtered.filter(project => project.fk_statut === statusFilter.value)
+    filtered = filtered.filter(project => project.normalizedStatus === statusFilter.value)
   }
 
   // Apply sorting
