@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import http from '../utils/http'
 import { useAuthStore } from '../stores/auth'
 
@@ -28,26 +28,53 @@ export function useTicketsCounter() {
 
     loading.value = true
     try {
-      // Fetch all tickets with high limit to get accurate count
-      const response = await http.get('/api/doli/tickets?limit=10000')
-      const tickets = response.data || []
-      
-       // console.log('Total tickets fetched:', tickets.length)
-       // console.log('Current user ID:', userId)
-      
-      // Count tickets assigned to current user that are not closed
+      const sqlClauses = []
+      const assignmentClauses = []
+
+      if (userId) {
+        assignmentClauses.push(`(t.fk_user_assign:=:${userId})`)
+      }
+
+      if (userLogin) {
+        const sanitizedLogin = String(userLogin).replace(/'/g, "''")
+        assignmentClauses.push(`(t.fk_user_assign_login:=:'${sanitizedLogin}')`)
+      }
+
+      if (assignmentClauses.length > 0) {
+        const combinedAssignment = assignmentClauses.length > 1
+          ? `(${assignmentClauses.join('or')})`
+          : assignmentClauses[0]
+        sqlClauses.push(combinedAssignment)
+      }
+
+      // Exclude closed tickets (status 8) server-side to reduce payload
+      sqlClauses.push('(t.fk_statut:<>:8)')
+
+      const params = {
+        limit: 500,
+        sortfield: 'datec',
+        sortorder: 'DESC'
+      }
+
+      if (sqlClauses.length > 0) {
+        params.sqlfilters = sqlClauses.join('and')
+      }
+
+      const response = await http.get('/api/doli/tickets', {
+        params,
+        timeout: 5000
+      })
+
+      const tickets = Array.isArray(response.data) ? response.data : []
+
       const assignedTickets = tickets.filter(ticket => {
-        // Try matching by ID first, then by login if available
         const isAssignedById = userId && ticket.fk_user_assign == userId
         const isAssignedByLogin = userLogin && ticket.fk_user_assign_login == userLogin
         const isAssigned = isAssignedById || isAssignedByLogin
-        const isNotClosed = ticket.fk_statut !== '8'
-        
-         // console.log(`Ticket ${ticket.id}: assigned to ${ticket.fk_user_assign} (login: ${ticket.fk_user_assign_login}), status: ${ticket.fk_statut}, matches user: ${isAssigned}, not closed: ${isNotClosed}`)
+        const isNotClosed = ticket.fk_statut !== '8' && ticket.fk_statut !== 8
         return isAssigned && isNotClosed
       })
-      
-       // console.log('Assigned active tickets:', assignedTickets.length)
+
       assignedTicketsCount.value = assignedTickets.length
     } catch (error) {
       console.error('Error fetching assigned tickets count:', error)

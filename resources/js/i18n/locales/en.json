@@ -38,6 +38,7 @@
     },
     "modal": {
       "title": "Project Details",
+      "untitledProject": "Untitled Project",
       "reference": "Reference",
       "status": "Status",
       "createdAt": "Created",
@@ -48,11 +49,69 @@
       "usage": "Usage",
       "titleLabel": "Title",
       "description": "Description",
+      "emptyDescription": "This project does not have a description yet.",
       "createdBy": "Created by",
       "public": "Public",
       "opportunity": "Opportunity",
       "close": "Close",
-      "edit": "Edit Project"
+      "edit": "Edit Project",
+      "documentation": "Documentation",
+      "comingSoon": "This section will be available soon.",
+      "labels": {
+        "projectCode": "Project #",
+        "customer": "Customer:",
+        "status": "Status",
+        "noTags": "No tags assigned",
+        "team": "Project Team",
+        "teamMember": "Team Member",
+        "noTeam": "No team assigned",
+        "notAvailable": "Not available"
+      },
+      "actions": {
+        "newTask": "New Task",
+        "invoiceProject": "Invoice Project",
+        "more": "More Actions"
+      },
+      "tabs": {
+        "project": "Project",
+        "contacts": "Project Contacts",
+        "tasks": "Tasks",
+        "timesheets": "Time Spent",
+        "summary": "Summary",
+        "tickets": "Tickets",
+        "notes": "Notes",
+        "documents": "Documents",
+        "agenda": "Events / Agenda"
+      },
+      "metrics": {
+        "progress": "Project Progress",
+        "tasks": "Open Tasks",
+        "completion": "Completion",
+        "daysLeft": "Days Left",
+        "loggedHours": "Logged Hours",
+        "loggedHoursSubtitle": "Total logged time",
+        "budget": "Budget",
+        "budgetSubtitle": "Configured budget",
+        "expenses": "Expenses",
+        "expensesSubtitle": "Tracked expenses"
+      },
+      "overview": {
+        "title": "Overview",
+        "export": "Export Project Data",
+        "projectId": "Project ID",
+        "customer": "Customer",
+        "billingType": "Billing Type",
+        "ratePerHour": "Rate Per Hour",
+        "dateCreated": "Date Created",
+        "startDate": "Start Date",
+        "deadline": "Deadline",
+        "loggedHours": "Total Logged Hours"
+      },
+      "billingTypes": {
+        "projectHours": "Project Hours",
+        "fixedPrice": "Fixed Price",
+        "notSet": "Not defined"
+      }
     }
   },
   "public": {
