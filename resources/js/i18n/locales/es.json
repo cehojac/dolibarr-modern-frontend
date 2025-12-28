@@ -38,6 +38,7 @@
     },
     "modal": {
       "title": "Detalles del Proyecto",
+      "untitledProject": "Proyecto sin nombre",
       "reference": "Referencia",
       "status": "Estado",
       "createdAt": "Creado",
@@ -48,11 +49,69 @@
       "usage": "Uso",
       "titleLabel": "Título",
       "description": "Descripción",
+      "emptyDescription": "Este proyecto aún no tiene descripción.",
       "createdBy": "Creado por",
       "public": "Público",
       "opportunity": "Oportunidad",
       "close": "Cerrar",
-      "edit": "Editar Proyecto"
+      "edit": "Editar Proyecto",
+      "documentation": "Documentación",
+      "comingSoon": "Esta sección estará disponible próximamente.",
+      "labels": {
+        "projectCode": "Proyecto #",
+        "customer": "Cliente:",
+        "status": "Estado",
+        "noTags": "Sin etiquetas asignadas",
+        "team": "Equipo del Proyecto",
+        "teamMember": "Miembro del equipo",
+        "noTeam": "Sin equipo asignado",
+        "notAvailable": "No disponible"
+      },
+      "actions": {
+        "newTask": "Nueva Tarea",
+        "invoiceProject": "Facturar Proyecto",
+        "more": "Más acciones"
+      },
+      "tabs": {
+        "project": "Proyecto",
+        "contacts": "Contactos del proyecto",
+        "tasks": "Tareas",
+        "timesheets": "Tiempo dedicado",
+        "summary": "Resumen",
+        "tickets": "Tickets",
+        "notes": "Notas",
+        "documents": "Documentos",
+        "agenda": "Eventos/Agenda"
+      },
+      "metrics": {
+        "progress": "Progreso del Proyecto",
+        "tasks": "Tareas Abiertas",
+        "completion": "Completado",
+        "daysLeft": "Días Restantes",
+        "loggedHours": "Horas Registradas",
+        "loggedHoursSubtitle": "Tiempo total registrado",
+        "budget": "Presupuesto",
+        "budgetSubtitle": "Presupuesto configurado",
+        "expenses": "Gastos",
+        "expensesSubtitle": "Gastos registrados"
+      },
+      "overview": {
+        "title": "Resumen",
+        "export": "Exportar datos del proyecto",
+        "projectId": "ID del Proyecto",
+        "customer": "Cliente",
+        "billingType": "Tipo de Facturación",
+        "ratePerHour": "Tarifa por Hora",
+        "dateCreated": "Fecha de Creación",
+        "startDate": "Fecha de Inicio",
+        "deadline": "Fecha Límite",
+        "loggedHours": "Horas Registradas"
+      },
+      "billingTypes": {
+        "projectHours": "Horas de Proyecto",
+        "fixedPrice": "Precio Fijo",
+        "notSet": "Sin definir"
+      }
     }
   },
   "public": {

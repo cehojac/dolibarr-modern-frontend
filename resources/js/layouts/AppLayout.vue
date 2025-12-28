@@ -242,6 +242,7 @@ import { useTicketsCounter } from '../composables/useTicketsCounter'
 import { useTasksCounter } from '../composables/useTasksCounter'
 import { useAgendaCounter } from '../composables/useAgendaCounter'
 import { usePermissions } from '../composables/usePermissions'
+import { useApiCache } from '../composables/useApiCache'
 import Breadcrumbs from '../components/Breadcrumbs.vue'
 
 const router = useRouter()
@@ -252,6 +253,7 @@ const { assignedTicketsCount, fetchAssignedTicketsCount, startAutoRefresh: start
 const { assignedTasksCount, fetchAssignedTasksCount, startAutoRefresh: startTasksAutoRefresh } = useTasksCounter()
 const { overdueEventsCount, fetchOverdueEventsCount, startAutoRefresh: startAgendaAutoRefresh } = useAgendaCounter()
 const { hasAnyPermission } = usePermissions()
+const { cachedFetch, hasCache } = useApiCache()
 
 // Configuración de permisos por módulo del menú
 const menuPermissions = {
@@ -322,6 +324,23 @@ watch(overdueEventsCount, (newValue) => {
 let stopTicketsAutoRefresh = null
 let stopTasksAutoRefresh = null
 let stopAgendaAutoRefresh = null
+
+const prefetchProjects = async () => {
+  try {
+    const cacheKey = 'projects:list'
+    if (hasCache(cacheKey)) {
+      return
+    }
+
+    await cachedFetch('/api/doli/projects', {
+      params: { limit: 500, sortfield: 'datec', sortorder: 'DESC' },
+      ttl: 600000,
+      cacheKey
+    })
+  } catch (error) {
+    console.warn('⚠️ Background project prefetch failed', error)
+  }
+}
 
 const user = computed(() => authStore.user)
 
@@ -443,6 +462,7 @@ onMounted(async () => {
   stopTicketsAutoRefresh = startTicketsAutoRefresh()
   stopTasksAutoRefresh = startTasksAutoRefresh()
   stopAgendaAutoRefresh = startAgendaAutoRefresh()
+  prefetchProjects()
 })
 
 onUnmounted(() => {
