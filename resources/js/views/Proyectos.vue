@@ -282,116 +282,311 @@
         <div class="fixed inset-0 bg-black bg-opacity-75 transition-opacity" @click="closeModal"></div>
 
         <!-- Modal -->
-        <div class="relative inline-block align-bottom bg-gray-900 rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-700" @click.stop>
+        <div class="relative inline-block align-bottom bg-gray-900 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full border border-gray-700/80" @click.stop>
           <!-- Header -->
-          <div class="bg-gray-800 px-6 py-4 border-b border-gray-700">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-xl font-semibold text-white">{{ t('projects.modal.title') }}</h3>
-                <p class="text-gray-400 mt-1">{{ selectedProject?.ref }}</p>
+          <div class="bg-gray-800/70 px-6 py-6 border-b border-gray-700/70">
+            <div class="flex flex-col gap-6">
+              <div class="flex flex-wrap items-start justify-between gap-6">
+                <div class="space-y-3">
+                  <div class="flex flex-wrap items-center gap-3">
+                    <h3 class="text-2xl font-semibold text-white tracking-tight">{{ projectTitle || t('projects.modal.untitledProject') }}</h3>
+                    <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold" :class="projectStatusBadgeClass">
+                      <span class="h-2 w-2 rounded-full" :class="projectStatusDotClass"></span>
+                      {{ projectStatusText }}
+                    </span>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-3 text-sm text-gray-400">
+                    <span>{{ t('projects.modal.labels.projectCode') }} {{ projectReferenceCode }}</span>
+                    <span class="hidden h-1 w-1 rounded-full bg-gray-600 md:inline"></span>
+                    <span>{{ t('projects.modal.labels.customer') }} {{ projectCustomerName }}</span>
+                  </div>
+                  <div v-if="projectModalTags.length" class="flex flex-wrap gap-2">
+                    <span
+                      v-for="tag in projectModalTags"
+                      :key="`modal-tag-${tag}`"
+                      class="inline-flex items-center rounded-full border border-blue-400/40 bg-blue-500/15 px-3 py-1 text-xs font-medium text-blue-100"
+                    >
+                      {{ tag }}
+                    </span>
+                  </div>
+                  <p v-else class="text-xs text-gray-500">{{ t('projects.modal.labels.noTags') }}</p>
+                </div>
+
+                <div class="flex flex-col items-end gap-4 text-right">
+                  <div v-if="projectTeamMembers.length" class="flex -space-x-3">
+                    <div
+                      v-for="member in projectTeamMembers.slice(0, 4)"
+                      :key="member.id"
+                      class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-800 bg-blue-600 text-sm font-semibold text-white shadow-md"
+                    >
+                      {{ member.initials }}
+                    </div>
+                    <div
+                      v-if="projectTeamMembers.length > 4"
+                      class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-800 bg-gray-700 text-xs font-semibold text-gray-200"
+                    >
+                      +{{ projectTeamMembers.length - 4 }}
+                    </div>
+                  </div>
+                  <p v-else class="text-xs text-gray-500">{{ t('projects.modal.labels.noTeam') }}</p>
+
+                  <div class="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-2 rounded-lg border border-blue-400/40 bg-blue-500/10 px-3 py-2 text-xs font-semibold text-blue-100 transition hover:bg-blue-500/20"
+                    >
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4" />
+                      </svg>
+                      {{ t('projects.modal.actions.newTask') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-2 rounded-lg border border-emerald-400/40 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-500/20"
+                    >
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7h8m-8 4h8m-5 4h5" />
+                      </svg>
+                      {{ t('projects.modal.actions.invoiceProject') }}
+                    </button>
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-2 rounded-lg border border-gray-600 px-3 py-2 text-xs font-semibold text-gray-300 transition hover:bg-gray-700/80 hover:text-white"
+                    >
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6l4 2" />
+                      </svg>
+                      {{ t('projects.modal.actions.more') }}
+                    </button>
+                  </div>
+                  <a href="#" class="text-xs font-medium text-blue-300 hover:text-blue-200">{{ t('projects.modal.documentation') }}</a>
+                </div>
               </div>
-              <button @click="closeModal" class="text-gray-400 hover:text-white transition-colors">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+
+              <button @click="closeModal" class="absolute right-6 top-6 text-gray-400 transition hover:text-white">
+                <span class="sr-only">{{ t('projects.modal.close') }}</span>
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
           </div>
 
+          <!-- Tabs -->
+          <div class="bg-gray-900 px-6">
+            <nav class="flex flex-nowrap gap-2 overflow-x-auto border-b border-gray-800/80 pb-1" aria-label="Project sections">
+              <button
+                v-for="tab in modalTabs"
+                :key="tab.id"
+                type="button"
+                @click="activeModalTab = tab.id"
+                class="inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide transition"
+                :class="activeModalTab === tab.id
+                  ? 'border-blue-500 text-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-200'"
+              >
+                {{ tab.label }}
+                <span
+                  v-if="tab.badge !== undefined && tab.badge !== null"
+                  class="inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-gray-700 px-1 text-[10px] font-semibold text-gray-200"
+                >
+                  {{ tab.badge }}
+                </span>
+              </button>
+            </nav>
+          </div>
+
           <!-- Content -->
           <div class="bg-gray-900 px-6 py-6">
-            <div v-if="loadingDetails" class="flex items-center justify-center py-8">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <span class="ml-3 text-gray-300">{{ t('projects.loading') }}</span>
+            <div v-if="loadingDetails" class="flex items-center justify-center py-10">
+              <div class="h-9 w-9 animate-spin rounded-full border-2 border-blue-500/40 border-t-transparent"></div>
+              <span class="ml-3 text-sm text-gray-300">{{ t('projects.loading') }}</span>
             </div>
 
-            <div v-else-if="projectDetails" class="space-y-6">
-              <!-- Información básica -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ t('projects.modal.reference') }}</label>
-                    <p class="text-white bg-gray-800 px-3 py-2 rounded-lg">{{ projectDetails.ref }}</p>
-                  </div>
-                  
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ t('projects.modal.status') }}</label>
-                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full" :class="getStatusClass(getProjectStatusValue(projectDetails))">
-                      {{ getStatusText(getProjectStatusValue(projectDetails)) }}
-                    </span>
+            <div v-else-if="projectDetails || selectedProject" class="space-y-8">
+              <div v-if="activeModalTab === 'overview'" class="space-y-8">
+                <!-- Progress & Metrics -->
+                <div class="grid gap-4 md:grid-cols-3">
+                  <div class="col-span-3 rounded-2xl border border-gray-800/80 bg-gray-800/30 p-6 shadow-lg">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">{{ t('projects.modal.metrics.progress') }}</p>
+                        <p class="mt-2 text-4xl font-bold text-white">{{ projectProgress }}%</p>
+                      </div>
+                      <div class="text-right">
+                        <p class="text-xs text-gray-400">{{ t('projects.modal.labels.status') }}</p>
+                        <p class="text-sm font-semibold text-gray-200">{{ projectStatusText }}</p>
+                      </div>
+                    </div>
+                    <div class="mt-5 h-2 w-full overflow-hidden rounded-full bg-gray-900">
+                      <div class="h-full rounded-full bg-emerald-500 transition-all" :style="{ width: projectProgress + '%' }"></div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ t('projects.modal.createdAt') }}</label>
-                    <p class="text-gray-300 bg-gray-800 px-3 py-2 rounded-lg">{{ formatDate(projectDetails.date_c || projectDetails.date_creation) }}</p>
+                  <div class="rounded-2xl border border-gray-800/80 bg-gray-800/20 p-5 shadow">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">{{ t('projects.modal.metrics.tasks') }}</p>
+                    <div class="mt-3 flex items-baseline gap-2">
+                      <span class="text-3xl font-semibold text-white">{{ projectTasksSummary.open !== null ? projectTasksSummary.open : '—' }}</span>
+                      <span class="text-xs text-gray-500">/ {{ projectTasksSummary.total !== null ? projectTasksSummary.total : '—' }}</span>
+                    </div>
+                    <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-900">
+                      <div class="h-full rounded-full bg-blue-500 transition-all" :style="{ width: projectTasksSummary.completion + '%' }"></div>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">{{ t('projects.modal.metrics.completion') }} {{ projectTasksSummary.completion }}%</p>
                   </div>
 
-                  <div v-if="projectDetails.date_start">
-                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ t('projects.modal.startDate') }}</label>
-                    <p class="text-gray-300 bg-gray-800 px-3 py-2 rounded-lg">{{ formatDate(projectDetails.date_start) }}</p>
+                  <div class="rounded-2xl border border-gray-800/80 bg-gray-800/20 p-5 shadow">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">{{ t('projects.modal.metrics.daysLeft') }}</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">
+                      {{ projectDeadlineSummary.daysLeft !== null ? projectDeadlineSummary.daysLeft : '—' }}
+                    </p>
+                    <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-900">
+                      <div
+                        class="h-full rounded-full bg-emerald-500 transition-all"
+                        :style="{ width: (projectDeadlineSummary.percent ?? 0) + '%' }"
+                      ></div>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">
+                      {{ projectDeadlineSummary.percent !== null ? projectDeadlineSummary.percent + '%' : t('projects.modal.labels.notAvailable') }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-2xl border border-gray-800/80 bg-gray-800/20 p-5 shadow">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">{{ t('projects.modal.metrics.loggedHours') }}</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ projectLoggedHours }}</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ t('projects.modal.metrics.loggedHoursSubtitle') }}</p>
+                  </div>
+
+                  <div class="rounded-2xl border border-gray-800/80 bg-gray-800/20 p-5 shadow">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">{{ t('projects.modal.metrics.budget') }}</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">{{ projectBudgetAmount }}</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ t('projects.modal.metrics.budgetSubtitle') }}</p>
+                  </div>
+
+                  <div class="rounded-2xl border border-gray-800/80 bg-gray-800/20 p-5 shadow">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">{{ t('projects.modal.metrics.expenses') }}</p>
+                    <p class="mt-3 text-3xl font-semibold text-white">—</p>
+                    <p class="mt-2 text-xs text-gray-500">{{ t('projects.modal.metrics.expensesSubtitle') }}</p>
                   </div>
                 </div>
 
-                <div class="space-y-4">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ t('projects.table.customer') }}</label>
-                    <p class="text-gray-300 bg-gray-800 px-3 py-2 rounded-lg">{{ projectDetails.thirdparty_name || '-' }}</p>
+                <!-- Overview Cards -->
+                <div class="grid gap-6 lg:grid-cols-2">
+                  <div class="rounded-2xl border border-gray-800/80 bg-gray-800/30 p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                      <h4 class="text-sm font-semibold uppercase tracking-wide text-gray-300">{{ t('projects.modal.overview.title') }}</h4>
+                      <button type="button" class="inline-flex items-center gap-2 rounded-full border border-gray-600 px-3 py-1 text-xs font-semibold text-gray-300 transition hover:bg-gray-700/80">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 7h16M4 12h16M4 17h16" />
+                        </svg>
+                        {{ t('projects.modal.overview.export') }}
+                      </button>
+                    </div>
+                    <dl class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
+                      <div>
+                        <dt class="text-gray-400">{{ t('projects.modal.overview.projectId') }}</dt>
+                        <dd class="mt-1 font-medium text-white">{{ projectIdentifier }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-gray-400">{{ t('projects.modal.overview.customer') }}</dt>
+                        <dd class="mt-1 font-medium text-white">{{ projectCustomerName }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-gray-400">{{ t('projects.modal.overview.billingType') }}</dt>
+                        <dd class="mt-1 font-medium text-white">{{ projectBillingType }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-gray-400">{{ t('projects.modal.overview.ratePerHour') }}</dt>
+                        <dd class="mt-1 font-medium text-white">{{ projectRatePerHour }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-gray-400">{{ t('projects.modal.overview.dateCreated') }}</dt>
+                        <dd class="mt-1 font-medium text-white">{{ formatDate(projectDetails?.date_c || projectDetails?.date_creation || selectedProject?.date_c) }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-gray-400">{{ t('projects.modal.overview.startDate') }}</dt>
+                        <dd class="mt-1 font-medium text-white">{{ formatDate(projectDetails?.date_start || selectedProject?.date_start) }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-gray-400">{{ t('projects.modal.overview.deadline') }}</dt>
+                        <dd class="mt-1 font-medium text-white">{{ formatDate(projectDetails?.date_end || selectedProject?.date_end) }}</dd>
+                      </div>
+                      <div>
+                        <dt class="text-gray-400">{{ t('projects.modal.overview.loggedHours') }}</dt>
+                        <dd class="mt-1 font-medium text-white">{{ projectLoggedHours }}</dd>
+                      </div>
+                    </dl>
                   </div>
 
-                  <div v-if="projectDetails.date_end">
-                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ t('projects.modal.endDate') }}</label>
-                    <p class="text-gray-300 bg-gray-800 px-3 py-2 rounded-lg">{{ formatDate(projectDetails.date_end) }}</p>
+                  <div class="rounded-2xl border border-gray-800/80 bg-gray-800/30 p-6">
+                    <div class="flex items-center justify-between">
+                      <h4 class="text-sm font-semibold uppercase tracking-wide text-gray-300">{{ t('projects.modal.labels.team') }}</h4>
+                      <span v-if="contactsLoading" class="flex items-center gap-2 text-xs text-gray-400">
+                        <svg class="h-4 w-4 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke-width="4"></circle>
+                          <path class="opacity-75" d="M4 12a8 8 0 018-8" stroke-width="4" stroke-linecap="round"></path>
+                        </svg>
+                        {{ t('projects.modal.labels.loadingTeam') }}
+                      </span>
+                    </div>
+                    <div v-if="projectTeamMembers.length" class="mt-4 space-y-4">
+                      <div
+                        v-for="member in projectTeamMembers"
+                        :key="`member-${member.id}`"
+                        class="flex items-center justify-between gap-3 rounded-xl border border-gray-700/60 bg-gray-900/40 px-4 py-3"
+                      >
+                        <div class="flex items-center gap-3">
+                          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white">
+                            {{ member.initials }}
+                          </div>
+                          <div>
+                            <p class="text-sm font-semibold text-white">{{ member.name }}</p>
+                            <p v-if="member.role" class="text-xs text-emerald-300">{{ member.role }}</p>
+                            <p v-else class="text-xs text-gray-500">{{ t('projects.modal.labels.teamMember') }}</p>
+                            <div class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-gray-400">
+                              <span v-if="member.email" class="inline-flex items-center gap-1">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l9 6 9-6" />
+                                </svg>
+                                {{ member.email }}
+                              </span>
+                              <span v-if="member.phone" class="inline-flex items-center gap-1">
+                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5l2-2 4 4-2 2c1 2.5 3.5 5 6 6l2-2 4 4-2 2c-2.5.5-9-4-12-7-3-3-7-9.5-7-12z" />
+                                </svg>
+                                {{ member.phone }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <button type="button" class="rounded-full border border-gray-600 px-3 py-1 text-xs font-medium text-gray-300 hover:bg-gray-700/80">{{ t('projects.modal.actions.more') }}</button>
+                      </div>
+                    </div>
+                    <p v-else class="mt-4 text-xs text-gray-500">{{ t('projects.modal.labels.noTeam') }}</p>
                   </div>
+                </div>
 
-                  <div v-if="projectDetails.budget_amount">
-                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ t('projects.modal.budget') }}</label>
-                    <p class="text-gray-300 bg-gray-800 px-3 py-2 rounded-lg">{{ formatCurrency(projectDetails.budget_amount) }}</p>
-                  </div>
-
-                  <div v-if="projectDetails.usage_bill_time">
-                    <label class="block text-sm font-medium text-gray-300 mb-1">{{ t('projects.modal.usage') }}</label>
-                    <p class="text-gray-300 bg-gray-800 px-3 py-2 rounded-lg">{{ projectDetails.usage_bill_time }}%</p>
-                  </div>
+                <!-- Description -->
+                <div class="rounded-2xl border border-gray-800/80 bg-gray-800/30 p-6">
+                  <h4 class="text-sm font-semibold uppercase tracking-wide text-gray-300">{{ t('projects.modal.description') }}</h4>
+                  <div class="mt-4 text-sm text-gray-200" v-if="projectDetails?.description" v-html="projectDetails.description"></div>
+                  <p v-else class="mt-4 text-sm text-gray-500">{{ t('projects.modal.emptyDescription') }}</p>
                 </div>
               </div>
 
-              <!-- Título -->
-              <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">{{ t('projects.modal.titleLabel') }}</label>
-                <p class="text-white bg-gray-800 px-4 py-3 rounded-lg">{{ projectDetails.title }}</p>
-              </div>
-
-              <!-- Descripción -->
-              <div v-if="projectDetails.description">
-                <label class="block text-sm font-medium text-gray-300 mb-2">{{ t('projects.modal.description') }}</label>
-                <div class="text-gray-300 bg-gray-800 px-4 py-3 rounded-lg max-h-64 overflow-y-auto" v-html="projectDetails.description"></div>
-              </div>
-
-              <!-- Información adicional -->
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-700">
-                <div v-if="projectDetails.fk_user_creat_label">
-                  <label class="block text-sm font-medium text-gray-400 mb-1">{{ t('projects.modal.createdBy') }}</label>
-                  <p class="text-sm text-gray-300">{{ projectDetails.fk_user_creat_label }}</p>
-                </div>
-                <div v-if="projectDetails.public">
-                  <label class="block text-sm font-medium text-gray-400 mb-1">{{ t('projects.modal.public') }}</label>
-                  <p class="text-sm text-gray-300">{{ projectDetails.public === '1' ? 'Sí' : 'No' }}</p>
-                </div>
-                <div v-if="projectDetails.usage_opportunity">
-                  <label class="block text-sm font-medium text-gray-400 mb-1">{{ t('projects.modal.opportunity') }}</label>
-                  <p class="text-sm text-gray-300">{{ projectDetails.usage_opportunity }}%</p>
-                </div>
+              <div v-else class="rounded-2xl border border-gray-800/80 bg-gray-800/40 p-10 text-center text-sm text-gray-400">
+                {{ t('projects.modal.comingSoon') }}
               </div>
             </div>
           </div>
 
           <!-- Footer -->
-          <div class="bg-gray-800 px-6 py-4 border-t border-gray-700">
-            <div class="flex justify-end space-x-3">
-              <button @click="closeModal" class="px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors">
+          <div class="bg-gray-900/80 px-6 py-4 border-t border-gray-800/80">
+            <div class="flex justify-end gap-3">
+              <button @click="closeModal" type="button" class="rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium text-gray-300 transition hover:bg-gray-800/80 hover:text-white">
                 {{ t('projects.modal.close') }}
               </button>
-              <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-500">
                 {{ t('projects.modal.edit') }}
               </button>
             </div>
@@ -407,9 +602,11 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import http from '../utils/http'
 import { useTheme } from '../composables/useTheme'
+import { useApiCache } from '../composables/useApiCache'
 
 const { isDark } = useTheme()
 const { t } = useI18n()
+const { cachedFetch } = useApiCache()
 
 const projects = ref([])
 const loading = ref(false)
@@ -417,6 +614,7 @@ const terceros = ref([])
 const tercerosMap = ref({})
 const categories = ref([])
 const categoriesMap = ref({})
+const activeModalTab = ref('overview')
 
 // UI state
 const showFilters = ref(false)
@@ -477,6 +675,18 @@ const statusOptions = computed(() => [
 const searchQuery = ref('')
 const statusFilter = ref('1')
 
+const modalTabs = computed(() => [
+  { id: 'overview', label: t('projects.modal.tabs.project'), icon: 'M6 12h12M6 16h12M6 8h12' },
+  { id: 'contacts', label: t('projects.modal.tabs.contacts'), badge: projectContactsCount.value },
+  { id: 'tasks', label: t('projects.modal.tabs.tasks'), badge: projectTasksSummary.value.total },
+  { id: 'timesheets', label: t('projects.modal.tabs.timesheets'), badge: projectTimeEntriesCount.value },
+  { id: 'summary', label: t('projects.modal.tabs.summary') },
+  { id: 'tickets', label: t('projects.modal.tabs.tickets'), badge: projectTicketsCount.value },
+  { id: 'notes', label: t('projects.modal.tabs.notes') },
+  { id: 'documents', label: t('projects.modal.tabs.documents'), badge: projectDocumentsCount.value },
+  { id: 'agenda', label: t('projects.modal.tabs.agenda') }
+])
+
 // Pagination
 const currentPage = ref(1)
 const itemsPerPage = ref(25)
@@ -490,19 +700,113 @@ const showModal = ref(false)
 const selectedProject = ref(null)
 const projectDetails = ref(null)
 const loadingDetails = ref(false)
+const projectContacts = ref([])
+const contactsLoading = ref(false)
+
+const projectTitle = computed(() => projectDetails.value?.title || selectedProject.value?.title || selectedProject.value?.ref || '')
+const projectReferenceCode = computed(() => projectDetails.value?.ref || selectedProject.value?.ref || '-')
+const projectCustomerName = computed(() => projectDetails.value?.thirdparty_name || selectedProject.value?.thirdparty_name || '—')
+const projectModalTags = computed(() => {
+  if (projectDetails.value) return getProjectTags(projectDetails.value)
+  if (selectedProject.value) return getProjectTags(selectedProject.value)
+  return []
+})
+const projectTeamMembers = computed(() => {
+  if (projectContacts.value.length > 0) {
+    return projectContacts.value
+  }
+  return getProjectMembers(projectDetails.value || selectedProject.value || {})
+})
+const projectProgress = computed(() => calculateProjectProgress(projectDetails.value || selectedProject.value))
+const projectTasksSummary = computed(() => calculateTasksSummary(projectDetails.value || selectedProject.value))
+const projectDeadlineSummary = computed(() => calculateDeadlineSummary(projectDetails.value || selectedProject.value))
+const projectLoggedHours = computed(() => formatDuration(projectDetails.value?.total_logged_hours || projectDetails.value?.totalhours || selectedProject.value?.total_logged_hours))
+const projectBudgetAmount = computed(() => {
+  const amount = projectDetails.value?.budget_amount || selectedProject.value?.budget_amount
+  return amount ? formatCurrency(amount) : '—'
+})
+const currentProject = computed(() => projectDetails.value || selectedProject.value || null)
+const projectStatusValue = computed(() => getProjectStatusValue(currentProject.value || {}))
+const projectStatusText = computed(() => getStatusText(projectStatusValue.value))
+const projectStatusBadgeClass = computed(() => getStatusBadgeClass(projectStatusValue.value))
+const projectStatusDotClass = computed(() => getStatusDotClass(projectStatusValue.value))
+const projectIdentifier = computed(() => currentProject.value?.id || currentProject.value?.ref || '—')
+const projectBillingType = computed(() => {
+  if (!currentProject.value) return t('projects.modal.billingTypes.projectHours')
+  const type = currentProject.value.billing_type || currentProject.value.bill_type
+  if (type && billingTypeLabels[type]) {
+    return billingTypeLabels[type]
+  }
+
+  if (currentProject.value.usage_bill_time) {
+    return t('projects.modal.billingTypes.projectHours')
+  }
+
+  return t('projects.modal.billingTypes.notSet')
+})
+const projectRatePerHour = computed(() => {
+  const rate = currentProject.value?.rate_per_hour || currentProject.value?.hourly_rate || currentProject.value?.rate
+  if (!rate) return t('projects.modal.billingTypes.notSet')
+  return formatCurrency(rate)
+})
+const projectContactsCount = computed(() => {
+  const contacts = currentProject.value?.contacts_ids_internal || currentProject.value?.contacts || currentProject.value?.linkedContacts
+  if (Array.isArray(contacts)) return contacts.length
+  const count = currentProject.value?.nb_contacts || currentProject.value?.contacts_count
+  return Number.isFinite(Number(count)) ? Number(count) : 0
+})
+const projectTimeEntriesCount = computed(() => {
+  const entries = currentProject.value?.time_entries || currentProject.value?.timesheets
+  if (Array.isArray(entries)) return entries.length
+  const count = currentProject.value?.nb_time_entries || currentProject.value?.time_spent_count
+  return Number.isFinite(Number(count)) ? Number(count) : 0
+})
+const projectTicketsCount = computed(() => {
+  const tickets = currentProject.value?.tickets || currentProject.value?.linkedTickets
+  if (Array.isArray(tickets)) return tickets.length
+  const count = currentProject.value?.nb_tickets || currentProject.value?.ticket_count
+  return Number.isFinite(Number(count)) ? Number(count) : 0
+})
+const projectDocumentsCount = computed(() => {
+  const documents = currentProject.value?.documents || currentProject.value?.files
+  if (Array.isArray(documents)) return documents.length
+  const count = currentProject.value?.nb_documents || currentProject.value?.document_count
+  return Number.isFinite(Number(count)) ? Number(count) : 0
+})
 
 const fetchProjects = async () => {
   loading.value = true
   try {
-    const [projectsResponse, tercerosResponse] = await Promise.all([
-      http.get('/api/doli/projects?limit=500&sortfield=datec&sortorder=DESC'),
-      http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] })),
-      http.get('/api/doli/categories?type=project&limit=1000').catch(() => ({ data: [] }))
+    const [projectsResponse, tercerosResponse, categoriesResponse] = await Promise.all([
+      cachedFetch('/api/doli/projects', {
+        params: { limit: 500, sortfield: 'datec', sortorder: 'DESC' },
+        ttl: 600000,
+        cacheKey: 'projects:list'
+      }),
+      cachedFetch('/api/doli/thirdparties', {
+        params: { limit: 1000, status: 1 },
+        ttl: 600000,
+        cacheKey: 'thirdparties:active'
+      }).catch(error => {
+        console.warn('⚠️ Error fetching thirdparties, using empty list', error)
+        return { data: [] }
+      }),
+      cachedFetch('/api/doli/categories', {
+        params: { type: 'project', limit: 1000 },
+        ttl: 600000,
+        cacheKey: 'categories:project'
+      }).catch(error => {
+        console.warn('⚠️ Error fetching categories, using empty list', error)
+        return { data: [] }
+      })
     ])
 
     const projectsData = projectsResponse.data || []
     terceros.value = tercerosResponse.data || []
-    categories.value = Array.isArray(arguments[2]?.data) ? arguments[2].data : (arguments[2]?.data?.data || [])
+    const categoriesData = categoriesResponse?.data
+    categories.value = Array.isArray(categoriesData)
+      ? categoriesData
+      : (Array.isArray(categoriesData?.data) ? categoriesData.data : [])
 
     const tercerosLookup = {}
     terceros.value.forEach(tercero => {
@@ -664,24 +968,60 @@ const nextPage = () => {
 }
 
 // Modal methods
+const fetchProjectContacts = async (projectId) => {
+  if (!projectId) return []
+  contactsLoading.value = true
+  try {
+    const response = await http.get(`/api/doli/dolibarrmodernfrontendapi/projects/${projectId}/contacts`, {
+      params: { limit: 200 }
+    })
+
+    const payload = response?.data ?? []
+    const contacts = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload?.contacts)
+          ? payload.contacts
+          : []
+
+    return contacts
+      .map((contact, index) => normalizeProjectContact(contact, projectId, index))
+      .filter(Boolean)
+  } catch (error) {
+    console.warn('⚠️ Error fetching project contacts', error)
+    return []
+  } finally {
+    contactsLoading.value = false
+  }
+}
+
 const viewProjectDetails = async (project) => {
   selectedProject.value = project
   showModal.value = true
   loadingDetails.value = true
+  activeModalTab.value = 'overview'
+  projectContacts.value = []
   
   try {
     const response = await http.get(`/api/doli/projects/${project.id}`)
     const details = response.data
+    details.category_ids = extractCategoryIds(details)
     if (!details.thirdparty_name) {
       details.thirdparty_name = extractThirdpartyName(resolveThirdparty(details.socid ?? details.fk_soc))
     }
     projectDetails.value = details
+
+    const contacts = await fetchProjectContacts(project.id)
+    projectContacts.value = contacts
   } catch (error) {
     console.error('Error fetching project details:', error)
     projectDetails.value = {
       ...project,
+      category_ids: extractCategoryIds(project),
       thirdparty_name: project.thirdparty_name || extractThirdpartyName(resolveThirdparty(project.socid ?? project.fk_soc))
     }
+    projectContacts.value = await fetchProjectContacts(project.id)
   } finally {
     loadingDetails.value = false
   }
@@ -692,19 +1032,24 @@ const closeModal = () => {
   selectedProject.value = null
   projectDetails.value = null
   loadingDetails.value = false
+  activeModalTab.value = 'overview'
+  projectContacts.value = []
 }
 
 const formatDate = (dateString) => {
-  if (!dateString) return '-'
-  return new Date(dateString * 1000).toLocaleDateString('es-ES')
+  const date = normalizeDate(dateString)
+  if (!date) return '—'
+  return date.toLocaleDateString('es-ES')
 }
 
 const formatCurrency = (amount) => {
-  if (!amount) return '-'
+  if (amount === undefined || amount === null || amount === '') return '—'
+  const numeric = Number(amount)
+  if (!Number.isFinite(numeric)) return '—'
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR'
-  }).format(amount)
+  }).format(numeric)
 }
 
 // Funciones para filtros de estado
@@ -745,6 +1090,30 @@ const getProjectMembers = (project) => {
     name: member.name || member.fullname || member.login || t('projects.members.unknown'),
     initials: getInitials(member.name || member.fullname || member.login || '?')
   }))
+}
+
+const normalizeProjectContact = (contact, projectId, index = 0) => {
+  if (!contact || typeof contact !== 'object') return null
+
+  const nestedContact = contact.contact || contact.linked_contact || contact.user || contact.member || {}
+  const firstName = contact.firstname ?? nestedContact.firstname ?? ''
+  const lastName = contact.lastname ?? nestedContact.lastname ?? ''
+  const compositeName = `${firstName} ${lastName}`.trim()
+  const fallbackName = contact.name || nestedContact.name || contact.fullname || nestedContact.fullname || compositeName
+  const email = contact.email || nestedContact.email || contact.mail || nestedContact.mail || null
+  const phone = contact.phone || contact.phone_mobile || nestedContact.phone || nestedContact.phone_mobile || nestedContact.phone_pro || null
+  const role = contact.role || contact.libelle || contact.label || contact.type_label || contact.position || contact.function || nestedContact.position || null
+
+  const resolvedName = fallbackName || email || contact.login || nestedContact.login || t('projects.modal.labels.teamMember')
+
+  return {
+    id: contact.id || contact.fk_contact || contact.contactid || nestedContact.id || `contact-${projectId}-${index}`,
+    name: resolvedName,
+    initials: getInitials(resolvedName),
+    role,
+    email,
+    phone
+  }
 }
 
 const resolveThirdparty = (id) => {
@@ -802,6 +1171,115 @@ const extractCategoryIds = (project) => {
   return []
 }
 
+const calculateProjectProgress = (project) => {
+  if (!project) return 0
+  const raw = project.opp_percent ?? project.progress ?? project.usage_bill_time ?? project.progress_percent
+  const numeric = Number(raw)
+  if (Number.isFinite(numeric)) {
+    return Math.min(100, Math.max(0, Math.round(numeric)))
+  }
+  return 0
+}
+
+const billingTypeLabels = {
+  time: t('projects.modal.billingTypes.projectHours'),
+  hour: t('projects.modal.billingTypes.projectHours'),
+  fixed: t('projects.modal.billingTypes.fixedPrice'),
+  fixed_price: t('projects.modal.billingTypes.fixedPrice')
+}
+
+const calculateTasksSummary = (project) => {
+  if (!project) {
+    return { open: null, total: null, completion: 0 }
+  }
+  const open = Number(project.tasks_open ?? project.todo_task ?? project.nb_tasks_todo ?? project.open_tasks)
+  const total = Number(project.tasks_total ?? project.nb_tasks ?? project.total_tasks)
+
+  if (!Number.isFinite(open) || !Number.isFinite(total) || total <= 0) {
+    return { open: null, total: null, completion: 0 }
+  }
+
+  const completed = Math.max(total - open, 0)
+  const completion = Math.min(100, Math.max(0, Math.round((completed / total) * 100)))
+  return { open, total, completion }
+}
+
+const calculateDeadlineSummary = (project) => {
+  if (!project) {
+    return { daysLeft: null, percent: null }
+  }
+
+  const endDate = project.date_end || project.datee || project.date_close
+  const startDate = project.date_start || project.dateo || project.date_creation
+
+  if (!endDate) {
+    return { daysLeft: null, percent: null }
+  }
+
+  const end = normalizeDate(endDate)
+  if (!end) {
+    return { daysLeft: null, percent: null }
+  }
+
+  const today = new Date()
+  const diffMs = end.getTime() - today.getTime()
+  const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+
+  if (!startDate) {
+    return { daysLeft, percent: null }
+  }
+
+  const start = normalizeDate(startDate)
+  if (!start) {
+    return { daysLeft, percent: null }
+  }
+
+  const totalDuration = end.getTime() - start.getTime()
+  if (totalDuration <= 0) {
+    return { daysLeft, percent: null }
+  }
+
+  const elapsed = today.getTime() - start.getTime()
+  const progress = Math.min(1, Math.max(0, elapsed / totalDuration))
+  return { daysLeft, percent: Math.round(progress * 100) }
+}
+
+const normalizeDate = (value) => {
+  if (!value) return null
+  const parsed = Number(value)
+  if (Number.isFinite(parsed)) {
+    const timestamp = parsed < 10000000000 ? parsed * 1000 : parsed
+    return new Date(timestamp)
+  }
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+const formatDuration = (value) => {
+  if (!value && value !== 0) return '00:00'
+
+  if (typeof value === 'string' && value.includes(':')) {
+    return value
+  }
+
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) {
+    return '00:00'
+  }
+
+  // Assume value is in hours if > 24, otherwise treat as hours
+  const totalMinutes = numeric > 24 ? Math.round(numeric) : Math.round(numeric * 60)
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+watch(showModal, (isOpen) => {
+  if (!isOpen) {
+    activeModalTab.value = 'overview'
+  }
+})
+
 const normalizeProjectStatus = (value) => {
   if (value === undefined || value === null) return '0'
   const strValue = String(value)
@@ -810,7 +1288,7 @@ const normalizeProjectStatus = (value) => {
   return '0'
 }
 
-const getProjectStatusValue = (project) => normalizeProjectStatus(project.normalizedStatus ?? project.status ?? project.fk_statut ?? project.statut)
+const getProjectStatusValue = (project = {}) => normalizeProjectStatus(project.normalizedStatus ?? project.status ?? project.fk_statut ?? project.statut)
 
 const getStatusText = (status) => {
   const statusKey = {

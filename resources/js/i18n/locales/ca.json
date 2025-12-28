@@ -38,6 +38,7 @@
     },
     "modal": {
       "title": "Detalls del Projecte",
+      "untitledProject": "Projecte sense nom",
       "reference": "Referència",
       "status": "Estat",
       "createdAt": "Creat",
@@ -48,11 +49,69 @@
       "usage": "Ús",
       "titleLabel": "Títol",
       "description": "Descripció",
+      "emptyDescription": "Aquest projecte encara no té descripció.",
       "createdBy": "Creat per",
       "public": "Públic",
       "opportunity": "Oportunitat",
       "close": "Tancar",
-      "edit": "Editar Projecte"
+      "edit": "Editar Projecte",
+      "documentation": "Documentació",
+      "comingSoon": "Aquesta secció estarà disponible aviat.",
+      "labels": {
+        "projectCode": "Projecte #",
+        "customer": "Client:",
+        "status": "Estat",
+        "noTags": "Sense etiquetes",
+        "team": "Equip del Projecte",
+        "teamMember": "Membre de l'equip",
+        "noTeam": "Sense equip assignat",
+        "notAvailable": "No disponible"
+      },
+      "actions": {
+        "newTask": "Nova Tasca",
+        "invoiceProject": "Facturar Projecte",
+        "more": "Més accions"
+      },
+      "tabs": {
+        "project": "Projecte",
+        "contacts": "Contactes del projecte",
+        "tasks": "Tasques",
+        "timesheets": "Temps dedicat",
+        "summary": "Resum",
+        "tickets": "Tiquets",
+        "notes": "Notes",
+        "documents": "Documents",
+        "agenda": "Esdeveniments/Agenda"
+      },
+      "metrics": {
+        "progress": "Progrés del Projecte",
+        "tasks": "Tasques Obertes",
+        "completion": "Completat",
+        "daysLeft": "Dies Restants",
+        "loggedHours": "Hores Registrades",
+        "loggedHoursSubtitle": "Temps total registrat",
+        "budget": "Pressupost",
+        "budgetSubtitle": "Pressupost configurat",
+        "expenses": "Despesa",
+        "expensesSubtitle": "Despeses registrades"
+      },
+      "overview": {
+        "title": "Resum",
+        "export": "Exportar dades del projecte",
+        "projectId": "ID del Projecte",
+        "customer": "Client",
+        "billingType": "Tipus de Facturació",
+        "ratePerHour": "Tarifa per Hora",
+        "dateCreated": "Data de Creació",
+        "startDate": "Data d'Inici",
+        "deadline": "Data Límit",
+        "loggedHours": "Hores Registrades"
+      },
+      "billingTypes": {
+        "projectHours": "Hores de Projecte",
+        "fixedPrice": "Preu Fix",
+        "notSet": "Sense definir"
+      }
     }
   },
   "public": {
