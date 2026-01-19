@@ -1008,7 +1008,7 @@ const viewTicketDetails = async (ticket) => {
     // Procesar mensajes usando el nuevo endpoint GET
     console.log('📡 Obteniendo mensajes del ticket con nuevo endpoint')
     try {
-      const messagesResponse = await http.get(`/api/doli/dolibarmodernfrontendapi/tickets/${ticket.id}/messages`, {
+      const messagesResponse = await http.get(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticket.id}/messages`, {
         headers: {
           'X-Public-Request': 'true'
         }
@@ -1150,7 +1150,7 @@ const sendMessage = async () => {
       contactId: currentContact.value?.id
     })
     
-    const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${selectedTicket.value.id}/newmessage`, {
+    const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${selectedTicket.value.id}/newmessage`, {
       message: newMessage.value,
       contact_id: currentContact.value?.id || null, // ID del contacto que envía
       private: 1, // Siempre privado para clientes públicos

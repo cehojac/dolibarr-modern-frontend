@@ -49,8 +49,8 @@ class DoliProxyController extends Controller
         $isPublicNewMessageRoute = str_starts_with($path, 'tickets/newmessage')
             && $request->header('X-Public-Request') === 'true';
         
-        // Verificar si es una solicitud al módulo personalizado dolibarmodernfrontendapi
-        $isPublicModuleRoute = str_contains($path, 'dolibarmodernfrontendapi/tickets')
+        // Verificar si es una solicitud al módulo personalizado dolibarrmodernfrontendapi
+        $isPublicModuleRoute = str_contains($path, 'dolibarrmodernfrontendapi/tickets')
             && $request->header('X-Public-Request') === 'true';
         
         // Verificar si es una solicitud para crear un ticket público (POST /tickets)
@@ -69,7 +69,7 @@ class DoliProxyController extends Controller
             && $request->header('X-Public-Request') === 'true';
         
         // Verificar si es una solicitud para subir documentos al módulo personalizado
-        $isPublicModuleUploadRoute = preg_match('/dolibarmodernfrontendapi\/ticket\/\d+\/documents/', $path)
+        $isPublicModuleUploadRoute = preg_match('/dolibarrmodernfrontendapi\/ticket\/\d+\/documents/', $path)
             && $request->isMethod('POST')
             && $request->header('X-Public-Request') === 'true';
         
@@ -110,7 +110,7 @@ class DoliProxyController extends Controller
         ]);
 
         // Construir URL específica para módulos personalizados
-        if (str_contains($path, 'dolibarmodernfrontendapi')) {
+        if (str_contains($path, 'dolibarrmodernfrontendapi')) {
             // Para el módulo personalizado, usar el token del .env en lugar del token de sesión
             $token = config('services.dolibarr.api_key');
             // baseUrl ya incluye /api/index.php, solo agregar el path
@@ -182,7 +182,7 @@ class DoliProxyController extends Controller
         }
 
         // Log para debug
-        if (str_contains($path, 'dolibarmodernfrontendapi') || str_contains($path, 'tickets')) {
+        if (str_contains($path, 'dolibarrmodernfrontendapi') || str_contains($path, 'tickets')) {
             \Log::info('PROXY DEBUG', [
                 'method' => $method,
                 'path_original' => $path,
@@ -222,7 +222,7 @@ class DoliProxyController extends Controller
         }
 
         // Log respuesta para módulo personalizado y tickets
-        if (str_contains($path, 'dolibarmodernfrontendapi') || str_contains($path, 'tickets')) {
+        if (str_contains($path, 'dolibarrmodernfrontendapi') || str_contains($path, 'tickets')) {
             \Log::info('PROXY RESPONSE', [
                 'path' => $path,
                 'status' => $response->status(),

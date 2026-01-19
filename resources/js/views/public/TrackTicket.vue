@@ -523,7 +523,7 @@ const sendMessage = async () => {
       contactId: currentContact.value?.id
     })
     
-    const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticket.value.id}/newmessage`, {
+    const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticket.value.id}/newmessage`, {
       message: newMessage.value,
       contact_id: currentContact.value?.id || null, // ID del contacto que envía
       private: 1, // Siempre privado para clientes públicos

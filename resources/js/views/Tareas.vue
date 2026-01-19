@@ -2565,7 +2565,7 @@ const loadTasks = async (forceRefresh = false) => {
 // Ya no es necesaria porque:
 // 1. Causaba exceso de peticiones (1 por cada tarea)
 // 2. La API de Dolibarr deniega acceso por rate limiting
-// 3. Ahora usamos /api/doli/dolibarmodernfrontendapi/task/{id}/contacts
+// 3. Ahora usamos /api/doli/dolibarrmodernfrontendapi/task/{id}/contacts
 //    solo cuando se abre el detalle de una tarea específica
 // 4. El campo fk_user_assign ya nos indica si hay usuario asignado
 
@@ -2849,7 +2849,7 @@ const viewTaskDetails = async (task) => {
     // Fetch assigned user from custom API endpoint
     try {
       console.log('🔍 Fetching task contacts from API:', task.id)
-      const contactsResponse = await http.get(`/api/doli/dolibarmodernfrontendapi/task/${task.id}/contacts`)
+      const contactsResponse = await http.get(`/api/doli/dolibarrmodernfrontendapi/task/${task.id}/contacts`)
       
       if (contactsResponse.data && contactsResponse.data.contacts) {
         console.log('📞 Task contacts received:', contactsResponse.data)
@@ -3126,7 +3126,7 @@ const uploadFileToDolibarr = async (file) => {
     const base64Data = base64Content.split(',')[1] // Remove data:xxx;base64, prefix
     
     // Upload to Dolibarr using custom module endpoint
-    const response = await http.post(`/api/doli/dolibarmodernfrontendapi/task/${selectedTask.value.id}/documents`, {
+    const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/task/${selectedTask.value.id}/documents`, {
       filename: file.name,
       filecontent: base64Data,
       fileencoding: 'base64'
@@ -3163,7 +3163,7 @@ const loadTaskFiles = async () => {
   try {
     // console.log('📂 Cargando archivos de la tarea:', selectedTask.value.id, selectedTask.value.ref)
     
-    const response = await http.get(`/api/doli/dolibarmodernfrontendapi/task/${selectedTask.value.id}/documents`)
+    const response = await http.get(`/api/doli/dolibarrmodernfrontendapi/task/${selectedTask.value.id}/documents`)
     
     // console.log('📦 Respuesta completa del API:', response.data)
     
@@ -3395,7 +3395,7 @@ const saveTaskAssignment = async () => {
     
     // API call to assign user using custom endpoint
     const response = await http.post(
-      `/api/doli/dolibarmodernfrontendapi/task/${taskDetails.value.id}/assign`,
+      `/api/doli/dolibarrmodernfrontendapi/task/${taskDetails.value.id}/assign`,
       assignData
     )
     console.log('✅ Assignment response:', response.data)

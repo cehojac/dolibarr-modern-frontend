@@ -878,7 +878,7 @@ const submitTicket = async () => {
           
           // console.log(`📤 Subiendo archivo: ${fileData.name}`)
           
-          const uploadResponse = await http.post(`/api/doli/dolibarmodernfrontendapi/ticket/${ticketId}/documents`, uploadPayload, {
+          const uploadResponse = await http.post(`/api/doli/dolibarrmodernfrontendapi/ticket/${ticketId}/documents`, uploadPayload, {
             headers: {
               'Content-Type': 'application/json',
               'X-Public-Request': 'true'
