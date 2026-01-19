@@ -606,7 +606,7 @@ import { useApiCache } from '../composables/useApiCache'
 
 const { isDark } = useTheme()
 const { t } = useI18n()
-const { cachedFetch } = useApiCache()
+const { cachedFetch, hasCache, getCache } = useApiCache()
 
 const projects = ref([])
 const loading = ref(false)
@@ -673,7 +673,7 @@ const statusOptions = computed(() => [
 
 // Filters and search
 const searchQuery = ref('')
-const statusFilter = ref('1')
+const statusFilter = ref('')
 
 const modalTabs = computed(() => [
   { id: 'overview', label: t('projects.modal.tabs.project'), icon: 'M6 12h12M6 16h12M6 8h12' },
@@ -774,6 +774,85 @@ const projectDocumentsCount = computed(() => {
   return Number.isFinite(Number(count)) ? Number(count) : 0
 })
 
+const normalizeCollection = (collection) => {
+  if (Array.isArray(collection)) {
+    return collection
+  }
+
+  if (collection && Array.isArray(collection.data)) {
+    return collection.data
+  }
+
+  return []
+}
+
+const enrichAndSetProjects = (projectsData = [], tercerosData = [], categoriesData = []) => {
+  const normalizedProjects = normalizeCollection(projectsData)
+  const normalizedThirdparties = normalizeCollection(tercerosData)
+  const normalizedCategories = normalizeCollection(categoriesData)
+
+  terceros.value = normalizedThirdparties
+  categories.value = normalizedCategories
+
+  const tercerosLookup = {}
+  normalizedThirdparties.forEach(tercero => {
+    const idVariants = [tercero.id, String(tercero.id), Number(tercero.id)]
+    idVariants.forEach(id => {
+      if (id !== undefined && id !== null && id !== 'undefined' && id !== 'null') {
+        tercerosLookup[id] = tercero
+      }
+    })
+  })
+  tercerosMap.value = tercerosLookup
+
+  const categoriesLookup = {}
+  normalizedCategories.forEach(category => {
+    const idVariants = [category.id, String(category.id), Number(category.id)]
+    idVariants.forEach(id => {
+      if (id !== undefined && id !== null && id !== 'undefined' && id !== 'null') {
+        categoriesLookup[id] = category
+      }
+    })
+  })
+  categoriesMap.value = categoriesLookup
+
+  const enrichedProjects = normalizedProjects.map(project => {
+    const clientId = project.socid ?? project.fk_soc ?? project.fk_thirdparty ?? project.client_id ?? project.thirdparty_id
+    const tercero = resolveThirdparty(clientId)
+    const thirdpartyName = extractThirdpartyName(tercero)
+
+    const normalizedStatus = normalizeProjectStatus(project.status ?? project.fk_statut ?? project.statut)
+
+    return {
+      ...project,
+      thirdparty_name: thirdpartyName,
+      client_id: clientId,
+      normalizedStatus,
+      displayedStartDate: project.date_start || project.dateo,
+      displayedEndDate: project.date_end || project.datee || project.date_close,
+      category_ids: extractCategoryIds(project)
+    }
+  })
+
+  projects.value = enrichedProjects
+}
+
+const prefillProjectsFromCache = () => {
+  if (!projects.value.length && hasCache('projects:list')) {
+    const cachedProjects = getCache('projects:list')
+    const cachedThirdparties = getCache('thirdparties:active')
+    const cachedCategories = getCache('categories:project')
+
+    if (cachedProjects?.data?.length) {
+      enrichAndSetProjects(
+        cachedProjects.data,
+        cachedThirdparties?.data || cachedThirdparties,
+        cachedCategories?.data || cachedCategories
+      )
+    }
+  }
+}
+
 const fetchProjects = async () => {
   loading.value = true
   try {
@@ -801,57 +880,11 @@ const fetchProjects = async () => {
       })
     ])
 
-    const projectsData = projectsResponse.data || []
-    terceros.value = tercerosResponse.data || []
-    const categoriesData = categoriesResponse?.data
-    categories.value = Array.isArray(categoriesData)
-      ? categoriesData
-      : (Array.isArray(categoriesData?.data) ? categoriesData.data : [])
-
-    const tercerosLookup = {}
-    terceros.value.forEach(tercero => {
-      const idVariants = [tercero.id, String(tercero.id), Number(tercero.id)]
-      idVariants.forEach(id => {
-        if (id !== undefined && id !== null && id !== 'undefined' && id !== 'null') {
-          tercerosLookup[id] = tercero
-        }
-      })
-    })
-
-    tercerosMap.value = tercerosLookup
-
-    const categoriesLookup = {}
-    categories.value.forEach(category => {
-      const idVariants = [category.id, String(category.id), Number(category.id)]
-      idVariants.forEach(id => {
-        if (id !== undefined && id !== null && id !== 'undefined' && id !== 'null') {
-          categoriesLookup[id] = category
-        }
-      })
-    })
-
-    categoriesMap.value = categoriesLookup
-
-    // Enrich projects with terceros data prioritizing socid
-    const enrichedProjects = projectsData.map(project => {
-      const clientId = project.socid ?? project.fk_soc ?? project.fk_thirdparty ?? project.client_id ?? project.thirdparty_id
-      const tercero = resolveThirdparty(clientId)
-      const thirdpartyName = extractThirdpartyName(tercero)
-
-      const normalizedStatus = normalizeProjectStatus(project.status ?? project.fk_statut ?? project.statut)
-
-      return {
-        ...project,
-        thirdparty_name: thirdpartyName,
-        client_id: clientId,
-        normalizedStatus,
-        displayedStartDate: project.date_start || project.dateo,
-        displayedEndDate: project.date_end || project.datee || project.date_close,
-        category_ids: extractCategoryIds(project)
-      }
-    })
-
-    projects.value = enrichedProjects
+    enrichAndSetProjects(
+      projectsResponse.data || projectsResponse,
+      tercerosResponse.data || tercerosResponse,
+      categoriesResponse?.data || categoriesResponse
+    )
   } catch (error) {
     console.error('❌ Error fetching projects:', error)
   } finally {
@@ -1365,7 +1398,7 @@ watch(projects, (newProjects, oldProjects) => {
 }, { deep: true })
 
 onMounted(() => {
-   console.log('🚀 Component mounted, calling fetchProjects')
+  prefillProjectsFromCache()
   fetchProjects()
 })
 </script>

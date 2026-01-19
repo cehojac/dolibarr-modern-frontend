@@ -3,6 +3,7 @@ import http from '../utils/http'
 import { useNotificationStore } from './notifications'
 import { useUserInterventionsStore } from '../composables/useUserInterventions'
 import { usePermissionsStore } from '../composables/usePermissions'
+import { useDataPreloader } from '../composables/useDataPreloader'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -11,7 +12,8 @@ export const useAuthStore = defineStore('auth', {
     loading: false,
     isLoggingOut: false,
     loginStep: null, // 'authenticating', 'loading_permissions', 'loading_data', 'complete'
-    loginProgress: 0 // 0-100
+    loginProgress: 0, // 0-100
+    loginDataSummary: []
   }),
 
   persist: {
@@ -31,10 +33,12 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.loginStep = null
       this.loginProgress = 0
+      this.loginDataSummary = []
       
       const notificationStore = useNotificationStore()
       const interventionsStore = useUserInterventionsStore()
       const permissionsStore = usePermissionsStore()
+      const dataPreloader = useDataPreloader()
       
       try {
         // PASO 1: Autenticación
@@ -58,23 +62,60 @@ export const useAuthStore = defineStore('auth', {
         this.loginProgress = 30
         console.log('🔑 PASO 2: Cargando permisos del usuario...')
         
-        // Pausa para asegurar que la sesión esté establecida
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Pausa breve para asegurar que la sesión esté establecida
+        await new Promise(resolve => setTimeout(resolve, 300))
         
-        await permissionsStore.fetchPermissions()
-        this.loginProgress = 60
+        const permissions = await permissionsStore.fetchPermissions()
+        const permissionCount = Array.isArray(permissions) ? permissions.length : 0
+        this.loginProgress = permissionCount > 0 ? 60 : 50
         console.log('✅ PASO 2 COMPLETADO: Permisos cargados correctamente')
+
+        const permissionsSummary = {
+          key: 'permissions',
+          status: permissionCount > 0 ? 'loaded' : 'empty',
+          count: permissionCount,
+          fromCache: false
+        }
+        this.loginDataSummary = [permissionsSummary]
         
         // PASO 3: Cargar Datos Adicionales
         this.loginStep = 'loading_data'
         this.loginProgress = 70
         console.log('📊 PASO 3: Cargando datos adicionales...')
         
+        try {
+          const preloadSummary = await dataPreloader.preloadAdditionalData({
+            user: response.data.user,
+            includePermissions: false
+          })
+
+          const successfulLoads = preloadSummary.filter(item => item.status === 'loaded')
+          const loadRatio = successfulLoads.length / (preloadSummary.length || 1)
+          const progressDelta = Math.round(loadRatio * 20)
+          this.loginProgress = Math.max(this.loginProgress, 65 + progressDelta)
+          this.loginDataSummary = [
+            ...this.loginDataSummary,
+            ...preloadSummary
+          ]
+          console.log('📦 Precarga de datos completada:', preloadSummary)
+        } catch (preloadError) {
+          console.warn('⚠️ Error durante la precarga de datos:', preloadError)
+          this.loginDataSummary = [
+            ...this.loginDataSummary,
+            {
+              key: 'additional-data',
+              status: 'error',
+              error: preloadError
+            }
+          ]
+        }
+
         if (response.data.user && response.data.user.id) {
           await interventionsStore.fetchUserInterventions()
+          this.loginProgress = Math.max(this.loginProgress, 90)
           console.log('✅ PASO 3 COMPLETADO: Intervenciones cargadas')
         }
-        
+
         // PASO 4: Finalización
         this.loginStep = 'complete'
         this.loginProgress = 100
@@ -86,6 +127,7 @@ export const useAuthStore = defineStore('auth', {
         setTimeout(() => {
           this.loginStep = null
           this.loginProgress = 0
+          this.loginDataSummary = []
         }, 2000)
         
       } catch (error) {
@@ -96,6 +138,7 @@ export const useAuthStore = defineStore('auth', {
         this.user = null
         this.loginStep = null
         this.loginProgress = 0
+        this.loginDataSummary = []
         
         // Manejo específico de errores por paso
         if (this.loginStep === 'authenticating') {
@@ -134,6 +177,7 @@ export const useAuthStore = defineStore('auth', {
       this.isLoggingOut = false
       this.loginStep = null
       this.loginProgress = 0
+      this.loginDataSummary = []
       
       // Limpiar localStorage y stores relacionados
       localStorage.removeItem('dolibarr-auth')
