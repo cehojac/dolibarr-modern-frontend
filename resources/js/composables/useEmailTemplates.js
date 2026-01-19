@@ -43,9 +43,9 @@ export function useEmailTemplates() {
       if (filters.private !== undefined) params.private = filters.private
 
       console.log('📤 Parámetros enviados a la API:', params)
-      console.log('🔗 URL completa:', '/api/doli/dolibarmodernfrontendapi/emailtemplates')
+      console.log('🔗 URL completa:', '/api/doli/dolibarrmodernfrontendapi/emailtemplates')
 
-      const response = await http.get('/api/doli/dolibarmodernfrontendapi/emailtemplates', {
+      const response = await http.get('/api/doli/dolibarrmodernfrontendapi/emailtemplates', {
         params
       })
 
@@ -164,7 +164,7 @@ export function useEmailTemplates() {
       const params = {}
       if (context) params.context = context
 
-      const response = await http.get('/api/doli/dolibarmodernfrontendapi/substitutionvariables', {
+      const response = await http.get('/api/doli/dolibarrmodernfrontendapi/substitutionvariables', {
         params
       })
 

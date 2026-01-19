@@ -4096,7 +4096,7 @@ const saveTimeEntry = async () => {
       try {
         //  console.log('🔗 ALTERNATIVA 2: Usando módulo personalizado a través del proxy...')
         
-        const customLinkResponse = await http.post(`/api/doli/dolibarmodernfrontendapi/link/${selectedTicket.value.id}/${interventionId}`)
+        const customLinkResponse = await http.post(`/api/doli/dolibarrmodernfrontendapi/link/${selectedTicket.value.id}/${interventionId}`)
          // console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
          // console.log('   Custom link result:', customLinkResponse.data)
         
@@ -4578,7 +4578,7 @@ const saveManualIntervention = async () => {
       //   attachments: attachments.length
       // })
 
-      const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
+      const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
       // console.log('✅ Email enviado:', response.data)
       
       // Enviar mensaje privado al ticket para registro
@@ -4760,7 +4760,7 @@ const saveManualIntervention = async () => {
         //  console.log('🔗 ALTERNATIVA 2: Usando módulo personalizado a través del proxy...')
         
         const ticketId = selectedTicket.value.id || ticketDetails.value.id
-        const customLinkResponse = await http.post(`/api/doli/dolibarmodernfrontendapi/link/${ticketId}/${interventionId}`)
+        const customLinkResponse = await http.post(`/api/doli/dolibarrmodernfrontendapi/link/${ticketId}/${interventionId}`)
          // console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
          // console.log('   Custom link result:', customLinkResponse.data)
         
@@ -5370,7 +5370,7 @@ const selectAssignedUser = (userId, displayText) => {
 const fetchTicketFollowers = async (ticketId) => {
   try {
      // console.log('🔍 Obteniendo seguidores del ticket:', ticketId)
-    const response = await http.get(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
+    const response = await http.get(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticketId}/contacts`)
     
      // console.log('📋 Raw API Response:', response)
      // console.log('📋 Response Data:', response.data)
@@ -5560,9 +5560,9 @@ const addFollower = async () => {
     }
     
     console.log('📤 Request data:', requestData)
-    console.log('📤 Endpoint:', `/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`)
+    console.log('📤 Endpoint:', `/api/doli/dolibarrmodernfrontendapi/tickets/${ticketId}/contacts`)
     
-    const response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts`, requestData)
+    const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticketId}/contacts`, requestData)
     
     console.log('✅ Seguidor agregado:', response.data)
     
@@ -5592,7 +5592,7 @@ const removeFollower = async (followerId, followerType) => {
     
      // console.log('➖ Eliminando seguidor:', { followerId, followerType, ticketId })
     
-    await http.delete(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/contacts/${followerId}`)
+    await http.delete(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticketId}/contacts/${followerId}`)
     
      // console.log('✅ Seguidor eliminado')
     
@@ -5706,7 +5706,7 @@ const sendComment = async () => {
         attachments: attachments
       }
 
-      // console.log('📤 Endpoint: /api/doli/dolibarmodernfrontendapi/tickets/' + ticketId + '/sendemail')
+      // console.log('📤 Endpoint: /api/doli/dolibarrmodernfrontendapi/tickets/' + ticketId + '/sendemail')
       // console.log('📧 Enviando email con archivos adjuntos:', attachments.length)
       // console.log('📋 Datos del email:', {
       //   subject: emailData.subject,
@@ -5714,7 +5714,7 @@ const sendComment = async () => {
       //   attachments: attachments.map(a => ({ name: a.name, size: a.size, type: a.type }))
       // })
 
-      response = await http.post(`/api/doli/dolibarmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
+      response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticketId}/sendemail`, emailData)
       
       // Enviar mensaje privado con el contenido del email (sin la firma)
       const privateMessage = `📧 Email enviado a: ${recipients.join(', ')}\n\n${newComment.value.trim()}`
@@ -8245,7 +8245,7 @@ const uploadSingleFile = async (file) => {
         
          // console.log('📋 Upload data (custom module):', uploadData)
         
-        const uploadUrl = `/api/doli/dolibarmodernfrontendapi/ticket/${ticketDetails.value.id}/documents`
+        const uploadUrl = `/api/doli/dolibarrmodernfrontendapi/ticket/${ticketDetails.value.id}/documents`
          // console.log('📤 Upload URL (custom module):', uploadUrl)
         
         const uploadResponse = await http.post(uploadUrl, uploadData)
@@ -8301,7 +8301,7 @@ const fetchTicketDocuments = async () => {
      // console.log('📋 Fetching documents for ticket:', ticketDetails.value.id)
     
     // Use custom module to get documents
-    const response = await http.get(`/api/doli/dolibarmodernfrontendapi/ticket/${ticketDetails.value.id}/documents`)
+    const response = await http.get(`/api/doli/dolibarrmodernfrontendapi/ticket/${ticketDetails.value.id}/documents`)
     
      // console.log('📋 Raw response from custom module:', response)
      // console.log('📋 Response data:', response.data)
