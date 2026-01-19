@@ -254,6 +254,11 @@ const { assignedTasksCount, fetchAssignedTasksCount, startAutoRefresh: startTask
 const { overdueEventsCount, fetchOverdueEventsCount, startAutoRefresh: startAgendaAutoRefresh } = useAgendaCounter()
 const { hasAnyPermission } = usePermissions()
 const { cachedFetch, hasCache } = useApiCache()
+const prefetchPromises = {
+  projects: null,
+  thirdparties: null,
+  categories: null
+}
 
 // Configuración de permisos por módulo del menú
 const menuPermissions = {
@@ -329,14 +334,15 @@ const prefetchProjects = async () => {
   try {
     const cacheKey = 'projects:list'
     if (hasCache(cacheKey)) {
-      return
+      return prefetchPromises.projects
     }
 
-    await cachedFetch('/api/doli/projects', {
+    prefetchPromises.projects = cachedFetch('/api/doli/projects', {
       params: { limit: 500, sortfield: 'datec', sortorder: 'DESC' },
       ttl: 600000,
       cacheKey
     })
+    return prefetchPromises.projects
   } catch (error) {
     console.warn('⚠️ Background project prefetch failed', error)
   }
