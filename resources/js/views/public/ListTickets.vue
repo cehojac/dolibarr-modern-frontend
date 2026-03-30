@@ -859,12 +859,14 @@ const verifyEmailForThirdparty = async (socid, email) => {
     console.log('📋 Contactos obtenidos:', contactsResponse.data?.length || 0)
     
     if (contactsResponse.data && Array.isArray(contactsResponse.data)) {
-      const hasMatchingContact = contactsResponse.data.some(
+      const matchingContact = contactsResponse.data.find(
         contact => contact.email && contact.email.toLowerCase() === email.toLowerCase()
       )
       
-      if (hasMatchingContact) {
-        console.log('✅ Email coincide con un contacto')
+      if (matchingContact) {
+        console.log('✅ Email coincide con un contacto:', matchingContact.firstname, matchingContact.lastname)
+        // Guardar el contacto correcto para usarlo al enviar mensajes
+        currentContact.value = matchingContact
         return true
       }
     }
@@ -1133,8 +1135,15 @@ const sendMessage = async () => {
       
       console.log('📦 Respuesta de contacto:', contactResponse.data)
       
-      // API returns array when using query param, get first match
-      const contactData = Array.isArray(contactResponse.data) ? contactResponse.data[0] : contactResponse.data
+      // Find the contact that exactly matches the email, not just the first result
+      let contactData = null
+      if (Array.isArray(contactResponse.data)) {
+        contactData = contactResponse.data.find(
+          c => c.email && c.email.toLowerCase() === searchEmail.value.toLowerCase()
+        ) || contactResponse.data[0]
+      } else {
+        contactData = contactResponse.data
+      }
       if (contactData && contactData.id) {
         currentContact.value = contactData
         console.log('✅ Contacto encontrado:', currentContact.value)
