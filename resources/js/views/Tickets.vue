@@ -7242,7 +7242,7 @@ const viewTicketDetails = async (ticket) => {
     if (interventions.length === 0) {
       try {
         // Get all recent interventions and filter client-side
-        const interventionsResponse = await http.get(`/api/doli/fichinter?limit=100&sortfield=datec&sortorder=DESC`)
+        const interventionsResponse = await http.get(`/api/doli/fichinter?limit=100&sortfield=t.datec&sortorder=DESC`)
         if (interventionsResponse.data && Array.isArray(interventionsResponse.data)) {
           // Filter client-side for interventions linked to this ticket
           const linkedInterventions = interventionsResponse.data.filter(intervention => {

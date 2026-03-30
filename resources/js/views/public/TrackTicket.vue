@@ -497,7 +497,8 @@ const sendMessage = async () => {
     // Obtener el contacto del email si no lo tenemos
     if (!currentContact.value && searchEmail.value) {
       console.log('👤 Obteniendo contacto para email:', searchEmail.value)
-      const contactResponse = await http.get(`/api/doli/contacts/email/${encodeURIComponent(searchEmail.value)}`, {
+      const contactResponse = await http.get('/api/doli/contacts', {
+        params: { email: searchEmail.value },
         headers: {
           'X-Public-Request': 'true'
         }
@@ -505,8 +506,10 @@ const sendMessage = async () => {
       
       console.log('📦 Respuesta de contacto:', contactResponse.data)
       
-      if (contactResponse.data && contactResponse.data.id) {
-        currentContact.value = contactResponse.data
+      // API returns array when using query param, get first match
+      const contactData = Array.isArray(contactResponse.data) ? contactResponse.data[0] : contactResponse.data
+      if (contactData && contactData.id) {
+        currentContact.value = contactData
         console.log('✅ Contacto encontrado:', currentContact.value)
       } else {
         console.error('❌ No se encontró contacto con ese email')
