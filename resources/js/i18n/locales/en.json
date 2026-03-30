@@ -157,6 +157,7 @@
         "table": {
           "date": "Date",
           "ref": "Ref",
+          "company": "Company",
           "subject": "Subject",
           "type": "Type",
           "severity": "Severity",
