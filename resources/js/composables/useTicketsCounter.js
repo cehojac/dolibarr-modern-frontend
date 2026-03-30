@@ -28,41 +28,18 @@ export function useTicketsCounter() {
 
     loading.value = true
     try {
-      const sqlClauses = []
-      const assignmentClauses = []
-
-      if (userId) {
-        assignmentClauses.push(`(t.fk_user_assign:=:${userId})`)
-      }
-
-      if (userLogin) {
-        const sanitizedLogin = String(userLogin).replace(/'/g, "''")
-        assignmentClauses.push(`(t.fk_user_assign_login:=:'${sanitizedLogin}')`)
-      }
-
-      if (assignmentClauses.length > 0) {
-        const combinedAssignment = assignmentClauses.length > 1
-          ? `(${assignmentClauses.join('or')})`
-          : assignmentClauses[0]
-        sqlClauses.push(combinedAssignment)
-      }
-
-      // Exclude closed tickets (status 8) server-side to reduce payload
-      sqlClauses.push('(t.fk_statut:<>:8)')
-
+      // Only use valid Dolibarr columns in sqlfilters
+      // Assignment filtering is done client-side since column names vary by Dolibarr version
       const params = {
         limit: 500,
         sortfield: 'datec',
-        sortorder: 'DESC'
-      }
-
-      if (sqlClauses.length > 0) {
-        params.sqlfilters = sqlClauses.join('and')
+        sortorder: 'DESC',
+        sqlfilters: '(t.fk_statut:<>:8)'
       }
 
       const response = await http.get('/api/doli/tickets', {
         params,
-        timeout: 5000
+        timeout: 20000
       })
 
       const tickets = Array.isArray(response.data) ? response.data : []

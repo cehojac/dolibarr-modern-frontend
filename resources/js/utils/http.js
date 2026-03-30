@@ -57,8 +57,11 @@ http.interceptors.response.use(
       console.log('URL solicitada:', response.config.url)
       console.log('Respuesta HTML:', response.data.substring(0, 200) + '...')
       
+      // No actuar si estamos en login o rutas públicas
+      const onLoginOrPublic = window.location.pathname === '/login' || window.location.pathname.startsWith('/new-ticket')
+      
       // Evitar múltiples redirecciones simultáneas
-      if (!isRedirecting) {
+      if (!isRedirecting && !onLoginOrPublic) {
         isRedirecting = true
         
         const notificationStore = useNotificationStore()
@@ -89,12 +92,13 @@ http.interceptors.response.use(
       const { status, data } = error.response
       
       switch (status) {
-        case 401:
-          // No redirigir si estamos en la página de login o si es una llamada a /api/doli/status
+        case 401: {
+          // No redirigir ni notificar si estamos en la página de login o si es una llamada a /api/doli/status
           const isLoginPage = window.location.pathname === '/login'
           const isStatusCheck = error.config?.url?.includes('/api/doli/status')
+          const isAuthMe = error.config?.url?.includes('/api/auth/me')
           
-          if (!isLoginPage && !isStatusCheck && !isRedirecting) {
+          if (!isLoginPage && !isStatusCheck && !isAuthMe && !isRedirecting) {
             isRedirecting = true
             notificationStore.error('Sesión expirada. Por favor, inicia sesión nuevamente.')
             authStore.logout()
@@ -105,15 +109,18 @@ http.interceptors.response.use(
               isRedirecting = false
             }, 2000)
           }
-          break
+        } break
           
         case 403:
           notificationStore.error('No tienes permisos para realizar esta acción.')
           break
           
-        case 419:
-          // Evitar múltiples recargas simultáneas
-          if (!isRedirecting) {
+        case 419: {
+          // No recargar si estamos en login o en rutas públicas
+          const isOnLogin = window.location.pathname === '/login'
+          const isOnPublic = window.location.pathname.startsWith('/new-ticket')
+          
+          if (!isRedirecting && !isOnLogin && !isOnPublic) {
             isRedirecting = true
             notificationStore.error('Sesión expirada. Recargando página...')
             // Recargar la página para obtener un nuevo token CSRF
@@ -121,7 +128,7 @@ http.interceptors.response.use(
               window.location.reload()
             }, 1500)
           }
-          break
+        } break
           
         case 404:
           notificationStore.error('El recurso solicitado no fue encontrado.')

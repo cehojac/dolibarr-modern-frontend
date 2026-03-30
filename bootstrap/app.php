@@ -11,9 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Reemplazar el middleware CSRF por defecto con nuestro personalizado
-        $middleware->web(replace: [
-            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class => \App\Http\Middleware\VerifyCsrfToken::class,
+        // Excluir todas las rutas API de la verificación CSRF
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+            '/api/*',
         ]);
         
         // Registrar middleware personalizado para forzar respuestas JSON en rutas API

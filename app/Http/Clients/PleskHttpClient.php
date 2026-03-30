@@ -13,32 +13,25 @@ class PleskHttpClient
     public static function create(): PendingRequest
     {
         return Http::withOptions([
-            // Timeouts extendidos
-            'timeout' => 120,
-            'connect_timeout' => 30,
+            'timeout' => 30,
+            'connect_timeout' => 10,
             
-            // Configuraciones específicas para Plesk
-            'verify' => false, // Deshabilitar verificación SSL temporalmente
-            'http_errors' => false, // No lanzar excepciones en errores HTTP
+            'verify' => false,
+            'http_errors' => false,
             
-            // Headers específicos para evitar bloqueos
             'headers' => [
-                'User-Agent' => 'Laravel-Plesk-Client/1.0',
+                'User-Agent' => 'Laravel-Dolibarr-Client/1.0',
                 'Accept' => 'application/json',
-                'Connection' => 'close', // Cerrar conexión después de cada request
             ],
             
-            // Configuraciones cURL específicas
             'curl' => [
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_MAXREDIRS => 3,
-                CURLOPT_TCP_KEEPALIVE => 0, // Deshabilitar keep-alive
-                CURLOPT_FRESH_CONNECT => true, // Forzar nueva conexión
-                CURLOPT_FORBID_REUSE => true, // No reutilizar conexiones
-                CURLOPT_DNS_CACHE_TIMEOUT => 60,
-                CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4, // Forzar IPv4
+                CURLOPT_TCP_KEEPALIVE => 1,
+                CURLOPT_DNS_CACHE_TIMEOUT => 120,
+                CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
             ]
-        ])->retry(5, 2000); // 5 reintentos con 2 segundos de delay
+        ])->retry(2, 1000, throw: false);
     }
     
     /**

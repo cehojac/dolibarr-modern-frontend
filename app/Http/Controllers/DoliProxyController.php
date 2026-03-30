@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\RequestException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Services\CacheService;
 use App\Http\Clients\PleskHttpClient;
@@ -197,6 +198,8 @@ class DoliProxyController extends Controller
         }
 
         // Realizar la solicitud
+        $response = null;
+
         try {
             switch ($method) {
                 case 'GET':
@@ -217,8 +220,23 @@ class DoliProxyController extends Controller
                 default:
                     return response()->json(['error' => 'Método HTTP no soportado'], 405);
             }
+        } catch (RequestException $e) {
+            if ($e->response) {
+                $response = $e->response;
+                \Log::warning('PROXY REQUEST EXCEPTION', [
+                    'path' => $path,
+                    'status' => $response->status(),
+                    'message' => $e->getMessage()
+                ]);
+            } else {
+                return response()->json(['error' => 'Error de conexión con Dolibarr: ' . $e->getMessage()], 500);
+            }
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error de conexión con Dolibarr: ' . $e->getMessage()], 500);
+        }
+
+        if (!$response) {
+            return response()->json(['error' => 'Error de conexión con Dolibarr: respuesta vacía'], 500);
         }
 
         // Log respuesta para módulo personalizado y tickets
@@ -270,10 +288,23 @@ class DoliProxyController extends Controller
                 'body' => $response->body()
             ]);
             
+            $rawBody = $response->body();
+            $decodedBody = null;
+
+            if (!empty($rawBody)) {
+                $decodedBody = json_decode($rawBody, true);
+            }
+
+            $friendlyMessage = $decodedBody['error']['message']
+                ?? $decodedBody['message']
+                ?? $rawBody
+                ?? 'La API de Dolibarr respondió con un error inesperado';
+
             return response()->json([
                 'error' => 'Error en la API de Dolibarr',
                 'status' => $response->status(),
-                'message' => $response->body()
+                'message' => $friendlyMessage,
+                'details' => $decodedBody ?? ['raw' => $rawBody]
             ], $response->status());
         }
 

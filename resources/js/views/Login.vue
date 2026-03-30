@@ -156,6 +156,11 @@ const { dolibarrVersion, isAccessLocked, loadStatus, loading: statusLoading } = 
 
 // Initialize theme and load Dolibarr status on component mount
 onMounted(async () => {
+  // Limpiar sesión stale al entrar al login para evitar llamadas innecesarias
+  localStorage.removeItem('dolibarr-auth')
+  authStore.isAuthenticated = false
+  authStore.user = null
+  
   initTheme()
   await loadStatus()
 })

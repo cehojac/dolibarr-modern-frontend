@@ -70,8 +70,8 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center space-x-3">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div class="flex items-center flex-wrap gap-3">
         <button class="px-4 py-2 rounded-lg text-sm font-medium flex items-center text-white"
                 :class="isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-900 hover:bg-gray-800'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,18 +85,73 @@
           </svg>
           Importar Clientes
         </button>
+
+        <div class="relative" @click.away="showColumnMenu = false">
+          <button
+            @click="showColumnMenu = !showColumnMenu"
+            class="border px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2"
+            :class="isDark ? 'border-gray-600 text-gray-200 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            Columnas
+          </button>
+          <div
+            v-if="showColumnMenu"
+            class="absolute z-40 mt-2 w-56 rounded-lg border shadow-lg p-3"
+            :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold" :class="isDark ? 'text-gray-200' : 'text-gray-600'">Columnas visibles</span>
+              <button
+                class="text-xs"
+                :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
+                @click="resetColumns"
+              >
+                Restaurar
+              </button>
+            </div>
+            <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+              <label
+                v-for="column in columnOptions"
+                :key="column.key"
+                class="flex items-center justify-between text-sm cursor-pointer"
+                :class="isDark ? 'text-gray-200' : 'text-gray-700'"
+              >
+                <span class="truncate">{{ column.label }}</span>
+                <input
+                  type="checkbox"
+                  class="form-checkbox h-4 w-4 text-blue-600"
+                  v-model="visibleColumns[column.key]"
+                  :disabled="column.required"
+                >
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center" :class="isDark ? 'border-gray-600 text-gray-300' : ''">
-        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-        </svg>
-        Filtros
-      </button>
+
+      <div class="flex items-center gap-3">
+        <button
+          class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center"
+          :class="isDark ? 'border-gray-600 text-gray-300' : ''"
+          @click="showFilters = !showFilters"
+        >
+          <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Filtros
+        </button>
+      </div>
     </div>
 
     <!-- Filters Bar -->
-    <div class="rounded-lg border p-4 mb-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
+    <div
+      v-if="showFilters"
+      class="rounded-lg border p-4 mb-4"
+      :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+    >
       <div class="flex items-center justify-between flex-wrap gap-4">
         <div class="flex items-center space-x-4 flex-wrap gap-2">
           <!-- Estado Filter -->
@@ -130,6 +185,41 @@
             </select>
           </div>
 
+          <!-- Date filters -->
+          <div class="flex items-center space-x-2">
+            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Creado:</label>
+            <input
+              type="date"
+              v-model="creationStart"
+              class="border rounded-lg px-3 py-2 text-sm"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'"
+            >
+            <span class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">al</span>
+            <input
+              type="date"
+              v-model="creationEnd"
+              class="border rounded-lg px-3 py-2 text-sm"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'"
+            >
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <label class="text-sm font-medium" :class="isDark ? 'text-gray-300' : 'text-gray-700'">Modificado:</label>
+            <input
+              type="date"
+              v-model="modificationStart"
+              class="border rounded-lg px-3 py-2 text-sm"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'"
+            >
+            <span class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">al</span>
+            <input
+              type="date"
+              v-model="modificationEnd"
+              class="border rounded-lg px-3 py-2 text-sm"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-700'"
+            >
+          </div>
+
           <!-- Reset Filters -->
           <button 
             @click="resetFilters" 
@@ -160,17 +250,56 @@
     </div>
 
     <!-- Quick Actions Bar -->
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center space-x-3">
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div class="flex items-center flex-wrap gap-2">
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Exportar</button>
+        <div class="relative" @click.away="showBulkMenu = false">
+          <button
+            class="text-sm transition-colors flex items-center gap-2 px-3 py-2 rounded-lg border"
+            :class="selectedIds.length === 0 ? (isDark ? 'border-gray-700 text-gray-500 cursor-not-allowed' : 'border-gray-200 text-gray-400 cursor-not-allowed') : (isDark ? 'border-gray-600 text-gray-200 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100')"
+            :disabled="selectedIds.length === 0"
+            @click="showBulkMenu = !showBulkMenu"
+          >
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+            Acciones masivas
+            <span v-if="selectedIds.length" class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">{{ selectedIds.length }}</span>
+          </button>
+          <div
+            v-if="showBulkMenu"
+            class="absolute mt-2 w-48 rounded-lg border shadow-lg z-30"
+            :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'"
+          >
+            <button
+              class="w-full text-left px-4 py-2 text-sm flex items-center gap-2"
+              :class="isDark ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'"
+              @click="bulkToggleStatus('activate')"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Activar seleccionados
+            </button>
+            <button
+              class="w-full text-left px-4 py-2 text-sm flex items-center gap-2"
+              :class="isDark ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'"
+              @click="bulkToggleStatus('deactivate')"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Desactivar seleccionados
+            </button>
+          </div>
+        </div>
         <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadClients">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
         </button>
       </div>
-      
+
       <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">
         <span class="font-medium">{{ filteredClients.length }}</span> clientes encontrados
       </div>
@@ -182,7 +311,20 @@
         <table class="min-w-full" :class="isDark ? 'bg-gray-800' : 'bg-white'">
           <thead :class="isDark ? 'bg-gray-700' : 'bg-gray-50'">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-300' : 'text-gray-500'">
+              <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">
+                <input
+                  type="checkbox"
+                  class="form-checkbox h-4 w-4 text-blue-600"
+                  :checked="isAllSelected"
+                  @change="toggleSelectAll($event.target.checked)"
+                  :indeterminate.prop="isSomeSelected"
+                >
+              </th>
+              <th
+                v-if="visibleColumns.id"
+                class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
+                :class="isDark ? 'text-gray-300' : 'text-gray-500'"
+              >
                 <div class="flex items-center">
                   ID
                   <svg class="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -190,18 +332,19 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Empresa</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Teléfono</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tipo</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Fecha Creación</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Acciones</th>
+              <th v-if="visibleColumns.name" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Empresa</th>
+              <th v-if="visibleColumns.email" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Email</th>
+              <th v-if="visibleColumns.phone" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Teléfono</th>
+              <th v-if="visibleColumns.status" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Estado</th>
+              <th v-if="visibleColumns.type" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Tipo</th>
+              <th v-if="visibleColumns.creation" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Fecha Creación</th>
+              <th v-if="visibleColumns.modification" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Última Modificación</th>
+              <th v-if="visibleColumns.actions" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-300' : 'text-gray-500'">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+              <td :colspan="columnCount" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center justify-center space-x-2">
                   <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                   <span class="text-sm">Cargando clientes...</span>
@@ -209,18 +352,31 @@
               </td>
             </tr>
             <tr v-else-if="filteredClients.length === 0">
-              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+              <td :colspan="columnCount" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <span class="text-sm">No se encontraron clientes</span>
               </td>
             </tr>
             <tr v-else v-for="client in paginatedClients" :key="client.id" class="transition-colors" :class="isDark ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'">
+              <td class="px-4 py-4 whitespace-nowrap">
+                <input
+                  type="checkbox"
+                  class="form-checkbox h-4 w-4 text-blue-600"
+                  :value="client.id"
+                  v-model="selectedIds"
+                >
+              </td>
+
               <!-- ID -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" :class="isDark ? 'text-white' : 'text-gray-900'">
+              <td
+                v-if="visibleColumns.id"
+                class="px-6 py-4 whitespace-nowrap text-sm font-medium"
+                :class="isDark ? 'text-white' : 'text-gray-900'"
+              >
                 {{ client.id }}
               </td>
               
               <!-- Empresa -->
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td v-if="visibleColumns.name" class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-8 w-8">
                     <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center">
@@ -251,17 +407,17 @@
               </td>
               
               <!-- Email -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
+              <td v-if="visibleColumns.email" class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
                 {{ client.email || '-' }}
               </td>
               
               <!-- Teléfono -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
+              <td v-if="visibleColumns.phone" class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
                 {{ client.phone || '-' }}
               </td>
               
               <!-- Estado -->
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td v-if="visibleColumns.status" class="px-6 py-4 whitespace-nowrap">
                 <label class="inline-flex items-center">
                   <input
                     type="checkbox"
@@ -276,7 +432,7 @@
               </td>
               
               <!-- Tipo -->
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td v-if="visibleColumns.type" class="px-6 py-4 whitespace-nowrap">
                 <div class="flex flex-wrap gap-1">
                   <span 
                     v-for="badge in getThirdpartyBadges(client)" 
@@ -290,12 +446,17 @@
               </td>
               
               <!-- Fecha Creación -->
-              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
+              <td v-if="visibleColumns.creation" class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
                 {{ formatDate(client.date_creation) }}
               </td>
               
+              <!-- Fecha Modificación -->
+              <td v-if="visibleColumns.modification" class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
+                {{ formatDate(client.tms) }}
+              </td>
+
               <!-- Acciones -->
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td v-if="visibleColumns.actions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end space-x-2">
                   <button 
                     @click="viewClient(client)"
@@ -375,23 +536,110 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
 import http from '../../utils/http'
 import { getThirdpartyType, getThirdpartyBadges } from '../../utils/thirdpartyHelpers'
+import { useNotificationStore } from '../../stores/notifications'
 
 const router = useRouter()
 const { isDark } = useTheme()
+const notificationStore = useNotificationStore()
 
 // Reactive data
 const clients = ref([])
 const loading = ref(false)
 
+// Column visibility (persisted)
+const COLUMN_STORAGE_KEY = 'clientes-visible-columns'
+const defaultColumns = {
+  id: true,
+  name: true,
+  email: true,
+  phone: true,
+  status: true,
+  type: true,
+  creation: true,
+  modification: false,
+  actions: true
+}
+
+const columnOptions = [
+  { key: 'id', label: 'ID', required: false },
+  { key: 'name', label: 'Empresa', required: true },
+  { key: 'email', label: 'Email', required: false },
+  { key: 'phone', label: 'Teléfono', required: false },
+  { key: 'status', label: 'Estado', required: false },
+  { key: 'type', label: 'Tipo', required: false },
+  { key: 'creation', label: 'Fecha creación', required: false },
+  { key: 'modification', label: 'Última modificación', required: false },
+  { key: 'actions', label: 'Acciones', required: true }
+]
+
+function ensureColumnPreferences(preferences = {}) {
+  const result = { ...defaultColumns }
+  Object.keys(defaultColumns).forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(preferences, key)) {
+      result[key] = Boolean(preferences[key])
+    }
+  })
+  return result
+}
+
+function loadColumnPreferences() {
+  if (typeof localStorage === 'undefined') {
+    return { ...defaultColumns }
+  }
+
+  try {
+    const raw = localStorage.getItem(COLUMN_STORAGE_KEY)
+    if (!raw) {
+      return { ...defaultColumns }
+    }
+
+    const parsed = JSON.parse(raw)
+    return ensureColumnPreferences(parsed)
+  } catch (error) {
+    console.warn('⚠️ No se pudieron cargar preferencias de columnas, usando valores por defecto', error)
+    return { ...defaultColumns }
+  }
+}
+
+function saveColumnPreferences(value) {
+  if (typeof localStorage === 'undefined') {
+    return
+  }
+
+  try {
+    localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(value))
+  } catch (error) {
+    console.warn('⚠️ No se pudieron guardar las preferencias de columnas', error)
+  }
+}
+
+const visibleColumns = ref(loadColumnPreferences())
+const showColumnMenu = ref(false)
+const showFilters = ref(true)
+const showBulkMenu = ref(false)
+const bulkLoading = ref(false)
+
 // Filters
 const searchQuery = ref('')
 const statusFilter = ref('active') // Por defecto mostrar solo activos
 const typeFilter = ref('all')
+const creationStart = ref('')
+const creationEnd = ref('')
+const modificationStart = ref('')
+const modificationEnd = ref('')
+
+// Selection state
+const selectedIds = ref([])
+
+const filteredIds = computed(() => filteredClients.value.map(client => String(client.id)))
+const selectedIdSet = computed(() => new Set(selectedIds.value.map(id => String(id))))
+const isAllSelected = computed(() => filteredIds.value.length > 0 && filteredIds.value.every(id => selectedIdSet.value.has(id)))
+const isSomeSelected = computed(() => selectedIds.value.length > 0 && !isAllSelected.value)
 
 // Pagination
 const currentPage = ref(1)
@@ -453,6 +701,46 @@ const filteredClients = computed(() => {
     filtered = filtered.filter(client => client.client == typeFilter.value)
   }
 
+  // Filter by creation date
+  const creationStartMs = creationStart.value ? new Date(`${creationStart.value}T00:00:00`).getTime() : null
+  const creationEndMs = creationEnd.value ? new Date(`${creationEnd.value}T23:59:59`).getTime() : null
+
+  if (creationStartMs !== null || creationEndMs !== null) {
+    filtered = filtered.filter(client => {
+      const created = convertDolibarrTimestamp(client.date_creation)
+      if (created === null) {
+        return false
+      }
+      if (creationStartMs !== null && created < creationStartMs) {
+        return false
+      }
+      if (creationEndMs !== null && created > creationEndMs) {
+        return false
+      }
+      return true
+    })
+  }
+
+  // Filter by modification date
+  const modificationStartMs = modificationStart.value ? new Date(`${modificationStart.value}T00:00:00`).getTime() : null
+  const modificationEndMs = modificationEnd.value ? new Date(`${modificationEnd.value}T23:59:59`).getTime() : null
+
+  if (modificationStartMs !== null || modificationEndMs !== null) {
+    filtered = filtered.filter(client => {
+      const updated = convertDolibarrTimestamp(client.tms)
+      if (updated === null) {
+        return false
+      }
+      if (modificationStartMs !== null && updated < modificationStartMs) {
+        return false
+      }
+      if (modificationEndMs !== null && updated > modificationEndMs) {
+        return false
+      }
+      return true
+    })
+  }
+
   // Filter by search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
@@ -493,6 +781,16 @@ const visiblePages = computed(() => {
   }
   
   return pages
+})
+
+const columnCount = computed(() => {
+  let count = 1 // checkbox column
+  Object.entries(visibleColumns.value).forEach(([, value]) => {
+    if (value) {
+      count += 1
+    }
+  })
+  return count
 })
 
 // Methods
@@ -554,6 +852,10 @@ const resetFilters = () => {
   statusFilter.value = 'active'
   typeFilter.value = 'all'
   searchQuery.value = ''
+  creationStart.value = ''
+  creationEnd.value = ''
+  modificationStart.value = ''
+  modificationEnd.value = ''
   currentPage.value = 1
 }
 
@@ -565,7 +867,58 @@ const editClient = (client) => {
    console.log('Edit client:', client)
 }
 
-// Pagination methods
+const toggleSelectAll = (checked) => {
+  if (checked) {
+    selectedIds.value = filteredClients.value.map(client => client.id)
+  } else {
+    selectedIds.value = []
+  }
+}
+
+const resetColumns = () => {
+  visibleColumns.value = { ...defaultColumns }
+}
+
+const bulkToggleStatus = async (mode) => {
+  if (selectedIds.value.length === 0 || bulkLoading.value) {
+    return
+  }
+
+  showBulkMenu.value = false
+  bulkLoading.value = true
+
+  const targetStatus = mode === 'activate' ? 1 : 0
+  const actionLabel = mode === 'activate' ? 'activar' : 'desactivar'
+
+  try {
+    await Promise.all(selectedIds.value.map((id) => {
+      return http.put(`/api/doli/thirdparties/${id}`, { status: targetStatus })
+    }))
+
+    notificationStore.addNotification(
+      'success',
+      'Acción masiva completada',
+      `Se han ${actionLabel} ${selectedIds.value.length} clientes.`
+    )
+
+    await loadClients()
+    selectedIds.value = []
+  } catch (error) {
+    console.error(' Error en acción masiva de clientes:', error)
+    const apiMessage = error.response?.data?.message
+      || error.response?.data?.error?.message
+      || error.message
+
+    notificationStore.addNotification(
+      'error',
+      'Error en acción masiva',
+      apiMessage || 'No se pudieron actualizar los clientes seleccionados.'
+    )
+  } finally {
+    bulkLoading.value = false
+  }
+}
+
 const previousPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
@@ -585,4 +938,47 @@ const goToPage = (page) => {
 onMounted(() => {
   loadClients()
 })
+
+watch(visibleColumns, (newVal) => {
+  saveColumnPreferences(newVal)
+}, { deep: true })
+
+watch(filteredClients, () => {
+  const validIds = new Set(filteredClients.value.map(client => String(client.id)))
+  selectedIds.value = selectedIds.value.filter(id => validIds.has(String(id)))
+})
+
+watch(clients, () => {
+  selectedIds.value = []
+})
+
+watch(itemsPerPage, () => {
+  currentPage.value = 1
+})
+
+watch([creationStart, creationEnd, modificationStart, modificationEnd], () => {
+  currentPage.value = 1
+})
+
+watch(statusFilter, handleFilterChange)
+watch(typeFilter, handleFilterChange)
+
+function convertDolibarrTimestamp(value) {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+
+  if (typeof value === 'string' && value.includes('-')) {
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? null : parsed.getTime()
+  }
+
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) {
+    return null
+  }
+
+  // Dolibarr suele entregar timestamp en segundos
+  return numeric > 1e12 ? numeric : numeric * 1000
+}
 </script>

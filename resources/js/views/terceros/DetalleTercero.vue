@@ -761,11 +761,19 @@
           @keyup.enter="deleteThirdparty"
         />
       </div>
+
+      <p
+        v-if="deleteErrorMessage"
+        class="text-sm mb-4 rounded-md px-3 py-2"
+        :class="isDark ? 'bg-red-900/30 text-red-200 border border-red-800' : 'bg-red-50 text-red-700 border border-red-200'"
+      >
+        {{ deleteErrorMessage }}
+      </p>
       
       <!-- Modal Actions -->
       <div class="flex justify-end space-x-3">
         <button
-          @click="showDeleteModal = false; deleteConfirmationText = ''"
+          @click="closeDeleteModal"
           :disabled="deletingThirdparty"
           class="px-4 py-2 text-sm font-medium border rounded-md transition-colors"
           :class="isDark ? 'text-gray-300 border-gray-600 hover:bg-gray-700 disabled:opacity-50' : 'text-gray-700 border-gray-300 hover:bg-gray-50 disabled:opacity-50'"
@@ -814,6 +822,7 @@ const extrafieldsFormattedValues = ref({})
 const showDeleteModal = ref(false)
 const deletingThirdparty = ref(false)
 const deleteConfirmationText = ref('')
+const deleteErrorMessage = ref('')
 const events = ref([
   { id: 14496, ref: '14496', date: '03/03/25 12:56', user: 'Arturo', type: 'Mensaje', title: '[CARLOS EDMUNDO HERRERA]' },
   { id: 14495, ref: '14495', date: '28/02/25 18:47', user: 'Arturo', type: 'Mensaje', title: '[CARLOS EDMUNDO HERRERA]' },
@@ -1256,6 +1265,12 @@ const formatDate = (value) => {
   }
 }
 
+const closeDeleteModal = () => {
+  showDeleteModal.value = false
+  deleteConfirmationText.value = ''
+  deleteErrorMessage.value = ''
+}
+
 // Delete thirdparty function
 const deleteThirdparty = async () => {
   try {
@@ -1264,10 +1279,11 @@ const deleteThirdparty = async () => {
       alert('El nombre del cliente no coincide. Por favor, verifica e intenta nuevamente.')
       return
     }
-    
+
     deletingThirdparty.value = true
+    deleteErrorMessage.value = ''
     const terceroId = route.params.id
-    
+
     if (!terceroId) {
       throw new Error('No se encontró el ID del cliente')
     }
@@ -1279,9 +1295,8 @@ const deleteThirdparty = async () => {
     console.log('✅ Cliente eliminado exitosamente:', response.data)
     
     // Cerrar modal
-    showDeleteModal.value = false
-    deleteConfirmationText.value = ''
-    
+    closeDeleteModal()
+
     // Mostrar mensaje de éxito
     alert('Cliente eliminado exitosamente')
     
@@ -1291,7 +1306,20 @@ const deleteThirdparty = async () => {
   } catch (error) {
     console.error('❌ Error eliminando cliente:', error)
     console.error('❌ Error details:', error.response?.data)
-    alert('Error al eliminar cliente: ' + (error.response?.data?.message || error.message))
+
+    const apiMessage = error.response?.data?.message
+      || error.response?.data?.error?.message
+      || error.message
+
+    if (error.response?.status === 409) {
+      deleteErrorMessage.value = apiMessage
+        ? `No se puede eliminar el cliente porque tiene elementos asociados: ${apiMessage}`
+        : 'No se puede eliminar el cliente porque tiene elementos asociados en Dolibarr. Revisa facturas, pedidos o proyectos relacionados.'
+    } else {
+      deleteErrorMessage.value = apiMessage
+        ? `Error al eliminar cliente: ${apiMessage}`
+        : 'Ocurrió un error al eliminar el cliente. Inténtalo de nuevo más tarde.'
+    }
   } finally {
     deletingThirdparty.value = false
   }

@@ -3,6 +3,7 @@ import http from '../utils/http'
 import { useNotificationStore } from './notifications'
 import { useUserInterventionsStore } from '../composables/useUserInterventions'
 import { usePermissionsStore } from '../composables/usePermissions'
+import { loadInitialCounters } from '../utils/loadInitialCounters'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -65,17 +66,25 @@ export const useAuthStore = defineStore('auth', {
         this.loginProgress = 60
         console.log('✅ PASO 2 COMPLETADO: Permisos cargados correctamente')
         
-        // PASO 3: Cargar Datos Adicionales
-        this.loginStep = 'loading_data'
+        // PASO 3: Precargar contadores críticos (tickets, tareas, agenda)
+        this.loginStep = 'loading_counters'
         this.loginProgress = 70
-        console.log('📊 PASO 3: Cargando datos adicionales...')
+        console.log('🧮 PASO 3: Precargando contadores (tickets, tareas, agenda)...')
+        await loadInitialCounters(response.data.user)
+        this.loginProgress = 80
+        console.log('✅ PASO 3 COMPLETADO: Contadores precargados')
+
+        // PASO 4: Cargar Datos Adicionales
+        this.loginStep = 'loading_data'
+        this.loginProgress = 85
+        console.log('📊 PASO 4: Cargando datos adicionales...')
         
         if (response.data.user && response.data.user.id) {
           await interventionsStore.fetchUserInterventions()
-          console.log('✅ PASO 3 COMPLETADO: Intervenciones cargadas')
+          console.log('✅ PASO 4 COMPLETADO: Intervenciones cargadas')
         }
         
-        // PASO 4: Finalización
+        // PASO 5: Finalización
         this.loginStep = 'complete'
         this.loginProgress = 100
         console.log('🎉 LOGIN COMPLETADO: Todos los pasos exitosos')
@@ -106,6 +115,9 @@ export const useAuthStore = defineStore('auth', {
           }
         } else if (this.loginStep === 'loading_permissions') {
           notificationStore.addNotification('error', 'Error de permisos', 'No se pudieron cargar los permisos. Intenta nuevamente.')
+        } else if (this.loginStep === 'loading_counters') {
+          notificationStore.addNotification('warning', 'Datos parciales', 'Login exitoso pero los contadores principales no se precargaron completamente.')
+          return
         } else if (this.loginStep === 'loading_data') {
           notificationStore.addNotification('warning', 'Datos parciales', 'Login exitoso pero algunos datos no se cargaron completamente.')
           // En este caso, no hacer throw para no interrumpir el login
