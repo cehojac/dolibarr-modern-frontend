@@ -333,7 +333,7 @@ const prefetchProjects = async () => {
     }
 
     await cachedFetch('/api/doli/projects', {
-      params: { limit: 500, sortfield: 'datec', sortorder: 'DESC' },
+      params: { limit: 500, sortfield: 't.datec', sortorder: 'DESC' },
       ttl: 600000,
       cacheKey
     })
