@@ -23,8 +23,16 @@ export function useTasksCounter() {
 
     loading.value = true
     try {
-      // Fetch all tasks with high limit to get accurate count
-      const response = await http.get('/api/doli/tasks?limit=10000&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
+      // Fetch tasks with reasonable limit to avoid timeouts
+      const response = await http.get('/api/doli/tasks', {
+        params: {
+          limit: 500,
+          sortfield: 't.rowid',
+          sortorder: 'DESC',
+          sqlfilters: '(t.progress:<:100)or(t.progress:is:null)'
+        },
+        timeout: 20000
+      })
       const tasks = response.data || []
       
        // console.log('📋 Tasks Counter - Total tasks fetched:', tasks.length)

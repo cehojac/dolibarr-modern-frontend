@@ -147,7 +147,7 @@ class DoliProxyController extends Controller
         
         // Si es una solicitud de tickets, agregar parámetros por defecto
         if (str_contains($url, '/tickets')) {
-            $queryParams['sortfield'] = 'datec';
+            $queryParams['sortfield'] = 't.datec';
             $queryParams['sortorder'] = 'DESC';
             $queryParams['limit'] = '500';
         }
