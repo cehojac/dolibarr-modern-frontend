@@ -157,6 +157,7 @@
         "table": {
           "date": "Fecha",
           "ref": "Ref",
+          "company": "Tercero",
           "subject": "Asunto",
           "type": "Tipo",
           "severity": "Gravedad",

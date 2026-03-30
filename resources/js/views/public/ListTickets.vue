@@ -195,6 +195,7 @@
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.date') }}</th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.ref') }}</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.company') }}</th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.subject') }}</th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.type') }}</th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">{{ $t('public.tickets.list.table.severity') }}</th>
@@ -222,6 +223,11 @@
                       {{ ticket.trackingId }}
                     </div>
                   </button>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white max-w-[180px] truncate" :title="ticket.companyName">
+                    {{ ticket.companyName || '-' }}
+                  </div>
                 </td>
                 <td class="px-6 py-4">
                   <div class="text-sm font-medium text-gray-900 dark:text-white max-w-md truncate">
@@ -422,9 +428,7 @@
                   <p class="font-medium text-gray-900 dark:text-white mb-1">
                     {{ message.author }}
                   </p>
-                  <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                    {{ message.content }}
-                  </p>
+                  <div class="text-gray-600 dark:text-gray-400 text-sm mb-2" v-html="message.content"></div>
                   <p class="text-xs text-gray-500 dark:text-gray-500">
                     {{ formatRelativeDate(message.date) }}
                   </p>
@@ -551,10 +555,15 @@ const sortedTicketMessages = computed(() => {
 const filteredTickets = computed(() => {
   let result = tickets.value
 
-  // Filtrar por estado cerrado
-  if (!showClosed.value) {
+  // Filtrar por estado
+  if (statusFilter.value !== 'all') {
+    // Dropdown tiene un estado específico seleccionado: mostrar solo ese estado
+    result = result.filter(ticket => ticket.status === statusFilter.value)
+  } else if (!showClosed.value) {
+    // Dropdown en "All" + checkbox desmarcado: ocultar cerrados
     result = result.filter(ticket => ticket.status !== 'closed')
   }
+  // Dropdown en "All" + checkbox marcado: mostrar todos
 
   // Filtrar por búsqueda de texto
   if (searchFilter.value) {
@@ -564,11 +573,6 @@ const filteredTickets = computed(() => {
       ticket.trackingId?.toLowerCase().includes(search) ||
       ticket.description?.toLowerCase().includes(search)
     )
-  }
-
-  // Filtrar por estado
-  if (statusFilter.value !== 'all') {
-    result = result.filter(ticket => ticket.status === statusFilter.value)
   }
 
   // Filtrar por prioridad
@@ -724,69 +728,20 @@ const searchTickets = async () => {
         await viewTicketDetails(mappedTicket)
         return
       }
-    } else if (searchEmail.value) {
-      // Si solo se proporciona email, buscar el tercero por email
-      console.log('📧 Buscando tercero por email:', searchEmail.value)
-      socid = await findThirdpartyByEmail(searchEmail.value)
-      
-      if (!socid) {
-        console.error('❌ No se encontró tercero con ese email')
-        alert('No se encontró ningún tercero con ese correo electrónico.')
-        return
-      }
-      console.log('✅ Tercero encontrado, socid:', socid)
     }
     
-    // Obtener todos los tickets del tercero
-    if (socid) {
-      console.log('🎫 Obteniendo tickets del tercero, socid:', socid)
-      const ticketsResponse = await http.get(`/api/doli/tickets`, {
-        params: {
-          socid: socid,
-          sortfield: 't.datec',
-          sortorder: 'DESC',
-          limit: 100
-        },
-        headers: {
-          'X-Public-Request': 'true'
-        }
-      })
+    // Si hay email (ya sea con o sin tracking ID), buscar todos los tickets del email
+    if (searchEmail.value) {
+      console.log('📧 Buscando todos los tickets por email:', searchEmail.value)
+      const allTickets = await findTicketsByEmail(searchEmail.value)
       
-      console.log('📦 Respuesta de tickets:', ticketsResponse.data)
-      
-      if (ticketsResponse.data && Array.isArray(ticketsResponse.data)) {
-        console.log(`✅ ${ticketsResponse.data.length} tickets encontrados`)
-        
-        // Obtener nombre de la empresa (tercero)
-        let companyName = ''
-        if (socid) {
-          try {
-            const thirdpartyResponse = await http.get(`/api/doli/thirdparties/${socid}`, {
-              headers: { 'X-Public-Request': 'true' }
-            })
-            companyName = thirdpartyResponse.data?.name || ''
-            console.log('🏢 Nombre de empresa:', companyName)
-          } catch (error) {
-            console.error('⚠️ Error al obtener nombre de empresa:', error)
-          }
-        }
-        
-        tickets.value = ticketsResponse.data.map(ticket => ({
-          id: ticket.id,
-          ref: ticket.ref || ticket.id,
-          trackingId: ticket.track_id,
-          subject: ticket.subject,
-          description: ticket.message,
-          status: mapTicketStatus(ticket.fk_statut),
-          priority: mapTicketPriority(ticket.severity_code),
-          type: ticket.type_code || 'other',
-          createdAt: ticket.datec,
-          email: searchEmail.value,
-          socid: ticket.socid,
-          companyName: companyName,
-          messages: ticket.messages || []
-        }))
+      if (allTickets.length === 0) {
+        console.log('❌ No se encontraron tickets para este email')
+        return
       }
+      
+      console.log(`✅ ${allTickets.length} tickets encontrados en total`)
+      tickets.value = allTickets
     }
     
   } catch (error) {
@@ -879,53 +834,104 @@ const verifyEmailForThirdparty = async (socid, email) => {
   }
 }
 
-// Buscar tercero por email
-const findThirdpartyByEmail = async (email) => {
+// Buscar todos los tickets donde el email está involucrado
+const findTicketsByEmail = async (email) => {
+  const allTickets = []
+  const companyNames = {} // Cache de nombres de terceros
+  
+  const sanitizedEmail = email.replace(/'/g, "''")
+  
+  // 1. Buscar todos los tickets por origin_email (Dolibarr devuelve todos los estados)
+  const publicHeaders = { 'X-Public-Request': 'true' }
+  
   try {
-    console.log('🔍 Buscando tercero por email:', email)
-    
-    // Buscar terceros por email
-    const response = await http.get('/api/doli/thirdparties', {
+    console.log('📧 Buscando tickets por origin_email:', email)
+    const response = await http.get('/api/doli/tickets', {
       params: {
-        email: email,
-        limit: 1
-      }
+        sqlfilters: `(t.origin_email:=:'${sanitizedEmail}')`,
+        sortfield: 't.datec',
+        sortorder: 'DESC',
+        limit: 200
+      },
+      headers: publicHeaders
     })
     
-    console.log('📋 Respuesta búsqueda terceros:', response.data)
-    
-    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-      console.log('✅ Tercero encontrado por email directo, id:', response.data[0].id)
-      return response.data[0].id
+    if (response.data && Array.isArray(response.data)) {
+      allTickets.push(...response.data)
+      // Log distribución de estados para debug
+      const statusCount = {}
+      allTickets.forEach(t => {
+        const s = t.fk_statut || 'unknown'
+        statusCount[s] = (statusCount[s] || 0) + 1
+      })
+      console.log(`✅ ${allTickets.length} tickets encontrados. Estados:`, statusCount)
     }
-    
-    // Si no se encuentra por email del tercero, buscar en contactos
-    console.log('👥 Buscando en contactos...')
-    const contactsResponse = await http.get('/api/doli/contacts', {
-      params: {
-        email: email,
-        limit: 1
-      }
-    })
-    
-    console.log('📋 Respuesta búsqueda contactos:', contactsResponse.data)
-    
-    if (contactsResponse.data && Array.isArray(contactsResponse.data) && contactsResponse.data.length > 0) {
-      console.log('✅ Tercero encontrado por contacto, socid:', contactsResponse.data[0].socid)
-      return contactsResponse.data[0].socid
-    }
-    
-    console.log('❌ No se encontró tercero con ese email')
-    return null
   } catch (error) {
-    console.error('❌ Error al buscar tercero:', error)
-    console.error('Error details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    })
-    return null
+    console.warn('⚠️ Error buscando tickets:', error.message)
   }
+  
+  // 2. Resolver el contacto para envío de mensajes (1 sola query)
+  if (!currentContact.value) {
+    try {
+      const contactsResponse = await http.get('/api/doli/contacts', {
+        params: { email: email, limit: 10 }
+      })
+      if (contactsResponse.data && Array.isArray(contactsResponse.data)) {
+        const match = contactsResponse.data.find(
+          c => c.email && c.email.toLowerCase() === email.toLowerCase()
+        )
+        if (match) {
+          currentContact.value = match
+          console.log('👤 Contacto resuelto:', match.firstname, match.lastname)
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Error resolviendo contacto:', error.message)
+    }
+  }
+  
+  if (allTickets.length === 0) {
+    console.log('� No se encontraron tickets')
+    return []
+  }
+  
+  // 3. Obtener nombres de terceros SOLO para los socids de los tickets encontrados
+  const uniqueSocids = [...new Set(allTickets.map(t => t.socid).filter(Boolean))]
+  console.log(`🏢 Obteniendo nombres de ${uniqueSocids.length} tercero(s)`)
+  
+  // Limitar peticiones paralelas en lotes de 5
+  for (let i = 0; i < uniqueSocids.length; i += 5) {
+    const batch = uniqueSocids.slice(i, i + 5)
+    await Promise.all(batch.map(async (sid) => {
+      try {
+        const response = await http.get(`/api/doli/thirdparties/${sid}`, {
+          headers: { 'X-Public-Request': 'true' }
+        })
+        companyNames[sid] = response.data?.name || ''
+      } catch (e) {
+        companyNames[sid] = ''
+      }
+    }))
+  }
+  
+  // 4. Ordenar por fecha descendente y mapear
+  allTickets.sort((a, b) => new Date(b.datec || 0) - new Date(a.datec || 0))
+  
+  return allTickets.map(ticket => ({
+    id: ticket.id,
+    ref: ticket.ref || ticket.id,
+    trackingId: ticket.track_id,
+    subject: ticket.subject,
+    description: ticket.message,
+    status: mapTicketStatus(ticket.fk_statut),
+    priority: mapTicketPriority(ticket.severity_code),
+    type: ticket.type_code || 'other',
+    createdAt: ticket.datec,
+    email: email,
+    socid: ticket.socid,
+    companyName: companyNames[ticket.socid] || '',
+    messages: ticket.messages || []
+  }))
 }
 
 // Mapear estado del ticket de Dolibarr a nuestro formato
