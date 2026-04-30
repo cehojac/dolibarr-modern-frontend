@@ -110,6 +110,18 @@
             <span v-else-if="isAccessLocked">Acceso Bloqueado</span>
             <span v-else>Acceder</span>
           </button>
+
+          <!-- Mensaje de error con guía al administrador -->
+          <div v-if="loginFailed" class="mt-4 p-4 rounded-lg border flex items-start space-x-3"
+               :class="isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-700'">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+            <div class="text-sm lg:text-base">
+              <p class="font-medium mb-1">No se pudo iniciar sesión</p>
+              <p>Verifica tus credenciales. Si el problema persiste, <strong>solicita acceso al administrador del sitio</strong>: es posible que tu cuenta no tenga los permisos necesarios para acceder.</p>
+            </div>
+          </div>
         </form>
       </div>
     </div>
@@ -180,18 +192,20 @@ const validation = useValidation(
 
 const { data, errors, validate, isValid } = validation
 const loading = ref(false)
+const loginFailed = ref(false)
 
 const handleLogin = async () => {
   validate()
   if (!isValid.value) return
   
   loading.value = true
+  loginFailed.value = false
   
   try {
     await authStore.login(data.login, data.password)
     router.push('/')
   } catch (err) {
-    // Error handling is done by the global interceptor
+    loginFailed.value = true
   } finally {
     loading.value = false
   }
