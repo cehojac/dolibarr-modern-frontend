@@ -5,9 +5,10 @@ FROM node:20-alpine AS node-builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json vite.config.js tailwind.config.cjs postcss.config.cjs ./
+COPY package.json vite.config.js tailwind.config.cjs postcss.config.cjs ./
+COPY package-lock.json* ./
 
-RUN npm ci --no-audit --no-fund
+RUN npm install --no-audit --no-fund
 
 COPY resources/ ./resources/
 COPY public/ ./public/
@@ -29,6 +30,7 @@ RUN apt-get update \
         libcurl4-openssl-dev \
         libsqlite3-dev \
         unzip \
+        curl \
     && docker-php-ext-install -j$(nproc) \
         curl \
         mbstring \
@@ -42,19 +44,15 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Configurar OPcache para producción
-RUN echo "opcache.enable=1\n\
-opcache.memory_consumption=128\n\
-opcache.interned_strings_buffer=8\n\
-opcache.max_accelerated_files=10000\n\
-opcache.validate_timestamps=0" > /usr/local/etc/php/conf.d/opcache-prod.ini
+RUN printf "opcache.enable=1\nopcache.memory_consumption=128\nopcache.interned_strings_buffer=8\nopcache.max_accelerated_files=10000\nopcache.validate_timestamps=0\n" \
+    > /usr/local/etc/php/conf.d/opcache-prod.ini
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Apache: solo módulos necesarios
+# Apache: habilitar módulos necesarios (NO reemplazar apache2.conf del sistema)
 RUN a2enmod rewrite headers expires
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
-COPY docker/apache/apache2.conf /etc/apache2/apache2.conf
 
 # Directorio de logs
 ENV APACHE_LOG_DIR=/var/log/apache2
@@ -86,5 +84,8 @@ COPY docker/init.sh /usr/local/bin/init.sh
 RUN chmod +x /usr/local/bin/init.sh
 
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost/up || exit 1
 
 CMD ["/usr/local/bin/init.sh"]

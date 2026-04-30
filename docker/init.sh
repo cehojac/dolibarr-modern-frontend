@@ -1,85 +1,99 @@
 #!/bin/bash
+set -e
 
-echo "🚀 Iniciando Dolibarr Modern Frontend..."
+echo "==> Iniciando Dolibarr Modern Frontend..."
 
-# Función para esperar a servicios externos (opcional)
-wait_for_service() {
-    if [ ! -z "$1" ] && [ ! -z "$2" ]; then
-        echo "⏳ Esperando a que $1:$2 esté disponible..."
-        timeout=60
-        while ! nc -z $1 $2 && [ $timeout -gt 0 ]; do
-            sleep 1
-            timeout=$((timeout-1))
-        done
-        if [ $timeout -eq 0 ]; then
-            echo "⚠️ Timeout esperando a $1:$2, continuando..."
-        else
-            echo "✅ $1:$2 disponible"
+cd /var/www/html
+
+# PASO 1: Crear directorios ANTES de cualquier comando artisan
+# (los volumenes Docker arrancan vacios y Laravel necesita estos paths)
+echo "--> Preparando directorios..."
+mkdir -p storage/framework/{cache/data,sessions,views} \
+         storage/logs \
+         bootstrap/cache \
+         database
+touch database/database.sqlite
+chown -R www-data:www-data storage bootstrap/cache database
+chmod -R 775 storage bootstrap/cache database
+
+# PASO 2: Preparar archivo .env
+if [ ! -f /var/www/html/.env ]; then
+    if [ -f /var/www/html/.env.docker ]; then
+        echo "--> Copiando .env.docker a .env..."
+        cp /var/www/html/.env.docker /var/www/html/.env
+        # key:generate necesita la linea APP_KEY= para saber donde escribir
+        if ! grep -q "^APP_KEY=" /var/www/html/.env; then
+            echo "APP_KEY=" >> /var/www/html/.env
         fi
+    else
+        echo "--> Creando .env minimo desde variables de entorno..."
+        cat > /var/www/html/.env <<EOF
+APP_NAME="${APP_NAME:-Dolibarr Modern Frontend}"
+APP_ENV=${APP_ENV:-production}
+APP_KEY=
+APP_DEBUG=${APP_DEBUG:-false}
+APP_URL=${APP_URL:-http://localhost}
+LOG_CHANNEL=stack
+LOG_LEVEL=${LOG_LEVEL:-error}
+DB_CONNECTION=sqlite
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+DOLIBARR_BASE_URL=${DOLIBARR_BASE_URL}
+DOLIBARR_API_KEY=${DOLIBARR_API_KEY}
+DOLIBARR_VERIFY_SSL=${DOLIBARR_VERIFY_SSL:-true}
+EOF
     fi
-}
-
-# Esperar a servicios externos si están configurados
-wait_for_service "$DB_HOST" "${DB_PORT:-3306}"
-
-# Generar clave de aplicación si no existe
-if [ ! -f .env ]; then
-    echo "📝 Copiando archivo de configuración..."
-    cp .env.docker .env
 fi
 
-# Generar APP_KEY si no existe
-if ! grep -q "APP_KEY=base64:" .env; then
-    echo "🔑 Generando clave de aplicación..."
-    php artisan key:generate --no-interaction
+# PASO 3: Generar APP_KEY (ahora los directorios ya existen)
+if ! grep -q "APP_KEY=base64:" /var/www/html/.env; then
+    echo "--> Generando APP_KEY..."
+    php artisan key:generate --no-interaction --force
 fi
 
-# Limpiar y optimizar caché
-echo "🧹 Limpiando caché..."
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-php artisan cache:clear
+# Exportar APP_KEY al entorno para que config:cache la recoja
+# (evita que la variable Docker vacia APP_KEY= sobreescriba la generada)
+GENERATED_KEY=$(grep "^APP_KEY=" /var/www/html/.env | cut -d= -f2-)
+if [ -n "$GENERATED_KEY" ]; then
+    export APP_KEY="$GENERATED_KEY"
+    echo "--> APP_KEY exportada al entorno"
+fi
 
-# Optimizar para producción
-echo "⚡ Optimizando aplicación..."
+# Limpiar cache (sin set -e para que no falle si ya estaba limpia)
+echo "--> Limpiando cache..."
+php artisan config:clear || true
+php artisan route:clear  || true
+php artisan view:clear   || true
+php artisan cache:clear  || true
+
+# Optimizar para produccion
+echo "--> Optimizando aplicacion..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Ejecutar migraciones si existen
-if [ -d "database/migrations" ] && [ "$(ls -A database/migrations)" ]; then
-    echo "🗄️ Ejecutando migraciones..."
-    php artisan migrate --force --no-interaction
+# Ejecutar migraciones si hay archivos de migracion
+if [ -d "database/migrations" ] && [ "$(ls -A database/migrations 2>/dev/null)" ]; then
+    echo "--> Ejecutando migraciones..."
+    php artisan migrate --force --no-interaction || true
 fi
 
-# Crear enlace simbólico para storage
-echo "🔗 Creando enlace simbólico para storage..."
-php artisan storage:link || true
+# Enlace simbolico para storage publico
+php artisan storage:link 2>/dev/null || true
 
-# Configurar permisos finales
-echo "🔐 Configurando permisos..."
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Mostrar información de la aplicación
-echo "📊 Información de la aplicación:"
-echo "   - PHP Version: $(php -v | head -n 1)"
-echo "   - Laravel Version: $(php artisan --version)"
-echo "   - Environment: $(php artisan env)"
-echo "   - URL: ${APP_URL:-http://localhost}"
-
-# Verificar configuración crítica
-echo "🔍 Verificando configuración..."
+# Verificar configuracion critica
 if [ -z "$DOLIBARR_BASE_URL" ]; then
-    echo "⚠️  ADVERTENCIA: DOLIBARR_BASE_URL no está configurada"
+    echo "[WARN] DOLIBARR_BASE_URL no configurada"
 fi
-
 if [ -z "$DOLIBARR_API_KEY" ]; then
-    echo "⚠️  ADVERTENCIA: DOLIBARR_API_KEY no está configurada"
+    echo "[WARN] DOLIBARR_API_KEY no configurada"
 fi
 
-echo "✅ Inicialización completada. Iniciando Apache..."
+echo "--> PHP: $(php -r 'echo PHP_VERSION;')"
+echo "--> APP_URL: ${APP_URL:-http://localhost}"
+echo "--> Iniciando Apache..."
 
 # Iniciar Apache en primer plano
 exec apache2-foreground
