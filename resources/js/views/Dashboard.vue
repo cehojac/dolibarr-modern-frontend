@@ -574,14 +574,18 @@ const loadTodos = async () => {
   loading.value = true
   try {
     
-    // Load all required data in parallel
-    const [ticketsResponse, tasksResponse, tercerosResponse, projectsResponse, usersResponse] = await Promise.all([
-      http.get('/api/doli/tickets').catch(() => ({ data: [] })),
-      http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)').catch(() => ({ data: [] })),
-      http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] })),
-      http.get('/api/doli/projects?limit=2000').catch(() => ({ data: [] })),
-      http.get('/api/doli/users').catch(() => ({ data: [] }))
-    ])
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+    // Cargar datos de forma escalonada para no saturar Dolibarr
+    const ticketsResponse = await http.get('/api/doli/tickets', { params: { limit: 300, sortfield: 't.datec', sortorder: 'DESC' } }).catch(() => ({ data: [] }))
+    await delay(300)
+    const tasksResponse = await http.get('/api/doli/tasks', { params: { limit: 200, sortfield: 't.datec', sortorder: 'DESC' } }).catch(() => ({ data: [] }))
+    await delay(300)
+    const tercerosResponse = await http.get('/api/doli/thirdparties', { params: { limit: 500, status: 1 } }).catch(() => ({ data: [] }))
+    await delay(300)
+    const projectsResponse = await http.get('/api/doli/projects', { params: { limit: 500 } }).catch(() => ({ data: [] }))
+    await delay(300)
+    const usersResponse = await http.get('/api/doli/users').catch(() => ({ data: [] }))
 
 
     // Create lookup maps for enrichment
