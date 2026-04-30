@@ -89,7 +89,8 @@ export const useAuthStore = defineStore('auth', {
         }, 2000)
         
       } catch (error) {
-        console.error(`❌ ERROR EN PASO ${this.loginStep}:`, error)
+        const failedStep = this.loginStep
+        console.error(`❌ ERROR EN PASO ${failedStep}:`, error)
         
         // Limpiar estado en caso de error
         this.isAuthenticated = false
@@ -98,15 +99,15 @@ export const useAuthStore = defineStore('auth', {
         this.loginProgress = 0
         
         // Manejo específico de errores por paso
-        if (this.loginStep === 'authenticating') {
+        if (failedStep === 'authenticating') {
           if (error.response && error.response.status === 401) {
             notificationStore.addNotification('error', 'Error de autenticación', 'Credenciales incorrectas')
           } else {
             notificationStore.addNotification('error', 'Error de conexión', 'No se pudo conectar con el servidor')
           }
-        } else if (this.loginStep === 'loading_permissions') {
+        } else if (failedStep === 'loading_permissions') {
           notificationStore.addNotification('error', 'Error de permisos', 'No se pudieron cargar los permisos. Intenta nuevamente.')
-        } else if (this.loginStep === 'loading_data') {
+        } else if (failedStep === 'loading_data') {
           notificationStore.addNotification('warning', 'Datos parciales', 'Login exitoso pero algunos datos no se cargaron completamente.')
           // En este caso, no hacer throw para no interrumpir el login
           return

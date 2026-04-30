@@ -7,8 +7,16 @@ let refreshInterval = null
 export function useInvoicesCounter() {
   const fetchOverdueInvoicesCount = async () => {
     try {
-      // Obtener todas las facturas con límite alto
-      const response = await http.get('/api/doli/invoices?limit=10000')
+      const response = await http.get('/api/doli/invoices', {
+        params: {
+          limit: 500,
+          sqlfilters: '(t.paye:=:0)and(t.fk_statut:=:1)',
+          sortfield: 't.date_lim_reglement',
+          sortorder: 'ASC'
+        },
+        timeout: 15000,
+        silentError: true
+      })
       
       if (response.data && Array.isArray(response.data)) {
         const now = Math.floor(Date.now() / 1000) // Timestamp actual en segundos

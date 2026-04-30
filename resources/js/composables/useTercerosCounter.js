@@ -7,8 +7,11 @@ let refreshInterval = null
 export function useTercerosCounter() {
   const fetchTercerosCount = async () => {
     try {
-      // Obtener todos los terceros activos con límite alto
-      const response = await http.get('/api/doli/thirdparties?limit=10000&status=1')
+      const response = await http.get('/api/doli/thirdparties', {
+        params: { limit: 1000, status: 1 },
+        timeout: 15000,
+        silentError: true
+      })
       
       if (response.data && Array.isArray(response.data)) {
         tercerosCount.value = response.data.length

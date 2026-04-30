@@ -30,7 +30,7 @@ return [
     ],
 
     'allowed_origins_patterns' => [
-        '/^https:\/\/.*\.carlos-herrera-consulting$/',
+        '/^https:\/\/[a-z0-9\-]+\.carlos-herrera\.consulting$/',
     ],
 
     'allowed_headers' => ['*'],

@@ -39,7 +39,8 @@ export function useTicketsCounter() {
 
       const response = await http.get('/api/doli/tickets', {
         params,
-        timeout: 20000
+        timeout: 15000,
+        silentError: true
       })
 
       const tickets = Array.isArray(response.data) ? response.data : []

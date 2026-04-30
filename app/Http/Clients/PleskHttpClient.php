@@ -16,7 +16,7 @@ class PleskHttpClient
             'timeout' => 30,
             'connect_timeout' => 10,
             
-            'verify' => false,
+            'verify' => env('DOLIBARR_VERIFY_SSL', true),
             'http_errors' => false,
             
             'headers' => [
