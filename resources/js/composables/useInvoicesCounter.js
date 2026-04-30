@@ -14,7 +14,7 @@ export function useInvoicesCounter() {
           sortfield: 't.date_lim_reglement',
           sortorder: 'ASC'
         },
-        timeout: 15000,
+        timeout: 20000,
         silentError: true
       })
       
