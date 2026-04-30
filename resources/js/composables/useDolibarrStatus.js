@@ -35,7 +35,7 @@ export function useDolibarrStatus() {
   const dolibarrVersion = computed(() => statusData.value?.dolibarr_version || null)
   
   const isAccessLocked = computed(() => {
-    if (!statusData.value) return true // Por defecto bloqueado si no hay datos
+    if (!statusData.value) return false // Sin datos = no bloquear (puede ser error de red)
     return statusData.value.access_locked === '1' || statusData.value.access_locked === 1
   })
   
