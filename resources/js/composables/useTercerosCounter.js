@@ -8,8 +8,8 @@ export function useTercerosCounter() {
   const fetchTercerosCount = async () => {
     try {
       const response = await http.get('/api/doli/thirdparties', {
-        params: { limit: 1000, status: 1 },
-        timeout: 15000,
+        params: { limit: 500, status: 1 },
+        timeout: 20000,
         silentError: true
       })
       

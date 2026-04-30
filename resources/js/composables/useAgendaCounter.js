@@ -35,7 +35,7 @@ export function useAgendaCounter() {
           limit: 500,
           user_ids: authStore.user.id
         },
-        timeout: 15000,
+        timeout: 20000,
         silentError: true
       })
       
