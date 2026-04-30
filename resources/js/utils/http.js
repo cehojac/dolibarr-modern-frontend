@@ -84,6 +84,7 @@ http.interceptors.response.use(
   (error) => {
     const notificationStore = useNotificationStore()
     const authStore = useAuthStore()
+    const isSilent = error.config?.silentError === true
     
     if (error.response) {
       const { status, data } = error.response
@@ -108,7 +109,7 @@ http.interceptors.response.use(
           break
           
         case 403:
-          notificationStore.error('No tienes permisos para realizar esta acción.')
+          if (!isSilent) notificationStore.error('No tienes permisos para realizar esta acción.')
           break
           
         case 419:
@@ -124,34 +125,36 @@ http.interceptors.response.use(
           break
           
         case 404:
-          notificationStore.error('El recurso solicitado no fue encontrado.')
+          if (!isSilent) notificationStore.error('El recurso solicitado no fue encontrado.')
           break
           
         case 422:
-          if (data.errors) {
-            Object.values(data.errors).flat().forEach(error => {
-              notificationStore.error(error)
-            })
-          } else {
-            notificationStore.error(data.message || 'Datos inválidos.')
+          if (!isSilent) {
+            if (data.errors) {
+              Object.values(data.errors).flat().forEach(error => {
+                notificationStore.error(error)
+              })
+            } else {
+              notificationStore.error(data.message || 'Datos inválidos.')
+            }
           }
           break
           
         case 429:
-          notificationStore.error('Demasiadas solicitudes. Por favor, espera un momento.')
+          if (!isSilent) notificationStore.error('Demasiadas solicitudes. Por favor, espera un momento.')
           break
           
         case 500:
-          notificationStore.error('Error interno del servidor. Por favor, contacta al administrador.')
+          if (!isSilent) notificationStore.error('Error interno del servidor. Por favor, contacta al administrador.')
           break
           
         default:
-          notificationStore.error(data.message || `Error ${status}: ${error.message}`)
+          if (!isSilent) notificationStore.error(data.message || `Error ${status}: ${error.message}`)
       }
     } else if (error.request) {
-      notificationStore.error('Error de conexión. Verifica tu conexión a internet.')
+      if (!isSilent) notificationStore.error('Error de conexión. Verifica tu conexión a internet.')
     } else {
-      notificationStore.error('Error inesperado: ' + error.message)
+      if (!isSilent) notificationStore.error('Error inesperado: ' + error.message)
     }
     
     return Promise.reject(error)

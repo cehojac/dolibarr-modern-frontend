@@ -7,8 +7,11 @@ let refreshInterval = null
 export function useProductsCounter() {
   const fetchProductsCount = async () => {
     try {
-      // Obtener todos los productos activos con límite alto
-      const response = await http.get('/api/doli/products?limit=10000&status=1')
+      const response = await http.get('/api/doli/products', {
+        params: { limit: 1000, status: 1 },
+        timeout: 15000,
+        silentError: true
+      })
       
       if (response.data && Array.isArray(response.data)) {
         productsCount.value = response.data.length

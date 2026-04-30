@@ -26,7 +26,10 @@ export function useTicketReferences() {
     loadingCategories.value = true
     try {
       console.log('🔍 Obteniendo categorías de tickets...')
-      const response = await http.get('/api/doli/setup/dictionary/ticket_categories')
+      const response = await http.get('/api/doli/setup/dictionary/ticket_categories', {
+        timeout: 5000,
+        silentError: true
+      })
       
       ticketCategories.value = response.data || []
       categoriesLoaded.value = true
@@ -55,7 +58,10 @@ export function useTicketReferences() {
     loadingSeverities.value = true
     try {
       console.log('🔍 Obteniendo gravedades de tickets...')
-      const response = await http.get('/api/doli/setup/dictionary/ticket_severities')
+      const response = await http.get('/api/doli/setup/dictionary/ticket_severities', {
+        timeout: 5000,
+        silentError: true
+      })
       
       ticketSeverities.value = response.data || []
       severitiesLoaded.value = true
@@ -84,7 +90,10 @@ export function useTicketReferences() {
     loadingTypes.value = true
     try {
       console.log('🔍 Obteniendo tipos de tickets...')
-      const response = await http.get('/api/doli/setup/dictionary/ticket_types')
+      const response = await http.get('/api/doli/setup/dictionary/ticket_types', {
+        timeout: 5000,
+        silentError: true
+      })
       
       ticketTypes.value = response.data || []
       typesLoaded.value = true

@@ -22,34 +22,18 @@ export function useTasksCounter() {
 
     loading.value = true
     try {
-      const sqlClauses = []
-
-      if (userId) {
-        sqlClauses.push(`(t.fk_user_assign:=:${userId})`)
-      }
-
-      if (userLogin) {
-        const sanitizedLogin = String(userLogin).replace(/'/g, "''")
-        sqlClauses.push(`(t.fk_user_assign_login:=:'${sanitizedLogin}')`)
-      }
-
-      sqlClauses.push('(t.progress:<:100)')
-
       const params = {
         limit: 200,
         sortfield: 't.rowid',
         sortorder: 'DESC'
       }
 
-      if (sqlClauses.length > 0) {
-        params.sqlfilters = sqlClauses.join('and')
-      }
-
       let tasks = []
 
       const response = await http.get('/api/doli/tasks', {
         params,
-        timeout: 20000
+        timeout: 15000,
+        silentError: true
       })
 
       if (Array.isArray(response.data)) {
@@ -58,29 +42,9 @@ export function useTasksCounter() {
         tasks = response.data.data
       }
 
-      if (tasks.length === 0 && userId) {
-        const fallbackParams = {
-          limit: 200,
-          sortfield: 't.rowid',
-          sortorder: 'DESC',
-          sqlfilters: `(t.fk_user_assign:=:${userId})and(t.progress:<:100)`
-        }
-
-        const fallbackResponse = await http.get('/api/doli/tasks', {
-          params: fallbackParams,
-          timeout: 20000
-        })
-
-        if (Array.isArray(fallbackResponse.data)) {
-          tasks = fallbackResponse.data
-        } else if (fallbackResponse.data && Array.isArray(fallbackResponse.data.data)) {
-          tasks = fallbackResponse.data.data
-        }
-      }
-
       const taskCount = tasks.filter(task => {
-        const isAssignedById = userId && task.fk_user_assign == userId
-        const isAssignedByLogin = userLogin && task.fk_user_assign_login == userLogin
+        const isAssignedById = userId && (task.fk_user_assign == userId || task.rowid_user == userId)
+        const isAssignedByLogin = userLogin && task.login == userLogin
         return (isAssignedById || isAssignedByLogin) && (task.progress ?? 0) < 100
       }).length
 

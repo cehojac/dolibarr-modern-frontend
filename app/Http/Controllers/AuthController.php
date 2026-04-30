@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use App\Http\Clients\PleskHttpClient;
 
 class AuthController extends Controller
@@ -16,6 +17,19 @@ class AuthController extends Controller
             $request->setLaravelSession(app('session.store'));
         }
         
+        $rateLimitKey = 'login.' . $request->ip();
+        try {
+            if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+                $seconds = RateLimiter::availableIn($rateLimitKey);
+                return response()->json([
+                    'message' => "Demasiados intentos. Intenta de nuevo en {$seconds} segundos."
+                ], 429);
+            }
+            RateLimiter::hit($rateLimitKey, 60);
+        } catch (\Exception $e) {
+            Log::warning('Rate limiter unavailable, skipping: ' . $e->getMessage());
+        }
+
         $request->validate([
             'login' => 'required|string',
             'password' => 'required|string'
@@ -210,6 +224,8 @@ class AuthController extends Controller
                 
                 Log::info('User data stored in session:', $request->session()->get('dolibarr_user'));
                 
+                try { RateLimiter::clear($rateLimitKey); } catch (\Exception $e) {}
+
                 return response()->json([
                     'message' => 'Autenticado correctamente',
                     'user' => $request->session()->get('dolibarr_user')
@@ -218,7 +234,8 @@ class AuthController extends Controller
                 return response()->json(['message' => 'Credenciales inválidas'], 401);
             }
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Error de conexión con Dolibarr: ' . $e->getMessage()], 500);
+            Log::error('Login error: ' . $e->getMessage());
+            return response()->json(['message' => 'Error de conexión con el servidor'], 500);
         }
     }
 
@@ -317,12 +334,20 @@ class AuthController extends Controller
 
     public function debugSession(Request $request)
     {
+        if (!config('app.debug')) {
+            return response()->json(['message' => 'Not available in production'], 403);
+        }
+
+        $token = $request->session()->get('dolibarr_token');
+        if (!$token) {
+            return response()->json(['message' => 'No autenticado'], 401);
+        }
+
         $sessionData = [
             'session_id' => $request->session()->getId(),
             'has_user' => $request->session()->has('dolibarr_user'),
             'has_permissions' => $request->session()->has('dolibarr_permissions'),
             'user_data' => $request->session()->get('dolibarr_user'),
-            'permissions_raw' => $request->session()->get('dolibarr_permissions', []),
             'permissions_count' => count($request->session()->get('dolibarr_permissions', [])),
             'all_session_keys' => array_keys($request->session()->all())
         ];

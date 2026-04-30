@@ -182,18 +182,11 @@ class DoliProxyController extends Controller
             $requestData = $request->all();
         }
 
-        // Log para debug
-        if (str_contains($path, 'dolibarrmodernfrontendapi') || str_contains($path, 'tickets')) {
+        if (config('app.debug') && (str_contains($path, 'dolibarrmodernfrontendapi') || str_contains($path, 'tickets'))) {
             \Log::info('PROXY DEBUG', [
                 'method' => $method,
                 'path_original' => $path,
                 'url_final' => $url,
-                'request_data' => $requestData,
-                'full_token' => substr($token, 0, 10) . '...',
-                'headers_sent' => [
-                    'DOLAPIKEY' => substr($token, 0, 10) . '...',
-                    'Accept' => 'application/json'
-                ]
             ]);
         }
 
@@ -219,16 +212,15 @@ class DoliProxyController extends Controller
                     return response()->json(['error' => 'Método HTTP no soportado'], 405);
             }
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Error de conexión con Dolibarr: ' . $e->getMessage()], 500);
+            \Log::error('PROXY CONNECTION ERROR', ['path' => $path, 'error' => $e->getMessage()]);
+            return response()->json(['error' => 'Error de conexión con Dolibarr'], 500);
         }
 
-        // Log respuesta para módulo personalizado y tickets
-        if (str_contains($path, 'dolibarrmodernfrontendapi') || str_contains($path, 'tickets')) {
+        if (config('app.debug') && (str_contains($path, 'dolibarrmodernfrontendapi') || str_contains($path, 'tickets'))) {
             \Log::info('PROXY RESPONSE', [
                 'path' => $path,
                 'status' => $response->status(),
                 'successful' => $response->successful(),
-                'body' => $response->body()
             ]);
         }
 
@@ -237,18 +229,21 @@ class DoliProxyController extends Controller
             try {
                 $responseData = $response->json();
                 
-                // Log adicional para tickets
-                if (str_contains($path, 'tickets')) {
+                if (config('app.debug') && str_contains($path, 'tickets')) {
                     \Log::info('PROXY SUCCESS PROCESSING', [
                         'path' => $path,
                         'response_data_type' => gettype($responseData),
-                        'response_keys' => is_array($responseData) ? array_keys($responseData) : 'not_array'
                     ]);
                 }
                 
                 // Cachear solo respuestas exitosas GET
                 if ($shouldCache && $method === 'GET') {
                     $this->cacheService->put($cacheKey, $responseData);
+                }
+
+                // Invalidar caché en operaciones de escritura
+                if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+                    $this->invalidateCacheForPath($path);
                 }
                 
                 return response()->json($responseData);
