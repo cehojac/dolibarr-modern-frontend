@@ -13,6 +13,10 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # Detectar HTTPS cuando la app está detrás de Plesk/Nginx/Apache proxy
+    RewriteCond %{HTTP:X-Forwarded-Proto} https
+    RewriteRule ^ - [E=HTTPS:on]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$

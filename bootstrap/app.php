@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Confiar en todos los proxies (Plesk/Apache/Nginx terminan HTTPS antes de llegar a PHP)
+        $middleware->trustProxies(at: '*');
+
         // Excluir rutas API del CSRF usando el método nativo de Laravel 11
         // (validateCsrfTokens actúa sobre ValidateCsrfToken, la clase real en L11)
         $middleware->validateCsrfTokens(except: [
