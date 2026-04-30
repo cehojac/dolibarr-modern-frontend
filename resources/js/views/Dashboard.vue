@@ -844,14 +844,18 @@ watch(() => authStore.user, (newUser, oldUser) => {
 }, { immediate: false })
 
 onMounted(async () => {
-  await Promise.all([
-    fetchAssignedTicketsCount(),
-    fetchAssignedTasksCount(),
-    fetchTercerosCount(),
-    fetchProductsCount(),
-    fetchOverdueEventsCount(),
-    fetchOverdueInvoicesCount(),
-    loadTodos()
-  ])
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+  // AppLayout ya carga en secuencia: tickets, tasks, agenda
+  // Solo cargamos aquí los contadores exclusivos del Dashboard, escalonados
+  // para no saturar Dolibarr con peticiones simultáneas
+  await delay(800)
+  await fetchTercerosCount()
+  await delay(400)
+  await fetchProductsCount()
+  await delay(400)
+  await fetchOverdueInvoicesCount()
+  await delay(400)
+  await loadTodos()
 })
 </script>

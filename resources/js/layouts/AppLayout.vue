@@ -456,9 +456,14 @@ const handleLogout = async () => {
 
 onMounted(async () => {
   initTheme()
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
   await fetchAssignedTicketsCount()
+  await delay(400)
   await fetchAssignedTasksCount()
+  await delay(400)
   await fetchOverdueEventsCount()
+
   stopTicketsAutoRefresh = startTicketsAutoRefresh()
   stopTasksAutoRefresh = startTasksAutoRefresh()
   stopAgendaAutoRefresh = startAgendaAutoRefresh()
