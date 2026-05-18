@@ -341,12 +341,14 @@ const verifyEmailForThirdparty = async (socid, email) => {
       const contactEmails = contactsResponse.data.map(c => c.email).filter(e => e)
       console.log('📧 Emails de contactos:', contactEmails)
       
-      const hasMatchingContact = contactsResponse.data.some(
+      const matchingContact = contactsResponse.data.find(
         contact => contact.email && contact.email.toLowerCase() === email.toLowerCase()
       )
       
-      if (hasMatchingContact) {
-        console.log('✅ Email coincide con un contacto')
+      if (matchingContact) {
+        console.log('✅ Email coincide con un contacto:', matchingContact.firstname, matchingContact.lastname)
+        // Guardar el contacto correcto para usarlo al enviar mensajes
+        currentContact.value = matchingContact
         return true
       }
     }
@@ -497,7 +499,8 @@ const sendMessage = async () => {
     // Obtener el contacto del email si no lo tenemos
     if (!currentContact.value && searchEmail.value) {
       console.log('👤 Obteniendo contacto para email:', searchEmail.value)
-      const contactResponse = await http.get(`/api/doli/contacts/email/${encodeURIComponent(searchEmail.value)}`, {
+      const contactResponse = await http.get('/api/doli/contacts', {
+        params: { email: searchEmail.value },
         headers: {
           'X-Public-Request': 'true'
         }
@@ -505,8 +508,17 @@ const sendMessage = async () => {
       
       console.log('📦 Respuesta de contacto:', contactResponse.data)
       
-      if (contactResponse.data && contactResponse.data.id) {
-        currentContact.value = contactResponse.data
+      // Find the contact that exactly matches the email, not just the first result
+      let contactData = null
+      if (Array.isArray(contactResponse.data)) {
+        contactData = contactResponse.data.find(
+          c => c.email && c.email.toLowerCase() === searchEmail.value.toLowerCase()
+        ) || contactResponse.data[0]
+      } else {
+        contactData = contactResponse.data
+      }
+      if (contactData && contactData.id) {
+        currentContact.value = contactData
         console.log('✅ Contacto encontrado:', currentContact.value)
       } else {
         console.error('❌ No se encontró contacto con ese email')

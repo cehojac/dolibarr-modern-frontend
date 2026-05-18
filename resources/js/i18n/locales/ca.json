@@ -157,6 +157,7 @@
         "table": {
           "date": "Data",
           "ref": "Ref",
+          "company": "Tercer",
           "subject": "Assumpte",
           "type": "Tipus",
           "severity": "Gravetat",

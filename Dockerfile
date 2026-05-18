@@ -1,93 +1,133 @@
-# Multi-stage build optimizado para Portainer
-FROM node:20-alpine AS node-builder
+# syntax=docker/dockerfile:1.7
 
-# Instalar dependencias del sistema
-RUN apk add --no-cache git curl
+# ============================================================
+# Stage 1: Vue 3 / Vite assets
+# ============================================================
+FROM node:20-alpine AS assets
 
-# Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar archivos de configuración de Node.js
-COPY package*.json ./
-COPY vite.config.js ./
-COPY tailwind.config.js ./
-COPY postcss.config.js ./
+# Manifest first for cache reuse on source-only changes
+COPY package.json package-lock.json* ./
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --no-audit --no-fund --prefer-offline || npm install --no-audit --no-fund
 
-# Instalar dependencias de Node.js
-RUN npm ci --silent
-
-# Copiar código fuente para compilar
+# Build config + source
+COPY vite.config.js tailwind.config.cjs postcss.config.cjs ./
 COPY resources/ ./resources/
 COPY public/ ./public/
 
-# Compilar assets
-RUN npm run build
+RUN npm run build && rm -rf node_modules
 
-# Stage 2: PHP con Apache optimizado
-FROM php:8.2-apache
+# ============================================================
+# Stage 2: Composer dependencies
+# ============================================================
+FROM composer:2 AS vendor
 
-# Instalar extensiones PHP necesarias
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libzip-dev \
-    libicu-dev \
-    libonig-dev \
-    libxml2-dev \
-    git \
-    curl \
-    zip \
-    unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        gd \
-        pdo \
-        pdo_mysql \
-        mysqli \
-        zip \
-        intl \
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+COPY database/ ./database/
+COPY bootstrap/ ./bootstrap/
+COPY artisan ./
+
+RUN --mount=type=cache,target=/tmp/composer-cache \
+    composer install \
+        --no-dev \
+        --no-interaction \
+        --no-progress \
+        --no-scripts \
+        --prefer-dist \
+        --optimize-autoloader
+
+# ============================================================
+# Stage 3: Runtime (PHP 8.3 + Apache)
+# ============================================================
+FROM php:8.3-apache-bookworm AS runtime
+
+# Required PHP extensions for Laravel 12 acting as Dolibarr API proxy
+# Build with -dev headers, then remove only the build deps (keep runtime libs).
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        unzip \
+        libonig-dev libxml2-dev libsqlite3-dev libzip-dev \
+    ; \
+    docker-php-ext-install -j"$(nproc)" \
         mbstring \
         xml \
-        curl \
-        fileinfo \
-        tokenizer \
-        bcmath \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+        pdo \
+        pdo_sqlite \
+        opcache \
+        zip \
+    ; \
+    apt-get remove -y --purge libonig-dev libxml2-dev libsqlite3-dev libzip-dev; \
+    apt-get autoremove -y; \
+    apt-get install -y --no-install-recommends libonig5 libxml2 libsqlite3-0 libzip4; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Instalar Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Production OPcache + PHP tuning
+RUN { \
+        echo 'opcache.enable=1'; \
+        echo 'opcache.enable_cli=0'; \
+        echo 'opcache.memory_consumption=128'; \
+        echo 'opcache.interned_strings_buffer=16'; \
+        echo 'opcache.max_accelerated_files=20000'; \
+        echo 'opcache.validate_timestamps=0'; \
+        echo 'opcache.fast_shutdown=1'; \
+    } > /usr/local/etc/php/conf.d/opcache.ini \
+    && { \
+        echo 'memory_limit=256M'; \
+        echo 'upload_max_filesize=32M'; \
+        echo 'post_max_size=32M'; \
+        echo 'expose_php=Off'; \
+    } > /usr/local/etc/php/conf.d/app.ini
 
-# Configurar Apache
-RUN a2enmod rewrite headers ssl
+# Apache: enable required modules, set ServerName, point to public/
+RUN a2enmod rewrite headers expires \
+    && echo "ServerName localhost" > /etc/apache2/conf-available/servername.conf \
+    && a2enconf servername
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
-COPY docker/apache/apache2.conf /etc/apache2/apache2.conf
 
-# Establecer directorio de trabajo
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public \
+    APP_ENV=production \
+    APP_DEBUG=false
+
 WORKDIR /var/www/html
 
-# Copiar código PHP
-COPY . .
+# Application code (filtered by .dockerignore)
+COPY --chown=www-data:www-data . .
 
-# Copiar assets compilados desde el stage anterior
-COPY --from=node-builder /app/public/build ./public/build
+# Pre-built assets and vendor from prior stages
+COPY --from=assets  --chown=www-data:www-data /app/public/build ./public/build
+COPY --from=vendor  --chown=www-data:www-data /app/vendor ./vendor
 
-# Instalar dependencias PHP
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Laravel runtime directories + permissions
+RUN set -eux; \
+    mkdir -p \
+        storage/framework/cache/data \
+        storage/framework/sessions \
+        storage/framework/views \
+        storage/logs \
+        bootstrap/cache \
+        database \
+    ; \
+    touch database/database.sqlite; \
+    chown -R www-data:www-data storage bootstrap/cache database; \
+    chmod -R 775 storage bootstrap/cache database; \
+    php artisan package:discover --ansi || true
 
-# Configurar permisos
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
-
-# Crear script de inicialización
+# Entrypoint
 COPY docker/init.sh /usr/local/bin/init.sh
 RUN chmod +x /usr/local/bin/init.sh
 
-# Exponer puerto
 EXPOSE 80
 
-# Comando de inicio
-CMD ["/usr/local/bin/init.sh"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD curl -fsS http://localhost/up >/dev/null || exit 1
+
+ENTRYPOINT ["/usr/local/bin/init.sh"]
+CMD ["apache2-foreground"]

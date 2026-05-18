@@ -11,7 +11,7 @@ class FixPleskProduction extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'plesk:fix-production {--domain=new-YOUR_DOMAIN}';
+    protected $signature = 'plesk:fix-production {--domain}';
 
     /**
      * The description of the console command.

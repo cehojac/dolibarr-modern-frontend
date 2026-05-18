@@ -35,9 +35,10 @@ class DoliProxyController extends Controller
         $isPublicContactEmailRoute = preg_match('/contacts\/email\//', $path) 
             && $request->header('X-Public-Request') === 'true';
         
-        // Verificar si es una solicitud de tickets con socid (después de validar email)
+        // Verificar si es una solicitud de tickets con socid o sqlfilters (después de validar email)
         $isPublicTicketsListRoute = str_starts_with($path, 'tickets') 
-            && $request->has('socid') 
+            && ($request->has('socid') || $request->has('sqlfilters'))
+            && $request->isMethod('GET')
             && $request->header('X-Public-Request') === 'true';
         
         // Verificar si es una solicitud de mensajes o envío de mensaje público
@@ -147,7 +148,7 @@ class DoliProxyController extends Controller
         
         // Si es una solicitud de tickets, agregar parámetros por defecto
         if (str_contains($url, '/tickets')) {
-            $queryParams['sortfield'] = 'datec';
+            $queryParams['sortfield'] = 't.datec';
             $queryParams['sortorder'] = 'DESC';
             $queryParams['limit'] = '500';
         }

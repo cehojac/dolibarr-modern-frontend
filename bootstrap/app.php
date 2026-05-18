@@ -11,12 +11,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Reemplazar el middleware CSRF por defecto con nuestro personalizado
-        $middleware->web(replace: [
-            \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class => \App\Http\Middleware\VerifyCsrfToken::class,
+        // CSRF exclusions for API routes (Laravel 12 idiomatic API).
+        // The class was renamed from VerifyCsrfToken to ValidateCsrfToken in L12,
+        // so the previous `replace:` no longer matched and exclusions silently failed.
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
         ]);
-        
-        // Registrar middleware personalizado para forzar respuestas JSON en rutas API
+
+        // Custom middleware aliases
         $middleware->alias([
             'force.json' => \App\Http\Middleware\ForceJsonResponse::class,
             'api.custom' => \App\Http\Middleware\ApiMiddleware::class,
