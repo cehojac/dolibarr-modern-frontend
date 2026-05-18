@@ -11,15 +11,7 @@ docker-compose*.yml
 
 # Dependencies (rebuilt in image)
 node_modules
-<<<<<<< HEAD
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-yarn.lock
-=======
 vendor
->>>>>>> c7c1f3c5a13ca892c07364a18054d0b85925375d
 
 # Local env files (secrets)
 .env
