@@ -1,85 +1,66 @@
-# Git
+# VCS
 .git
 .gitignore
 .gitattributes
+.github
 
-# Docker
+# Docker (the Dockerfile reads from these but they don't need to be in the layer)
 Dockerfile
-docker-compose.yml
+docker-compose*.yml
 .dockerignore
 
-# Node.js
+# Dependencies (rebuilt in image)
 node_modules
+<<<<<<< HEAD
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 package-lock.json
 yarn.lock
+=======
+vendor
+>>>>>>> c7c1f3c5a13ca892c07364a18054d0b85925375d
 
-# Laravel
-/vendor
+# Local env files (secrets)
 .env
+.env.local
 .env.backup
 .env.production
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
+.env.docker
 
-# Storage y cache
-/storage/*.key
-/storage/app/public
-/storage/framework/cache/data
-/storage/framework/sessions
-/storage/framework/testing
-/storage/framework/views
-/storage/logs
-/bootstrap/cache/*.php
+# Logs / caches
+*.log
+storage/logs/*
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/public/*
+storage/app_key
+bootstrap/cache/*.php
 
-# IDE
+# IDE / OS
 .vscode
 .idea
+.windsurf
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.temp
-
-# Documentation
-README.md
-CHANGELOG.md
-LICENSE
-*.md
-
-# Test files
-tests/
+# Tests
+tests
 phpunit.xml
 .phpunit.result.cache
 
-# Development tools
+# Local dev junk
+pnpm-lock.yaml
+Homestead.*
+auth.json
+DEPLOYMENT.md
+docs
+
+# Tooling configs not needed at runtime
 .editorconfig
 .styleci.yml
-.php_cs
-.php_cs.cache
-
-# Deployment
-deploy.php
-.deployer
-
-# Backup files
-*.bak
-*.backup
+.php_cs*

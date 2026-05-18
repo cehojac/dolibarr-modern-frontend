@@ -1,11 +1,25 @@
+<<<<<<< HEAD
 version: '3.8'
 
 services:
   # Aplicación principal
+=======
+# ============================================================
+# Dolibarr Modern Frontend
+# Quick start:
+#   1. cp .env.docker.example .env.docker
+#   2. edit DOLIBARR_BASE_URL and DOLIBARR_API_KEY
+#   3. docker compose up -d --build
+#   4. open http://localhost:8080
+# ============================================================
+
+services:
+>>>>>>> c7c1f3c5a13ca892c07364a18054d0b85925375d
   app:
     build:
       context: .
       dockerfile: Dockerfile
+<<<<<<< HEAD
     container_name: dolibarr-modern-frontend
     restart: unless-stopped
     ports:
@@ -106,3 +120,40 @@ volumes:
 networks:
   dolibarr-network:
     driver: bridge
+=======
+    image: ${IMAGE_NAME:-cehojac/dolibarr-modern-frontend}:${IMAGE_TAG:-latest}
+    container_name: dolibarr-modern-frontend
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:80"
+    env_file:
+      - .env.docker
+    volumes:
+      - app_storage:/var/www/html/storage
+      - app_bootstrap_cache:/var/www/html/bootstrap/cache
+      - app_database:/var/www/html/database
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/up >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  app_storage:
+  app_bootstrap_cache:
+  app_database:
+>>>>>>> c7c1f3c5a13ca892c07364a18054d0b85925375d
