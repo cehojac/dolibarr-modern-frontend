@@ -1,13 +1,10 @@
 # ============================================================
-# Dolibarr Modern Frontend — Docker Compose
-#
-# USO:
-#   1. Copia .env.docker a .env.docker y edita DOLIBARR_BASE_URL y DOLIBARR_API_KEY
-#   2. docker compose up -d --build
-#   3. Abre http://localhost:8080
-#
-# Para producción detrás de un reverse proxy (Nginx, Traefik, Plesk):
-#   Cambia el puerto o usa el bloque "networks" externo de tu proxy.
+# Dolibarr Modern Frontend
+# Quick start:
+#   1. cp .env.docker.example .env.docker
+#   2. edit DOLIBARR_BASE_URL and DOLIBARR_API_KEY
+#   3. docker compose up -d --build
+#   4. open http://localhost:8080
 # ============================================================
 
 services:
@@ -15,30 +12,38 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: dolibarr-modern-frontend:latest
+    image: ${IMAGE_NAME:-cehojac/dolibarr-modern-frontend}:${IMAGE_TAG:-latest}
     container_name: dolibarr-modern-frontend
     restart: unless-stopped
     ports:
-      - "${APP_PORT:-8081}:80"
+      - "${APP_PORT:-8080}:80"
     env_file:
       - .env.docker
     volumes:
-      # Datos persistentes en volúmenes Docker (no bind mounts — mejor en Windows/Linux)
-      - sessions:/var/www/html/storage/framework/sessions
-      - cache_data:/var/www/html/storage/framework/cache
-      - views_cache:/var/www/html/storage/framework/views
-      - logs:/var/www/html/storage/logs
-      - bootstrap_cache:/var/www/html/bootstrap/cache
+      - app_storage:/var/www/html/storage
+      - app_bootstrap_cache:/var/www/html/bootstrap/cache
+      - app_database:/var/www/html/database
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/up"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost/up >/dev/null || exit 1"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 60s
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
-  sessions:
-  cache_data:
-  views_cache:
-  logs:
-  bootstrap_cache:
+  app_storage:
+  app_bootstrap_cache:
+  app_database:
