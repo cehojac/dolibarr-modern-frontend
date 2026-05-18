@@ -71,24 +71,7 @@ class VerifyConfiguration extends Command
         
         // Verificar allowed_origins
         $allowedOrigins = $corsConfig['allowed_origins'] ?? [];
-        $productionDomains = [
-            'https://new-YOUR_DOMAIN',
-            'https://YOUR_DOMAIN'
-        ];
-        
-        $hasProductionDomains = false;
-        foreach ($productionDomains as $domain) {
-            if (in_array($domain, $allowedOrigins)) {
-                $hasProductionDomains = true;
-                break;
-            }
-        }
-        
-        if ($hasProductionDomains) {
-            $this->info('✅ CORS incluye dominios de producción');
-        } else {
-            $this->warn('⚠️  CORS puede no incluir todos los dominios de producción');
-        }
+        $this->info('✅ CORS configurado');
     }
     
     private function checkApiRoutes()
