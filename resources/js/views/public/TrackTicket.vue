@@ -237,6 +237,69 @@
             placeholder="Escriba su mensaje aquí..."
             class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none mb-4"
           ></textarea>
+
+          <!-- Zona de adjuntos -->
+          <div class="mb-4">
+            <input
+              ref="fileInputRef"
+              type="file"
+              multiple
+              class="hidden"
+              @change="handleFileSelect"
+            />
+            <button
+              type="button"
+              @click="$refs.fileInputRef.click()"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+              Adjuntar archivos
+            </button>
+            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Tamaño máximo por archivo: 10 MB</p>
+
+            <!-- Errores de tamaño -->
+            <div v-if="fileErrors.length > 0" class="mt-2 space-y-1">
+              <p
+                v-for="(err, i) in fileErrors"
+                :key="i"
+                class="text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
+              >
+                <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ err }}
+              </p>
+            </div>
+
+            <!-- Lista de archivos adjuntos -->
+            <ul v-if="attachedFiles.length > 0" class="mt-2 space-y-1">
+              <li
+                v-for="(file, index) in attachedFiles"
+                :key="index"
+                class="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 text-sm"
+              >
+                <div class="flex items-center gap-2 min-w-0">
+                  <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="truncate text-gray-700 dark:text-gray-300">{{ file.filename }}</span>
+                  <span class="text-gray-400 dark:text-gray-500 flex-shrink-0">{{ formatFileSize(file.size) }}</span>
+                </div>
+                <button
+                  type="button"
+                  @click="removeAttachment(index)"
+                  class="ml-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </li>
+            </ul>
+          </div>
+
           <div class="flex justify-end">
             <button
               @click="sendMessage"
@@ -302,6 +365,41 @@ const newMessage = ref('')
 const isSending = ref(false)
 const currentContact = ref(null) // Contacto del email consultado
 const showSuccessToast = ref(false)
+const attachedFiles = ref([]) // Archivos adjuntos listos para enviar
+const fileErrors = ref([]) // Errores de validación de tamaño
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
+
+const handleFileSelect = (event) => {
+  fileErrors.value = []
+  const files = Array.from(event.target.files)
+  const newErrors = []
+
+  files.forEach(file => {
+    if (file.size > MAX_FILE_SIZE) {
+      newErrors.push(`"${file.name}" supera el límite de 10 MB`)
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1]
+      attachedFiles.value.push({ filename: file.name, file_content: base64, size: file.size })
+    }
+    reader.readAsDataURL(file)
+  })
+
+  fileErrors.value = newErrors
+  event.target.value = '' // Reset input para permitir re-selección
+}
+
+const removeAttachment = (index) => {
+  attachedFiles.value.splice(index, 1)
+}
+
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
 
 // Verificar si el email pertenece al tercero o sus contactos (igual que ListTickets)
 const verifyEmailForThirdparty = async (socid, email) => {
@@ -498,14 +596,16 @@ const sendMessage = async () => {
     
     // Obtener el contacto del email si no lo tenemos
     if (!currentContact.value && searchEmail.value) {
-      console.log('👤 Obteniendo contacto para email:', searchEmail.value)
+      console.log('👤 Obteniendo contacto para email:', searchEmail.value, {
+        sqlfilters: `(t.email:=:'${searchEmail.value}')`,
+      })
       const contactResponse = await http.get('/api/doli/contacts', {
         params: { email: searchEmail.value },
         headers: {
           'X-Public-Request': 'true'
         }
       })
-      
+
       console.log('📦 Respuesta de contacto:', contactResponse.data)
       
       // Find the contact that exactly matches the email, not just the first result
@@ -535,12 +635,17 @@ const sendMessage = async () => {
       contactId: currentContact.value?.id
     })
     
-    const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticket.value.id}/newmessage`, {
+    const payload = {
       message: newMessage.value,
       contact_id: currentContact.value?.id || null, // ID del contacto que envía
       private: 1, // Siempre privado para clientes públicos
       send_email: 0 // No enviar email por defecto
-    }, {
+    }
+    if (attachedFiles.value.length > 0) {
+      payload.attachments = attachedFiles.value.map(({ filename, file_content }) => ({ filename, file_content }))
+    }
+
+    const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticket.value.id}/newmessage`, payload, {
       headers: {
         'X-Public-Request': 'true'
       }
@@ -575,6 +680,8 @@ const sendMessage = async () => {
       })
       
       newMessage.value = ''
+      attachedFiles.value = []
+      fileErrors.value = []
       
       // Mostrar notificación de éxito
       showSuccessToast.value = true
