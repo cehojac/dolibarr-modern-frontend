@@ -382,6 +382,98 @@
             <div class="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none" v-html="selectedTicket?.description"></div>
           </div>
 
+          <!-- Message Form Card -->
+          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              {{ $t('public.tickets.list.modal.sendMessage') }}
+            </h3>
+            <textarea
+              v-model="newMessage"
+              rows="4"
+              :placeholder="$t('public.tickets.list.modal.messagePlaceholder')"
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none mb-4"
+            ></textarea>
+
+            <!-- Zona de adjuntos -->
+            <div class="mb-4">
+              <input
+                ref="fileInputRef"
+                type="file"
+                multiple
+                class="hidden"
+                @change="handleFileSelect"
+              />
+              <button
+                type="button"
+                @click="$refs.fileInputRef.click()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                Adjuntar archivos
+              </button>
+              <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">Tamaño máximo por archivo: 10 MB</p>
+
+              <!-- Errores de tamaño -->
+              <div v-if="fileErrors.length > 0" class="mt-2 space-y-1">
+                <p
+                  v-for="(err, i) in fileErrors"
+                  :key="i"
+                  class="text-xs text-red-600 dark:text-red-400 flex items-center gap-1"
+                >
+                  <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ err }}
+                </p>
+              </div>
+
+              <!-- Lista de archivos adjuntos -->
+              <ul v-if="attachedFiles.length > 0" class="mt-2 space-y-1">
+                <li
+                  v-for="(file, index) in attachedFiles"
+                  :key="index"
+                  class="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 text-sm"
+                >
+                  <div class="flex items-center gap-2 min-w-0">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="truncate text-gray-700 dark:text-gray-300">{{ file.filename }}</span>
+                    <span class="text-gray-400 dark:text-gray-500 flex-shrink-0">{{ formatFileSize(file.size) }}</span>
+                  </div>
+                  <button
+                    type="button"
+                    @click="removeAttachment(index)"
+                    class="ml-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex-shrink-0"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                @click="sendMessage"
+                :disabled="!newMessage.trim() || isSending"
+                class="px-6 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-medium transition-colors flex items-center space-x-2"
+              >
+                <svg v-if="isSending" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>{{ isSending ? $t('public.tickets.list.modal.sending') : $t('public.tickets.list.modal.send') }}</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Timeline Card -->
           <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 historial-section">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
@@ -455,35 +547,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Message Form Card -->
-          <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-              {{ $t('public.tickets.list.modal.sendMessage') }}
-            </h3>
-            <textarea
-              v-model="newMessage"
-              rows="4"
-              :placeholder="$t('public.tickets.list.modal.messagePlaceholder')"
-              class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none mb-4"
-            ></textarea>
-            <div class="flex justify-end">
-              <button
-                @click="sendMessage"
-                :disabled="!newMessage.trim() || isSending"
-                class="px-6 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-medium transition-colors flex items-center space-x-2"
-              >
-                <svg v-if="isSending" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>{{ isSending ? $t('public.tickets.list.modal.sending') : $t('public.tickets.list.modal.send') }}</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -537,17 +600,21 @@ const ticketMessages = ref([])
 const newMessage = ref('')
 const isSending = ref(false)
 const showSuccessToast = ref(false)
+const fileInputRef = ref(null)
+const attachedFiles = ref([]) // Archivos adjuntos listos para enviar
+const fileErrors = ref([]) // Errores de validación de tamaño
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 const companyName = ref('CH CONSULTING') // Valor por defecto
 const companyLogo = ref(null) // Logo de la empresa
 const companyInitials = ref('CH') // Iniciales por defecto
 
-// Mensajes ordenados por fecha (más antiguo primero, más nuevo al final)
+// Mensajes ordenados por fecha (más nuevo primero, más antiguo al final)
 const sortedTicketMessages = computed(() => {
   return [...ticketMessages.value].sort((a, b) => {
     // Convertir fechas a timestamps para comparar
     const dateA = new Date(a.date).getTime()
     const dateB = new Date(b.date).getTime()
-    return dateA - dateB // Orden ascendente (más antiguo primero)
+    return dateB - dateA // Orden descendente (más nuevo primero)
   })
 })
 
@@ -1094,6 +1161,40 @@ const closeModal = () => {
   selectedTicket.value = null
   ticketMessages.value = []
   newMessage.value = ''
+  attachedFiles.value = []
+  fileErrors.value = []
+}
+
+const handleFileSelect = (event) => {
+  fileErrors.value = []
+  const files = Array.from(event.target.files)
+  const newErrors = []
+
+  files.forEach(file => {
+    if (file.size > MAX_FILE_SIZE) {
+      newErrors.push(`"${file.name}" supera el límite de 10 MB`)
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const base64 = e.target.result.split(',')[1]
+      attachedFiles.value.push({ filename: file.name, file_content: base64, size: file.size })
+    }
+    reader.readAsDataURL(file)
+  })
+
+  fileErrors.value = newErrors
+  event.target.value = '' // Reset input para permitir re-selección
+}
+
+const removeAttachment = (index) => {
+  attachedFiles.value.splice(index, 1)
+}
+
+const formatFileSize = (bytes) => {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 const loadTicketMessages = async (ticketId) => {
@@ -1168,12 +1269,17 @@ const sendMessage = async () => {
       contactId: currentContact.value?.id
     })
     
-    const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${selectedTicket.value.id}/newmessage`, {
+    const payload = {
       message: newMessage.value,
       contact_id: currentContact.value?.id || null, // ID del contacto que envía
       private: 1, // Siempre privado para clientes públicos
       send_email: 0 // No enviar email por defecto
-    }, {
+    }
+    if (attachedFiles.value.length > 0) {
+      payload.attachments = attachedFiles.value.map(({ filename, file_content }) => ({ filename, file_content }))
+    }
+
+    const response = await http.post(`/api/doli/dolibarrmodernfrontendapi/tickets/${selectedTicket.value.id}/newmessage`, payload, {
       headers: {
         'X-Public-Request': 'true'
       }
@@ -1209,6 +1315,8 @@ const sendMessage = async () => {
       })
       
       newMessage.value = ''
+      attachedFiles.value = []
+      fileErrors.value = []
       
       // Mostrar notificación de éxito
       showSuccessToast.value = true
@@ -1221,20 +1329,20 @@ const sendMessage = async () => {
       
       // Pequeño delay adicional para asegurar renderizado completo
       setTimeout(() => {
-        // Buscar el último mensaje en el DOM
+        // Buscar el primer mensaje en el DOM (más reciente con orden descendente)
         const messages = document.querySelectorAll('.message-item')
         console.log('🔍 Mensajes encontrados para scroll:', messages.length)
-        
+
         if (messages.length > 0) {
-          const lastMessage = messages[messages.length - 1]
-          console.log('📍 Haciendo scroll al último mensaje')
-          lastMessage.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
+          const firstMessage = messages[0]
+          console.log('📍 Haciendo scroll al mensaje más reciente')
+          firstMessage.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
         } else {
-          // Fallback: scroll al final de la sección de historial
+          // Fallback: scroll al inicio de la sección de historial
           const historialSection = document.querySelector('.historial-section')
           if (historialSection) {
-            console.log('📍 Fallback: scroll manual al final')
-            historialSection.scrollTop = historialSection.scrollHeight
+            console.log('📍 Fallback: scroll manual al inicio')
+            historialSection.scrollTop = 0
           }
         }
       }, 100)
