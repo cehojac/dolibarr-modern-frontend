@@ -174,55 +174,6 @@
           <div class="text-gray-700 dark:text-gray-300 prose prose-sm max-w-none" v-html="ticket.description"></div>
         </div>
 
-        <!-- Timeline Card -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 historial-section">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Historial
-          </h3>
-
-          <div class="space-y-6">
-            <div
-              v-for="(event, index) in sortedTimeline"
-              :key="index"
-              class="flex gap-4 timeline-event"
-            >
-              <div class="flex flex-col items-center">
-                <div
-                  class="w-10 h-10 rounded-full flex items-center justify-center"
-                  :class="getEventIconClass(event.type, event.isExternal)"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path v-if="event.type === 'created'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    <path v-else-if="event.type === 'updated'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    <path v-else-if="event.type === 'comment'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                    <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div
-                  v-if="index < sortedTimeline.length - 1"
-                  class="w-0.5 flex-1 bg-gray-200 dark:bg-gray-700 mt-2"
-                  style="min-height: 2rem;"
-                ></div>
-              </div>
-
-              <div class="flex-1 pb-6">
-                <p class="font-medium text-gray-900 dark:text-white mb-1">
-                  {{ event.title }}
-                </p>
-                <p v-if="event.description" class="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                  {{ event.description }}
-                </p>
-                <p class="text-xs text-gray-500 dark:text-gray-500">
-                  {{ formatDateTime(event.date) }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Message Form Card -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -314,6 +265,55 @@
             </button>
           </div>
         </div>
+
+        <!-- Timeline Card -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 historial-section">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Historial
+          </h3>
+
+          <div class="space-y-6">
+            <div
+              v-for="(event, index) in sortedTimeline"
+              :key="index"
+              class="flex gap-4 timeline-event"
+            >
+              <div class="flex flex-col items-center">
+                <div
+                  class="w-10 h-10 rounded-full flex items-center justify-center"
+                  :class="getEventIconClass(event.type, event.isExternal)"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path v-if="event.type === 'created'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    <path v-else-if="event.type === 'updated'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <path v-else-if="event.type === 'comment'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div
+                  v-if="index < sortedTimeline.length - 1"
+                  class="w-0.5 flex-1 bg-gray-200 dark:bg-gray-700 mt-2"
+                  style="min-height: 2rem;"
+                ></div>
+              </div>
+
+              <div class="flex-1 pb-6">
+                <p class="font-medium text-gray-900 dark:text-white mb-1">
+                  {{ event.title }}
+                </p>
+                <p v-if="event.description" class="text-gray-600 dark:text-gray-400 text-sm mb-2">
+                  {{ event.description }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-500">
+                  {{ formatDateTime(event.date) }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -344,14 +344,14 @@ import http from '@/utils/http'
 const router = useRouter()
 const route = useRoute()
 
-// Timeline ordenado por fecha (más antiguo primero, más nuevo al final)
+// Timeline ordenado por fecha (más nuevo primero, más antiguo al final)
 const sortedTimeline = computed(() => {
   if (!ticket.value || !ticket.value.timeline) return []
   return [...ticket.value.timeline].sort((a, b) => {
     // Convertir fechas a timestamps para comparar
     const dateA = new Date(a.date).getTime()
     const dateB = new Date(b.date).getTime()
-    return dateA - dateB // Orden ascendente (más antiguo primero)
+    return dateB - dateA // Orden descendente (más nuevo primero)
   })
 })
 
@@ -694,20 +694,20 @@ const sendMessage = async () => {
       
       // Pequeño delay adicional para asegurar renderizado completo
       setTimeout(() => {
-        // Buscar el último evento en el DOM
+        // Buscar el primer evento en el DOM (más reciente con orden descendente)
         const events = document.querySelectorAll('.timeline-event')
         console.log('🔍 Eventos encontrados para scroll:', events.length)
-        
+
         if (events.length > 0) {
-          const lastEvent = events[events.length - 1]
-          console.log('📍 Haciendo scroll al último evento')
-          lastEvent.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'nearest' })
+          const firstEvent = events[0]
+          console.log('📍 Haciendo scroll al evento más reciente')
+          firstEvent.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' })
         } else {
-          // Fallback: scroll al final de la sección de historial
+          // Fallback: scroll al inicio de la sección de historial
           const historialSection = document.querySelector('.historial-section')
           if (historialSection) {
-            console.log('📍 Fallback: scroll manual al final')
-            historialSection.scrollTop = historialSection.scrollHeight
+            console.log('📍 Fallback: scroll manual al inicio')
+            historialSection.scrollTop = 0
           }
         }
       }, 100)
