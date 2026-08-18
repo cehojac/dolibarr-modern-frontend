@@ -97,23 +97,13 @@ export function useInterventions() {
 
   // Get interventions for a specific ticket
   const getInterventionsForTicket = (ticketId) => {
-     console.log('=== getInterventionsForTicket called ===')
-     console.log('Ticket ID:', ticketId)
-     console.log('Available interventions:', interventions.value.length)
-    
-    
     const filtered = interventions.value.filter(intervention => {
-       console.log(`Checking intervention ${intervention.ref}:`, intervention.linkedObjectsIds)
-      
       // Método 1: Verificar vinculación por linkedObjectsIds (base de datos)
       if (intervention.linkedObjectsIds && intervention.linkedObjectsIds.ticket && typeof intervention.linkedObjectsIds.ticket === 'object') {
         // Structure: { "ticket": { "366": "438" } }
         // The values are the actual ticket IDs
         const ticketIds = Object.values(intervention.linkedObjectsIds.ticket)
-         console.log(`  Found ticket IDs for ${intervention.ref}:`, ticketIds)
-        
         const matches = ticketIds.some(id => String(id) === String(ticketId))
-         console.log(`  Matches ticket ${ticketId}:`, matches)
         if (matches) return true
       }
       
@@ -121,21 +111,17 @@ export function useInterventions() {
       if (intervention.note_private) {
         const noteMatch = intervention.note_private.includes(`[TICKET_LINK]`) && 
                          intervention.note_private.includes(`(ID: ${ticketId})`)
-         console.log(`  Note-based link for ${intervention.ref}:`, noteMatch)
         if (noteMatch) return true
       }
       
       // Método 3: Verificar vinculación por descripción (método anterior)
       if (intervention.desc && intervention.desc.includes(`(ID: ${ticketId})`)) {
-         console.log(`  Description-based link for ${intervention.ref}: true`)
         return true
       }
-      
-       console.log(`  No link found for ${intervention.ref}`)
+
       return false
     })
-    
-     console.log(`Found ${filtered.length} interventions for ticket ${ticketId}`)
+
     return filtered
   }
 

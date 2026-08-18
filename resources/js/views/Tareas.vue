@@ -2498,8 +2498,8 @@ const loadTasks = async (forceRefresh = false) => {
           loading.value = false
           // console.log('📋 Tareas desde caché:', basicTasks.length)
           
-          // Cargar datos adicionales en background
-          loadAdditionalDataInBackground()
+          // Ya no necesitamos cargar datos adicionales en background
+          // porque la caché ya contiene datos enriquecidos
           return
         } else {
           // console.log('⏱️ Caché expirada, recargando...')
@@ -2507,27 +2507,26 @@ const loadTasks = async (forceRefresh = false) => {
       }
     }
     
-    // PASO 1: Cargar TODAS las tareas (sin filtro de progreso, límite 1000)
-    // console.log('📡 Llamando API de tareas (límite 1000)...')
-    const tasksResponse = await http.get('/api/doli/tasks?limit=1000')
+    // PASO 1: Cargar TODAS las tareas con datos enriquecidos en una sola llamada
+    // console.log('📡 Llamando API de tareas enriquecidas...')
+    const tasksResponse = await http.get('/api/doli/dolibarrmodernfrontendapi/tasks/enriched?limit=1000&include_contacts=1')
     
-    if (!tasksResponse.data || !Array.isArray(tasksResponse.data)) {
+    if (!tasksResponse.data || !tasksResponse.data.tasks || !Array.isArray(tasksResponse.data.tasks)) {
       tasks.value = []
       loading.value = false
       return
     }
     
-    // console.log('✅ Tareas cargadas desde API:', tasksResponse.data.length)
+    // console.log('✅ Tareas enriquecidas cargadas desde API:', tasksResponse.data.tasks.length)
     
     // Guardar en caché
-    localStorage.setItem(CACHE_KEY, JSON.stringify(tasksResponse.data))
+    localStorage.setItem(CACHE_KEY, JSON.stringify(tasksResponse.data.tasks))
     localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString())
     // console.log('💾 Tareas guardadas en caché')
     
-    
-    // PASO 2: Procesar tareas básicas CON enriquecimiento básico de usuario
-    const basicTasks = tasksResponse.data.map(task => {
-      // Verificar si la tarea está asignada al usuario actual (pre-enriquecimiento básico)
+    // PASO 2: Procesar tareas enriquecidas
+    const enrichedTasks = tasksResponse.data.tasks.map(task => {
+      // Verificar si la tarea está asignada al usuario actual
       const isMyTask = task.fk_user_assign && authStore.user && task.fk_user_assign == authStore.user.id
       
       // Usar status si fk_statut es null
@@ -2535,24 +2534,46 @@ const loadTasks = async (forceRefresh = false) => {
         ? parseInt(task.fk_statut) 
         : parseInt(task.status || 0)
       
+      // Construir nombre de usuario asignado
+      let assigned_to = null
+      if (task.assigned_user) {
+        assigned_to = `${task.assigned_user.firstname || ''} ${task.assigned_user.lastname || ''}`.trim()
+      }
+      
+      // Construir nombre de proyecto
+      let project_name = null
+      if (task.project) {
+        project_name = task.project.title || task.project.ref
+      }
+      
+      // Construir nombre de tercero
+      let tercero_name = null
+      if (task.thirdparty) {
+        tercero_name = task.thirdparty.name
+      }
+      
       return {
         ...task,
-        status: taskStatus, // Usar el estado real de Dolibarr
-        assigned_to: null, // Se enriquecerá después
-        project_name: null, // Se enriquecerá después
-        tercero_name: null, // Se enriquecerá después
+        status: taskStatus,
+        assigned_to: assigned_to,
+        project_name: project_name,
+        tercero_name: tercero_name,
         priority: task.array_options?.options_prioridad || task.priority || 'Normal',
-        isUserAssigned: isMyTask
+        isUserAssigned: isMyTask,
+        // Guardar datos enriquecidos para uso futuro
+        enriched_project: task.project,
+        enriched_user: task.assigned_user,
+        enriched_thirdparty: task.thirdparty,
+        enriched_contacts: task.contacts || []
       }
     })
     
-    // PASO 3: Mostrar datos básicos inmediatamente
-    tasks.value = basicTasks
+    // PASO 3: Mostrar datos enriquecidos inmediatamente
+    tasks.value = enrichedTasks
     loading.value = false
-    // console.log('⚡ Datos básicos mostrados -', basicTasks.length, 'tareas cargadas')
+    // console.log('⚡ Datos enriquecidos mostrados -', enrichedTasks.length, 'tareas cargadas')
     
-    // PASO 4: Enriquecer en background
-    await loadAdditionalDataInBackground()
+    // PASO 4: Ya no necesitamos loadAdditionalDataInBackground porque todo viene enriquecido
     
   } catch (error) {
     // console.error('Error loading tasks:', error)
@@ -2846,44 +2867,72 @@ const viewTaskDetails = async (task) => {
       }
     }
     
-    // Fetch assigned user from custom API endpoint
-    try {
-      console.log('🔍 Fetching task contacts from API:', task.id)
-      const contactsResponse = await http.get(`/api/doli/dolibarrmodernfrontendapi/task/${task.id}/contacts`)
+    // Use enriched contacts data from the task if available
+    if (task.enriched_contacts && Array.isArray(task.enriched_contacts)) {
+      console.log('📞 Using enriched contacts from task:', task.enriched_contacts)
       
-      if (contactsResponse.data && contactsResponse.data.contacts) {
-        console.log('📞 Task contacts received:', contactsResponse.data)
-        
-        // Find the TASKEXECUTIVE contact (assigned user)
-        const executiveContact = contactsResponse.data.contacts.find(
-          contact => contact.contact_type_code === 'TASKEXECUTIVE'
-        )
-        
-        if (executiveContact) {
-          console.log('👤 Found TASKEXECUTIVE contact:', executiveContact)
-          // Set the assigned user from the contact data
-          currentTaskAssignedUser.value = {
-            id: executiveContact.user_id,
-            firstname: executiveContact.firstname,
-            lastname: executiveContact.lastname,
-            email: executiveContact.email,
-            phone_mobile: executiveContact.phone_mobile
-          }
-          // Update taskDetails with the assigned user ID
-          taskDetails.value.fk_user_assign = executiveContact.user_id
-          console.log('✅ Assigned user set:', currentTaskAssignedUser.value)
-        } else {
-          currentTaskAssignedUser.value = null
-          console.log('👤 No TASKEXECUTIVE contact found')
+      // Find the TASKEXECUTIVE contact (assigned user)
+      const executiveContact = task.enriched_contacts.find(
+        contact => contact.contact_type_code === 'TASKEXECUTIVE'
+      )
+      
+      if (executiveContact) {
+        console.log('👤 Found TASKEXECUTIVE contact from enriched data:', executiveContact)
+        // Set the assigned user from the contact data
+        currentTaskAssignedUser.value = {
+          id: executiveContact.user_id,
+          firstname: executiveContact.firstname,
+          lastname: executiveContact.lastname,
+          email: executiveContact.email,
+          phone_mobile: executiveContact.phone_mobile
         }
-      }
-    } catch (error) {
-      console.error('❌ Error fetching task contacts:', error)
-      // Fallback to old method if API fails
-      if (taskData.fk_user_assign) {
-        currentTaskAssignedUser.value = users.value.find(u => u.id == taskData.fk_user_assign)
+        // Update taskDetails with the assigned user ID
+        taskDetails.value.fk_user_assign = executiveContact.user_id
+        console.log('✅ Assigned user set from enriched data:', currentTaskAssignedUser.value)
       } else {
         currentTaskAssignedUser.value = null
+        console.log('👤 No TASKEXECUTIVE contact found in enriched data')
+      }
+    } else {
+      // Fallback to API call if enriched data not available
+      try {
+        console.log('🔍 Fetching task contacts from API (fallback):', task.id)
+        const contactsResponse = await http.get(`/api/doli/dolibarrmodernfrontendapi/task/${task.id}/contacts`)
+        
+        if (contactsResponse.data && contactsResponse.data.contacts) {
+          console.log('📞 Task contacts received from API:', contactsResponse.data)
+          
+          // Find the TASKEXECUTIVE contact (assigned user)
+          const executiveContact = contactsResponse.data.contacts.find(
+            contact => contact.contact_type_code === 'TASKEXECUTIVE'
+          )
+          
+          if (executiveContact) {
+            console.log('👤 Found TASKEXECUTIVE contact from API:', executiveContact)
+            // Set the assigned user from the contact data
+            currentTaskAssignedUser.value = {
+              id: executiveContact.user_id,
+              firstname: executiveContact.firstname,
+              lastname: executiveContact.lastname,
+              email: executiveContact.email,
+              phone_mobile: executiveContact.phone_mobile
+            }
+            // Update taskDetails with the assigned user ID
+            taskDetails.value.fk_user_assign = executiveContact.user_id
+            console.log('✅ Assigned user set from API:', currentTaskAssignedUser.value)
+          } else {
+            currentTaskAssignedUser.value = null
+            console.log('👤 No TASKEXECUTIVE contact found in API')
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error fetching task contacts:', error)
+        // Fallback to old method if API fails
+        if (taskData.fk_user_assign) {
+          currentTaskAssignedUser.value = users.value.find(u => u.id == taskData.fk_user_assign)
+        } else {
+          currentTaskAssignedUser.value = null
+        }
       }
     }
     
@@ -4150,17 +4199,19 @@ const generateTaskRef = async () => {
     
     // console.log('🔢 Generando referencia con prefijo:', prefix)
     
-    // Obtener todas las tareas del mes actual
-    const response = await http.get('/api/doli/tasks', {
+    // Obtener todas las tareas del mes actual usando endpoint enriquecido
+    const response = await http.get('/api/doli/dolibarrmodernfrontendapi/tasks/enriched', {
       params: {
         limit: 1000,
         sortfield: 't.ref',
-        sortorder: 'DESC'
+        sortorder: 'DESC',
+        include_contacts: 0
       }
     })
     
     // Filtrar tareas que coincidan con el prefijo del mes actual
-    const tasksThisMonth = response.data.filter(task => 
+    const tasksData = response.data?.tasks || response.data || []
+    const tasksThisMonth = tasksData.filter(task => 
       task.ref && task.ref.startsWith(prefix)
     )
     

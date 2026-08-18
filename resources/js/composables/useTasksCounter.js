@@ -38,7 +38,8 @@ export function useTasksCounter() {
       const params = {
         limit: 200,
         sortfield: 't.rowid',
-        sortorder: 'DESC'
+        sortorder: 'DESC',
+        include_contacts: 0
       }
 
       if (sqlClauses.length > 0) {
@@ -47,27 +48,21 @@ export function useTasksCounter() {
 
       let tasks = []
 
-      const response = await http.get('/api/doli/tasks', {
-        params,
-        timeout: 20000
-      })
+      try {
+        // Try enriched endpoint first
+        const response = await http.get('/api/doli/dolibarrmodernfrontendapi/tasks/enriched', {
+          params,
+          timeout: 20000
+        })
 
-      if (Array.isArray(response.data)) {
-        tasks = response.data
-      } else if (response.data && Array.isArray(response.data.data)) {
-        tasks = response.data.data
-      }
-
-      if (tasks.length === 0 && userId) {
-        const fallbackParams = {
-          limit: 200,
-          sortfield: 't.rowid',
-          sortorder: 'DESC',
-          sqlfilters: `(t.fk_user_assign:=:${userId})and(t.progress:<:100)`
+        if (response.data && response.data.tasks && Array.isArray(response.data.tasks)) {
+          tasks = response.data.tasks
         }
-
+      } catch (enrichedError) {
+        // Fallback to native endpoint if enriched fails
+        console.warn('⚠️ Enriched endpoint failed, using native endpoint:', enrichedError.message)
         const fallbackResponse = await http.get('/api/doli/tasks', {
-          params: fallbackParams,
+          params,
           timeout: 20000
         })
 

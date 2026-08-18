@@ -574,10 +574,18 @@ const loadTodos = async () => {
   loading.value = true
   try {
     
-    // Load all required data in parallel
+    // Load all required data in parallel using enriched endpoints with fallbacks
     const [ticketsResponse, tasksResponse, tercerosResponse, projectsResponse, usersResponse] = await Promise.all([
-      http.get('/api/doli/tickets').catch(() => ({ data: [] })),
-      http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)').catch(() => ({ data: [] })),
+      http.get('/api/doli/dolibarrmodernfrontendapi/tickets/enriched?limit=500&include_contacts=0')
+        .catch(err => {
+          console.warn('⚠️ Enriched tickets endpoint failed, using native:', err.message)
+          return http.get('/api/doli/tickets?limit=500').catch(() => ({ data: [] }))
+        }),
+      http.get('/api/doli/dolibarrmodernfrontendapi/tasks/enriched?limit=500&include_contacts=0&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
+        .catch(err => {
+          console.warn('⚠️ Enriched tasks endpoint failed, using native:', err.message)
+          return http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)').catch(() => ({ data: [] }))
+        }),
       http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] })),
       http.get('/api/doli/projects?limit=2000').catch(() => ({ data: [] })),
       http.get('/api/doli/users').catch(() => ({ data: [] }))
@@ -615,12 +623,14 @@ const loadTodos = async () => {
     // Process tickets with enrichment and count assigned ones
     let assignedTicketsCounter = 0
     try {
-      if (ticketsResponse.data && Array.isArray(ticketsResponse.data)) {
-        ticketsResponse.data.forEach(ticket => {
+      const ticketsData = ticketsResponse.data?.tickets || ticketsResponse.data || []
+      if (Array.isArray(ticketsData)) {
+        ticketsData.forEach(ticket => {
           // Only include non-closed tickets
           if (ticket.fk_statut !== '8') {
-            const assignedUser = usersMap[ticket.fk_user_assign] || null
-            const tercero = tercerosMap[ticket.fk_soc] || null
+            // Use enriched data if available, otherwise use maps
+            const assignedUser = ticket.assigned_user || usersMap[ticket.fk_user_assign] || null
+            const tercero = ticket.thirdparty || tercerosMap[ticket.fk_soc] || null
             
             // Count tickets assigned to current user
             const currentUserId = authStore.user?.id || authStore.user?.rowid || authStore.user?.user_id
@@ -644,7 +654,7 @@ const loadTodos = async () => {
               project: null,
               progress: null,
               tercero_name: tercero ? tercero.name : null,
-              project_name: null,
+              project_name: ticket.project ? (ticket.project.title || ticket.project.ref) : null,
               project_category: null,
               severity: ticket.severity_code || ticket.severity || 'NORMAL'
             })
@@ -658,19 +668,21 @@ const loadTodos = async () => {
     
     // Process tasks with enrichment and count assigned ones
     let assignedTasksCounter = 0
-    if (tasksResponse.data && Array.isArray(tasksResponse.data)) {
-      tasksResponse.data.forEach(task => {
+    const tasksData = tasksResponse.data?.tasks || tasksResponse.data || []
+    if (Array.isArray(tasksData)) {
+      tasksData.forEach(task => {
         // Only include non-completed tasks
         if (task.progress < 100) {
-          const project = projectsMap[task.fk_project] || projectsMap[String(task.fk_project)] || null
+          // Use enriched data if available, otherwise use maps
+          const project = task.project || projectsMap[task.fk_project] || projectsMap[String(task.fk_project)] || null
           
-          // Try to find assigned user from multiple possible fields
-          let assignedUser = null
-          if (task.fk_user_assign) {
+          // Try to find assigned user from enriched data or maps
+          let assignedUser = task.assigned_user || null
+          if (!assignedUser && task.fk_user_assign) {
             assignedUser = usersMap[task.fk_user_assign] || usersMap[String(task.fk_user_assign)] || null
           }
           
-          const tercero = project ? tercerosMap[project.fk_soc] : null
+          const tercero = task.thirdparty || (project ? tercerosMap[project.fk_soc] : null)
           
           // Count tasks assigned to current user
           const currentUserId = authStore.user?.id || authStore.user?.rowid || authStore.user?.user_id

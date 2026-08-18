@@ -6448,48 +6448,80 @@ const getUserDisplayName = (intervention) => {
 }
 
 const fetchTickets = async () => {
-   // console.log('🎫 Fetching tickets...')
+  // console.log('🎫 Fetching enriched tickets...')
   loading.value = true
   try {
-    const response = await http.get('/api/doli/tickets')
-     // console.log('✅ Tickets loaded:', response.data?.length || 0, 'tickets')
-    const ticketsData = response.data || []
+    let ticketsData = []
+
+    try {
+      const response = await http.get('/api/doli/dolibarrmodernfrontendapi/tickets/enriched?limit=1000&include_contacts=1')
+      // console.log('✅ Enriched tickets loaded:', response.data?.tickets?.length || 0, 'tickets')
+
+      if (response.data && Array.isArray(response.data.tickets)) {
+        ticketsData = response.data.tickets
+      } else {
+        throw new Error('Invalid enriched tickets response format')
+      }
+    } catch (enrichedError) {
+      console.warn('⚠️ Enriched tickets endpoint failed, using native endpoint:', enrichedError?.message)
+      const nativeResponse = await http.get('/api/doli/tickets?limit=1000')
+      ticketsData = Array.isArray(nativeResponse.data) ? nativeResponse.data : []
+    }
     
-    // Enrich tickets with tercero names and assigned user names using cached data
-     // console.log('🔄 Enriching tickets - Users available:', users.value.length, 'Terceros available:', terceros.value.length)
-    
-    // Enriquecer tickets con datos disponibles (sin proyectos aún)
+    // Procesar tickets enriquecidos
     tickets.value = ticketsData.map(ticket => {
-      // Enrich with tercero name
-      if (ticket.fk_soc && terceros.value.length > 0) {
-        const tercero = terceros.value.find(t => t.id == ticket.fk_soc)
-        if (tercero) {
-          ticket.thirdparty_name = tercero.name
-        }
+      // Construir nombre de tercero
+      let thirdparty_name = null
+      if (ticket.thirdparty) {
+        thirdparty_name = ticket.thirdparty.name
+      } else if (ticket.thirdparty_name) {
+        thirdparty_name = ticket.thirdparty_name
+      } else if (ticket.fk_soc) {
+        const tercero = terceros.value.find(t => Number(t.id) === Number(ticket.fk_soc))
+        thirdparty_name = tercero?.name || null
       }
       
-      // Enrich with assigned user name
-      if (ticket.fk_user_assign && users.value.length > 0) {
-        const user = users.value.find(u => u.id == ticket.fk_user_assign)
-        if (user) {
-          ticket.assigned_to = `${user.firstname || ''} ${user.lastname || ''}`.trim() || user.login
-           // console.log(`👤 Ticket ${ticket.id} assigned to: ${ticket.assigned_to} (User ID: ${ticket.fk_user_assign})`)
-        } else {
-           // console.log(`⚠️ User not found for ticket ${ticket.id} (User ID: ${ticket.fk_user_assign})`)
-        }
+      // Construir nombre de usuario asignado
+      let assigned_to = null
+      if (ticket.assigned_user) {
+        assigned_to = `${ticket.assigned_user.firstname || ''} ${ticket.assigned_user.lastname || ''}`.trim() || ticket.assigned_user.login
+      } else if (ticket.assigned_to) {
+        assigned_to = ticket.assigned_to
       } else if (ticket.fk_user_assign) {
-         // console.log(`⚠️ No users loaded for ticket ${ticket.id} (User ID: ${ticket.fk_user_assign})`)
+        const assignedUser = users.value.find(u => Number(u.id) === Number(ticket.fk_user_assign))
+        if (assignedUser) {
+          assigned_to = `${assignedUser.firstname || ''} ${assignedUser.lastname || ''}`.trim() || assignedUser.login
+        }
       }
       
-      return ticket
+      // Construir nombre de proyecto
+      let project_name = null
+      if (ticket.project) {
+        project_name = ticket.project.title || ticket.project.ref
+      } else if (ticket.project_name) {
+        project_name = ticket.project_name
+      }
+      
+      return {
+        ...ticket,
+        thirdparty_name: thirdparty_name,
+        assigned_to: assigned_to,
+        project_name: project_name,
+        // Guardar datos enriquecidos para uso futuro
+        enriched_thirdparty: ticket.thirdparty,
+        enriched_user: ticket.assigned_user,
+        enriched_project: ticket.project,
+        enriched_contacts: ticket.contacts || []
+      }
     })
     
     // Calculate metrics after loading tickets
     calculateTicketMetrics()
      // console.log('✅ Tickets and metrics updated successfully')
   } catch (error) {
-    // console.error('❌ Error fetching tickets:', error)
+    // console.error('❌ Error fetching enriched tickets:', error)
     // console.error('❌ Error details:', error.response?.data)
+    tickets.value = []
   } finally {
     loading.value = false
   }
@@ -7145,137 +7177,149 @@ const viewTicketDetails = async (ticket) => {
   }
   
   try {
-     // console.log('🔍 Fetching ticket details for ID:', ticket.id)
-    // Fetch detailed ticket information
-    const response = await http.get(`/api/doli/tickets/${ticket.id}`)
-     // console.log('✅ Ticket details response:', response)
-    ticketDetails.value = response.data
+    // Temporalmente desactivado para evitar 404 repetidos en consola mientras
+    // el endpoint enriquecido de detalle no esté expuesto en este entorno.
+    const tryEnrichedDetail = false
+    let detailData = null
+
+    if (tryEnrichedDetail) {
+      const detailEndpoints = [
+        `/api/doli/dolibarrmodernfrontendapi/tickets/detail/${ticket.id}`,
+        `/api/doli/dolibarrmodernfrontendapi/tickets/${ticket.id}/detail`,
+        `/api/doli/dolibarrmodernfrontendapi/ticket/${ticket.id}/detail`
+      ]
+
+      for (const endpoint of detailEndpoints) {
+        try {
+          const detailResponse = await http.get(endpoint)
+          detailData = detailResponse.data
+          break
+        } catch (err) {
+          if (err?.response?.status !== 404) {
+            throw err
+          }
+        }
+      }
+    }
+
+    if (!detailData) {
+      throw new Error('Enriched ticket detail endpoint disabled/unavailable')
+    }
+
+    ticketDetails.value = detailData
     
-    // Enriquecer con nombre del proyecto si existe
-    if (ticketDetails.value.fk_project) {
-      ticketDetails.value.project_name = await getProjectName(ticketDetails.value.fk_project)
-      // console.log(`📁 Proyecto del ticket: ${ticketDetails.value.project_name}`)
+    // Use enriched data from the response
+    if (detailData.thirdparty) {
+      ticketDetails.value.thirdparty_info = detailData.thirdparty
     }
     
-    // Cargar todas las intervenciones del ticket
-    await fetchAllTicketInterventions(ticket.id)
+    if (detailData.assigned_user) {
+      currentAssignedUser.value = detailData.assigned_user
+    }
     
-    // Load followers, users/contacts, reminders, company info, and email templates
+    if (detailData.project) {
+      ticketDetails.value.project_name = detailData.project.title || detailData.project.ref
+    }
+    
+    // Use enriched contacts
+    if (detailData.contacts && Array.isArray(detailData.contacts)) {
+      ticketFollowers.value = detailData.contacts
+      
+      // Separate internal and external followers
+      internalFollowers.value = detailData.contacts.filter(follower => {
+        return follower.user_id !== null && follower.user_id !== undefined
+      })
+      
+      externalFollowers.value = detailData.contacts.filter(follower => {
+        return follower.user_id === null || follower.user_id === undefined
+      })
+    }
+    
+    // Use enriched messages
+    if (detailData.messages && Array.isArray(detailData.messages)) {
+      ticketDetails.value.messages = detailData.messages
+    }
+    
+    // Use enriched agenda events as reminders
+    if (detailData.agenda_events && Array.isArray(detailData.agenda_events)) {
+      ticketReminders.value = detailData.agenda_events.map(event => {
+        let formattedDate = ''
+        if (event.datep) {
+          formattedDate = new Date(event.datep * 1000).toLocaleDateString('es-ES')
+        }
+        return {
+          id: event.rowid,
+          title: event.label,
+          date: formattedDate,
+          completed: event.percent === 100
+        }
+      })
+    }
+    
+    // Use enriched interventions
+    if (detailData.interventions && Array.isArray(detailData.interventions)) {
+      allTicketInterventions.value = detailData.interventions
+    }
+    
+    // Load additional data that's not in the enriched endpoint
     await Promise.all([
-      fetchTicketFollowers(ticket.id),
-      fetchTicketReminders(ticket.id),
       fetchAvailableUsers(),
-      fetchAvailableContacts(response.data.fk_soc),
-      fetchCompanyInfo(response.data.fk_soc),
+      fetchAvailableContacts(detailData.fk_soc),
+      fetchCompanyInfo(detailData.fk_soc),
       loadEmailTemplates(),
       loadSubstitutionVariables()
     ])
     
-    // Log summary of loaded data
-     // console.log('📊 Resumen de datos cargados para intervinientes:')
-     // console.log(`   - Usuarios activos: ${availableUsers.value.length}`)
-     // console.log(`   - Contactos de empresa (${response.data.fk_soc}): ${availableContacts.value.length}`)
-     // console.log(`   - Intervinientes actuales: ${ticketFollowers.value.length}`)
-     // console.log(`   - Empresa: ${currentCompany.value?.name || 'No encontrada'}`)
+    // Initialize notes and description with existing values
+    privateNote.value = ticketDetails.value.note_private || ''
+    publicNote.value = ticketDetails.value.note_public || ''
+    taskDescription.value = ticketDetails.value.description || ''
     
-    // Try multiple methods to get interventions/messages for this ticket
-    let interventions = []
-    
-    // Method 1: Check if messages are in the ticket response
-    if (response.data.messages && Array.isArray(response.data.messages)) {
-      interventions = response.data.messages
-    }
-    
-    // Method 2: Try the messages endpoint
-    if (interventions.length === 0) {
-      try {
-        const messagesResponse = await http.get(`/api/doli/tickets/${ticket.id}/messages`)
-        if (messagesResponse.data && Array.isArray(messagesResponse.data)) {
-          interventions = messagesResponse.data
-        }
-      } catch (err) {
-        // console.warn('Messages endpoint failed:', err)
-      }
-    }
-    
-    // Method 3: Try using objectlinks to find related interventions
-    if (interventions.length === 0) {
-      try {
-        const objectlinksResponse = await http.get(`/api/doli/tickets/${ticket.id}/objectlinks`)
-        
-        // Look for linked interventions or actioncomm objects
-        if (objectlinksResponse.data && Array.isArray(objectlinksResponse.data)) {
-          const interventionLinks = objectlinksResponse.data.filter(link => 
-            link.objecttype === 'actioncomm' || link.objecttype === 'intervention'
-          )
-          
-          // Fetch each intervention
-          for (const link of interventionLinks) {
-            try {
-              const interventionResponse = await http.get(`/api/doli/agendaevents/${link.objectid}`)
-              if (interventionResponse.data) {
-                interventions.push(interventionResponse.data)
-              }
-            } catch (interventionErr) {
-              // console.warn(`Failed to fetch intervention ${link.objectid}:`, interventionErr)
-            }
-          }
-        }
-      } catch (err) {
-        // console.warn('Objectlinks endpoint failed:', err)
-      }
-    }
-    
-    // Method 4: Try agendaevents with ticket filter
-    if (interventions.length === 0) {
-      try {
-        const agendaResponse = await http.get(`/api/doli/agendaevents?elementtype=ticket&elementid=${ticket.id}`)
-        if (agendaResponse.data && Array.isArray(agendaResponse.data)) {
-          interventions = agendaResponse.data
-        }
-      } catch (err) {
-        // console.warn('Agenda events endpoint failed:', err)
-      }
-    }
-    
-    // Method 5: Try fichinter (interventions) and filter client-side by linkedObjectsIds
-    if (interventions.length === 0) {
-      try {
-        // Get all recent interventions and filter client-side
-        const interventionsResponse = await http.get(`/api/doli/fichinter?limit=100&sortfield=t.datec&sortorder=DESC`)
-        if (interventionsResponse.data && Array.isArray(interventionsResponse.data)) {
-          // Filter client-side for interventions linked to this ticket
-          const linkedInterventions = interventionsResponse.data.filter(intervention => {
-            return intervention.linkedObjectsIds && 
-                   intervention.linkedObjectsIds.ticket && 
-                   Object.values(intervention.linkedObjectsIds.ticket).includes(ticket.id.toString())
-          })
-          interventions = linkedInterventions
-        }
-      } catch (err) {
-        // console.warn('Fichinter endpoint failed:', err)
-      }
-    }
-    
-    ticketDetails.value.messages = interventions
-    
-    // Fetch third party information if fk_soc exists
-    if (ticketDetails.value.fk_soc) {
-      try {
-        const thirdPartyResponse = await http.get(`/api/doli/thirdparties/${ticketDetails.value.fk_soc}`)
-        ticketDetails.value.thirdparty_info = thirdPartyResponse.data
-      } catch (thirdPartyError) {
-        // console.error('Error fetching third party details:', thirdPartyError)
-        ticketDetails.value.thirdparty_info = null
-      }
-    }
   } catch (error) {
-    // console.error('❌ Error fetching ticket details:', error)
-    // console.error('Error status:', error.response?.status)
-    // console.error('Error data:', error.response?.data)
-    // console.error('Request URL:', error.config?.url)
-    ticketDetails.value = ticket // Fallback to basic ticket data
-    ticketDetails.value.messages = []
+    // Fallback robusto: usar endpoint nativo si el enriquecido no existe o falla
+    try {
+      const nativeResponse = await http.get(`/api/doli/tickets/${ticket.id}`)
+      const nativeData = nativeResponse.data || {}
+
+      ticketDetails.value = {
+        ...ticket,
+        ...nativeData,
+        messages: []
+      }
+
+      if (ticketDetails.value.fk_user_assign) {
+        const assignedUser = users.value.find(u => Number(u.id) === Number(ticketDetails.value.fk_user_assign))
+        currentAssignedUser.value = assignedUser || null
+      } else {
+        currentAssignedUser.value = null
+      }
+
+      await Promise.allSettled([
+        fetchTicketFollowers(ticket.id),
+        fetchTicketReminders(ticket.id),
+        fetchAllTicketInterventions(ticket.id),
+        fetchAvailableUsers(),
+        fetchAvailableContacts(ticketDetails.value.fk_soc || ticket.fk_soc),
+        fetchCompanyInfo(ticketDetails.value.fk_soc || ticket.fk_soc),
+        loadEmailTemplates(),
+        loadSubstitutionVariables()
+      ])
+
+      privateNote.value = ticketDetails.value.note_private || ''
+      publicNote.value = ticketDetails.value.note_public || ''
+      taskDescription.value = ticketDetails.value.description || ''
+    } catch (nativeError) {
+      ticketDetails.value = {
+        ...ticket,
+        messages: []
+      }
+      ticketFollowers.value = []
+      internalFollowers.value = []
+      externalFollowers.value = []
+      ticketReminders.value = []
+      allTicketInterventions.value = []
+      currentAssignedUser.value = null
+    }
   } finally {
     loadingDetails.value = false
   }
