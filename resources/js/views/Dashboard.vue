@@ -571,6 +571,11 @@ const visiblePages = computed(() => {
 
 // Methods
 const loadTodos = async () => {
+  if (!authStore.isAuthenticated || !authStore.user) {
+    todos.value = []
+    return
+  }
+
   loading.value = true
   try {
     
@@ -733,6 +738,23 @@ const loadTodos = async () => {
   }
 }
 
+const bootstrapDashboardData = async () => {
+  if (!authStore.isAuthenticated || !authStore.user) {
+    todos.value = []
+    return
+  }
+
+  await Promise.allSettled([
+    fetchAssignedTicketsCount(),
+    fetchAssignedTasksCount(),
+    fetchTercerosCount(),
+    fetchProductsCount(),
+    fetchOverdueEventsCount(),
+    fetchOverdueInvoicesCount(),
+    loadTodos()
+  ])
+}
+
 const sortBy = (field) => {
   if (sortField.value === field) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
@@ -851,19 +873,17 @@ watch(() => authStore.user, (newUser, oldUser) => {
       oldUser: oldUser ? { id: oldUser.id, login: oldUser.login } : null,
       newUser: { id: newUser.id, login: newUser.login }
     })
-    loadTodos()
+    bootstrapDashboardData()
   }
 }, { immediate: false })
 
+watch(() => authStore.isAuthenticated, (isAuthenticated) => {
+  if (!isAuthenticated) {
+    todos.value = []
+  }
+})
+
 onMounted(async () => {
-  await Promise.all([
-    fetchAssignedTicketsCount(),
-    fetchAssignedTasksCount(),
-    fetchTercerosCount(),
-    fetchProductsCount(),
-    fetchOverdueEventsCount(),
-    fetchOverdueInvoicesCount(),
-    loadTodos()
-  ])
+  await bootstrapDashboardData()
 })
 </script>

@@ -1,11 +1,19 @@
 import { ref } from 'vue'
 import http from '../utils/http'
+import { useAuthStore } from '../stores/auth'
 
 const productsCount = ref(null)
 let refreshInterval = null
 
 export function useProductsCounter() {
+  const authStore = useAuthStore()
+
   const fetchProductsCount = async () => {
+    if (!authStore.isAuthenticated || !authStore.user) {
+      productsCount.value = null
+      return
+    }
+
     try {
       // Obtener todos los productos activos con límite alto
       const response = await http.get('/api/doli/products?limit=10000&status=1')

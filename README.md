@@ -2,6 +2,10 @@
 
 Un frontend moderno y responsive para Dolibarr ERP/CRM construido con Laravel, Vue 3 y Tailwind CSS.
 
+## 🏷️ Versión
+
+**v1.0.1**
+
 ## 🚀 Características
 
 - **SPA moderna** con Vue 3 + Vue Router + Pinia
@@ -13,6 +17,15 @@ Un frontend moderno y responsive para Dolibarr ERP/CRM construido con Laravel, V
 - **Loading skeletons** para mejor percepción de velocidad
 - **Responsive design** para desktop y móvil
 - **6 módulos principales**: Terceros, Productos, Servicios, Documentos, Agenda, Tickets
+
+## 🆕 Cambios recientes (v1.0.1)
+
+- Corrección de rutas para endpoints enriquecidos del módulo custom:
+  - `/api/doli/dolibarrmodernfrontendapi/tickets/enriched`
+  - `/api/doli/dolibarrmodernfrontendapi/tasks/enriched`
+- Fallback automático en Tickets y detalle de ticket para usar endpoints nativos cuando el enriquecido no está disponible.
+- Mejora de resiliencia en vistas `Dashboard`, `Agenda`, `Tareas`, `Tickets` y `useTasksCounter`.
+- Limpieza de logs de depuración ruidosos en flujo de intervenciones.
 
 ## 🛠️ Stack Tecnológico
 
@@ -176,6 +189,12 @@ El sistema proxy de Laravel expone estos endpoints:
 - `GET /api/auth/me` - Estado de sesión
 - `POST /api/auth/logout` - Cerrar sesión
 - `GET|POST|PUT|DELETE /api/doli/*` - Proxy a Dolibarr API
+
+### Endpoints enriquecidos (si el módulo custom está instalado)
+
+- `GET /api/doli/dolibarrmodernfrontendapi/tickets/enriched`
+- `GET /api/doli/dolibarrmodernfrontendapi/tasks/enriched`
+- `GET /api/doli/dolibarrmodernfrontendapi/tickets/{id}/detail` (puede variar según versión/ruteo del módulo)
 
 ## 🐛 Troubleshooting
 

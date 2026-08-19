@@ -9,7 +9,7 @@ export function useTasksCounter() {
   const authStore = useAuthStore()
 
   const fetchAssignedTasksCount = async () => {
-    if (!authStore.user) {
+    if (!authStore.isAuthenticated || !authStore.user) {
       return
     }
 
@@ -59,6 +59,10 @@ export function useTasksCounter() {
           tasks = response.data.tasks
         }
       } catch (enrichedError) {
+        if (enrichedError?.response?.status === 401) {
+          throw enrichedError
+        }
+
         // Fallback to native endpoint if enriched fails
         console.warn('⚠️ Enriched endpoint failed, using native endpoint:', enrichedError.message)
         const fallbackResponse = await http.get('/api/doli/tasks', {
