@@ -36,7 +36,7 @@ export function useTicketsCounter() {
       try {
         const enrichedResponse = await http.get('/api/doli/dolibarrmodernfrontendapi/tickets/enriched', {
           params: enrichedParams,
-          timeout: 20000
+          timeout: 30000
         })
 
         if (Array.isArray(enrichedResponse.data?.tickets)) {
@@ -54,7 +54,7 @@ export function useTicketsCounter() {
             sortorder: 'DESC',
             sqlfilters: '(t.fk_statut:<>:8)'
           },
-          timeout: 20000
+          timeout: 30000
         })
 
         tickets = Array.isArray(fallbackResponse.data) ? fallbackResponse.data : []

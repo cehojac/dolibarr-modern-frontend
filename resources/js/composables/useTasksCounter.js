@@ -52,7 +52,7 @@ export function useTasksCounter() {
         // Try enriched endpoint first
         const response = await http.get('/api/doli/dolibarrmodernfrontendapi/tasks/enriched', {
           params,
-          timeout: 20000
+          timeout: 30000
         })
 
         if (response.data && response.data.tasks && Array.isArray(response.data.tasks)) {
@@ -67,7 +67,7 @@ export function useTasksCounter() {
         console.warn('⚠️ Enriched endpoint failed, using native endpoint:', enrichedError.message)
         const fallbackResponse = await http.get('/api/doli/tasks', {
           params,
-          timeout: 20000
+          timeout: 30000
         })
 
         if (Array.isArray(fallbackResponse.data)) {

@@ -56,7 +56,9 @@ export const useUserInterventionsStore = defineStore('userInterventions', {
           properties: 'id,linkedObjectsIds,ref,status,duration,datee,datem,desc,lines,desc'
         })
 
-        const response = await http.get(`/api/doli/interventions?${params.toString()}`)
+        const response = await http.get(`/api/doli/interventions?${params.toString()}`, {
+          timeout: 30000
+        })
          console.log('API Response:', response)
         
         this.interventions = response.data || []
