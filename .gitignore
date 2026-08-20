@@ -10,6 +10,9 @@
 .env.backup
 .env.docker
 .env.production
+.env.testing
+docker/dolibarr-test/.env.docker-test
+/e2e/fixtures/test-user.json
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
