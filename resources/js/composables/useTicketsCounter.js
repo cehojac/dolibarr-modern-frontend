@@ -9,9 +9,7 @@ export function useTicketsCounter() {
   const authStore = useAuthStore()
 
   const fetchAssignedTicketsCount = async () => {
-    // console.log('Auth store user:', authStore.user)
-    
-    if (!authStore.user) {
+    if (!authStore.isAuthenticated || !authStore.user) {
       // console.log('No user found in auth store')
       return
     }
@@ -28,27 +26,46 @@ export function useTicketsCounter() {
 
     loading.value = true
     try {
-      // Only use valid Dolibarr columns in sqlfilters
-      // Assignment filtering is done client-side since column names vary by Dolibarr version
-      const params = {
+      let tickets = []
+
+      const enrichedParams = {
         limit: 500,
-        sortfield: 't.datec',
-        sortorder: 'DESC',
-        sqlfilters: '(t.fk_statut:<>:8)'
+        include_contacts: 0
       }
 
-      const response = await http.get('/api/doli/tickets', {
-        params,
-        timeout: 20000
-      })
+      try {
+        const enrichedResponse = await http.get('/api/doli/dolibarrmodernfrontendapi/tickets/enriched', {
+          params: enrichedParams,
+          timeout: 30000
+        })
 
-      const tickets = Array.isArray(response.data) ? response.data : []
+        if (Array.isArray(enrichedResponse.data?.tickets)) {
+          tickets = enrichedResponse.data.tickets
+        }
+      } catch (enrichedError) {
+        if (enrichedError?.response?.status === 401) {
+          throw enrichedError
+        }
+
+        const fallbackResponse = await http.get('/api/doli/tickets', {
+          params: {
+            limit: 500,
+            sortfield: 't.datec',
+            sortorder: 'DESC',
+            sqlfilters: '(t.fk_statut:<>:8)'
+          },
+          timeout: 30000
+        })
+
+        tickets = Array.isArray(fallbackResponse.data) ? fallbackResponse.data : []
+      }
 
       const assignedTickets = tickets.filter(ticket => {
         const isAssignedById = userId && ticket.fk_user_assign == userId
         const isAssignedByLogin = userLogin && ticket.fk_user_assign_login == userLogin
         const isAssigned = isAssignedById || isAssignedByLogin
-        const isNotClosed = ticket.fk_statut !== '8' && ticket.fk_statut !== 8
+        const status = Number(ticket.fk_statut)
+        const isNotClosed = ![7, 8, 9].includes(status)
         return isAssigned && isNotClosed
       })
 

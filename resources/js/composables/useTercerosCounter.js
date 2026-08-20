@@ -1,11 +1,19 @@
 import { ref } from 'vue'
 import http from '../utils/http'
+import { useAuthStore } from '../stores/auth'
 
 const tercerosCount = ref(null)
 let refreshInterval = null
 
 export function useTercerosCounter() {
+  const authStore = useAuthStore()
+
   const fetchTercerosCount = async () => {
+    if (!authStore.isAuthenticated || !authStore.user) {
+      tercerosCount.value = null
+      return
+    }
+
     try {
       // Obtener todos los terceros activos con límite alto
       const response = await http.get('/api/doli/thirdparties?limit=10000&status=1')

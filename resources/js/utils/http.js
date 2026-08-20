@@ -9,7 +9,7 @@ let isRedirecting = false
 // Create axios instance
 const http = axios.create({
   baseURL: '/',
-  timeout: 10000,
+  timeout: 30000,
   withCredentials: true, // Importante para cookies de sesión en producción
   headers: {
     'Content-Type': 'application/json',

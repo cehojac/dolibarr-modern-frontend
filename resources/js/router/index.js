@@ -167,8 +167,11 @@ const router = createRouter({
   routes
 })
 
+let authInitialized = false
+
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+  let sessionCheckedInInit = false
   
   // Permitir acceso a rutas públicas sin autenticación
   if (to.meta.public) {
@@ -176,15 +179,20 @@ router.beforeEach(async (to, from, next) => {
     return
   }
   
-  // Inicializar desde localStorage si no está autenticado
-  if (!authStore.isAuthenticated) {
-    authStore.initializeFromStorage()
+  // Inicializar sesión una sola vez al arrancar la app
+  if (!authInitialized) {
+    const hadStoredAuth = typeof window !== 'undefined' && !!localStorage.getItem('dolibarr-auth')
+    await authStore.initializeFromStorage()
+    authInitialized = true
+    sessionCheckedInInit = hadStoredAuth
   }
   
-  // Si requiere autenticación y no está autenticado
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // Verificar una vez más con el servidor antes de redirigir
-    await authStore.checkAuth()
+  // Si requiere autenticación y no está autenticado, verificar sesión de servidor
+  if (to.meta.requiresAuth) {
+    if (!authStore.isAuthenticated && !sessionCheckedInInit) {
+      await authStore.checkAuth()
+    }
+
     if (!authStore.isAuthenticated) {
       next('/login')
       return

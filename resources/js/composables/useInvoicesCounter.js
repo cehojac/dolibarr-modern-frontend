@@ -1,11 +1,19 @@
 import { ref } from 'vue'
 import http from '../utils/http'
+import { useAuthStore } from '../stores/auth'
 
 const overdueInvoicesCount = ref(null)
 let refreshInterval = null
 
 export function useInvoicesCounter() {
+  const authStore = useAuthStore()
+
   const fetchOverdueInvoicesCount = async () => {
+    if (!authStore.isAuthenticated || !authStore.user) {
+      overdueInvoicesCount.value = null
+      return
+    }
+
     try {
       // Obtener todas las facturas con límite alto
       const response = await http.get('/api/doli/invoices?limit=10000')

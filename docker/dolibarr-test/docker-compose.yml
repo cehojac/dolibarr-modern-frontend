@@ -1,0 +1,47 @@
+services:
+  dolibarr-db:
+    image: mariadb:10.11
+    container_name: dolibarr-test-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: dolibarr_root_pw
+      MYSQL_DATABASE: dolibarr_test
+      MYSQL_USER: dolibarr
+      MYSQL_PASSWORD: dolibarr_pw
+    volumes:
+      - dolibarr_test_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  dolibarr:
+    image: dolibarr/dolibarr:latest
+    container_name: dolibarr-test
+    restart: unless-stopped
+    depends_on:
+      dolibarr-db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      DOLI_DB_HOST: dolibarr-db
+      DOLI_DB_NAME: dolibarr_test
+      DOLI_DB_USER: dolibarr
+      DOLI_DB_PASSWORD: dolibarr_pw
+      DOLI_ADMIN_LOGIN: admin
+      DOLI_ADMIN_PASSWORD: admin_test_pw
+      DOLI_URL_ROOT: http://localhost:8080
+      DOLI_INSTALL_AUTO: 1
+      DOLI_INIT_DEMO: 1
+      DOLI_MODULES: "Societe,Ticket,Projet,Agenda,Api,Contact"
+      PHP_INI_DATE_TIMEZONE: Europe/Madrid
+    volumes:
+      - dolibarr_test_documents:/var/www/documents
+      - dolibarr_test_html_custom:/var/www/html/custom
+
+volumes:
+  dolibarr_test_db:
+  dolibarr_test_documents:
+  dolibarr_test_html_custom:

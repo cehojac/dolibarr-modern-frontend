@@ -2303,14 +2303,15 @@ const loadCompanyProjects = async (socid) => {
 const loadProjectTasks = async (projectid) => {
   try {
     loadingTasks.value = true
-    const response = await http.get('/api/doli/tasks', {
+    const response = await http.get('/api/doli/dolibarrmodernfrontendapi/tasks/enriched', {
       params: {
         sortfield: 'ref',
         sortorder: 'ASC',
-        sqlfilters: `(t.fk_projet:=:${projectid})`
+        sqlfilters: `(t.fk_projet:=:${projectid})`,
+        include_contacts: 0
       }
     })
-    projectTasks.value = response.data || []
+    projectTasks.value = response.data?.tasks || response.data || []
     console.log(`✅ Tareas cargadas para proyecto ${projectid}:`, projectTasks.value.length)
   } catch (error) {
     console.error('❌ Error cargando tareas:', error)

@@ -28,7 +28,9 @@ export function useAgendaCounter() {
       
       // Llamar a la API SIN filtros SQL - traer todos los eventos del usuario
       // (igual que en la página Agenda para consistencia)
-      const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=500&user_ids=${authStore.user.id}`)
+      const response = await http.get(`/api/doli/agendaevents?sortfield=t.id&sortorder=DESC&limit=500&user_ids=${authStore.user.id}`, {
+        timeout: 30000
+      })
       
       const data = response.data
       console.log('📅 Overdue events response:', data)

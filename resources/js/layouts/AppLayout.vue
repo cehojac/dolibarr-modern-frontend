@@ -325,7 +325,33 @@ let stopTicketsAutoRefresh = null
 let stopTasksAutoRefresh = null
 let stopAgendaAutoRefresh = null
 
+const stopCounterRefreshes = () => {
+  if (stopTicketsAutoRefresh) {
+    stopTicketsAutoRefresh()
+    stopTicketsAutoRefresh = null
+  }
+  if (stopTasksAutoRefresh) {
+    stopTasksAutoRefresh()
+    stopTasksAutoRefresh = null
+  }
+  if (stopAgendaAutoRefresh) {
+    stopAgendaAutoRefresh()
+    stopAgendaAutoRefresh = null
+  }
+}
+
+const startCounterRefreshes = () => {
+  stopCounterRefreshes()
+  stopTicketsAutoRefresh = startTicketsAutoRefresh()
+  stopTasksAutoRefresh = startTasksAutoRefresh()
+  stopAgendaAutoRefresh = startAgendaAutoRefresh()
+}
+
 const prefetchProjects = async () => {
+  if (!authStore.isAuthenticated || !authStore.user) {
+    return
+  }
+
   try {
     const cacheKey = 'projects:list'
     if (hasCache(cacheKey)) {
@@ -335,11 +361,28 @@ const prefetchProjects = async () => {
     await cachedFetch('/api/doli/projects', {
       params: { limit: 500, sortfield: 't.datec', sortorder: 'DESC' },
       ttl: 600000,
-      cacheKey
+      cacheKey,
+      timeout: 30000
     })
   } catch (error) {
     console.warn('⚠️ Background project prefetch failed', error)
   }
+}
+
+const bootstrapLayoutData = async () => {
+  if (!authStore.isAuthenticated || !authStore.user) {
+    stopCounterRefreshes()
+    return
+  }
+
+  await Promise.allSettled([
+    fetchAssignedTicketsCount(),
+    fetchAssignedTasksCount(),
+    fetchOverdueEventsCount()
+  ])
+
+  startCounterRefreshes()
+  prefetchProjects()
 }
 
 const user = computed(() => authStore.user)
@@ -456,24 +499,27 @@ const handleLogout = async () => {
 
 onMounted(async () => {
   initTheme()
-  await fetchAssignedTicketsCount()
-  await fetchAssignedTasksCount()
-  await fetchOverdueEventsCount()
-  stopTicketsAutoRefresh = startTicketsAutoRefresh()
-  stopTasksAutoRefresh = startTasksAutoRefresh()
-  stopAgendaAutoRefresh = startAgendaAutoRefresh()
-  prefetchProjects()
+  await bootstrapLayoutData()
 })
 
+watch(
+  () => [authStore.isAuthenticated, authStore.user?.id, authStore.user?.login],
+  async ([isAuthenticated, userId, userLogin], [prevAuthenticated, prevUserId, prevUserLogin] = []) => {
+    const authChanged = isAuthenticated !== prevAuthenticated
+    const userChanged = userId !== prevUserId || userLogin !== prevUserLogin
+
+    if (isAuthenticated && (authChanged || userChanged)) {
+      await bootstrapLayoutData()
+      return
+    }
+
+    if (!isAuthenticated && prevAuthenticated) {
+      stopCounterRefreshes()
+    }
+  }
+)
+
 onUnmounted(() => {
-  if (stopTicketsAutoRefresh) {
-    stopTicketsAutoRefresh()
-  }
-  if (stopTasksAutoRefresh) {
-    stopTasksAutoRefresh()
-  }
-  if (stopAgendaAutoRefresh) {
-    stopAgendaAutoRefresh()
-  }
+  stopCounterRefreshes()
 })
 </script>
