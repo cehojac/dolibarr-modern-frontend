@@ -1255,9 +1255,78 @@
 
           <!-- Content - Two Panel Layout -->
           <div class="flex h-[80vh]" :class="isDark ? 'bg-gray-900' : 'bg-white'">
-            <div v-if="loadingDetails" class="flex items-center justify-center w-full py-8">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <span class="ml-3" :class="isDark ? 'text-gray-300' : 'text-gray-600'">Cargando detalles...</span>
+            <div v-if="loadingDetails" class="flex w-full min-h-0" role="status" aria-live="polite" aria-label="Cargando detalles del ticket">
+              <!-- Skeleton - Left Panel -->
+              <div class="flex-1 p-6 overflow-y-auto min-w-0">
+                <!-- Action buttons skeleton -->
+                <div class="flex items-center space-x-3 mb-6">
+                  <div class="h-9 w-36 rounded-lg skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  <div class="h-9 w-24 rounded-lg skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  <div class="h-9 w-32 rounded-lg skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  <div class="h-9 w-24 rounded-lg skeleton-shimmer ml-auto" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                </div>
+
+                <!-- Description skeleton -->
+                <div class="mb-8">
+                  <div class="h-5 w-28 rounded skeleton-shimmer mb-4" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  <div class="space-y-2">
+                    <div class="h-3.5 w-full rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                    <div class="h-3.5 w-11/12 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                    <div class="h-3.5 w-2/3 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  </div>
+                </div>
+
+                <!-- Interventions skeleton -->
+                <div class="mb-8">
+                  <div class="h-5 w-52 rounded skeleton-shimmer mb-4" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  <div class="space-y-3">
+                    <div v-for="n in 2" :key="`int-skel-${n}`" class="flex items-start space-x-3 p-4 rounded-lg border" :class="isDark ? 'border-gray-700' : 'border-gray-200'">
+                      <div class="w-8 h-8 rounded-full skeleton-shimmer flex-shrink-0" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                      <div class="flex-1 space-y-2">
+                        <div class="h-3.5 w-1/3 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                        <div class="h-3 w-2/3 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Comments skeleton -->
+                <div>
+                  <div class="h-5 w-32 rounded skeleton-shimmer mb-4" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  <div class="h-28 w-full rounded-lg skeleton-shimmer mb-6" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  <div class="space-y-4">
+                    <div v-for="n in 2" :key="`msg-skel-${n}`" class="flex items-start space-x-3">
+                      <div class="w-8 h-8 rounded-full skeleton-shimmer flex-shrink-0" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                      <div class="flex-1 space-y-2">
+                        <div class="h-3.5 w-1/4 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                        <div class="h-3 w-full rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                        <div class="h-3 w-4/5 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Skeleton - Right Sidebar -->
+              <div class="w-80 max-w-sm border-l p-4 overflow-y-auto flex-shrink-0" :class="isDark ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'">
+                <div class="h-5 w-24 rounded skeleton-shimmer mb-4" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                <div class="space-y-4">
+                  <div v-for="n in 5" :key="`info-skel-${n}`">
+                    <div class="h-3 w-16 rounded skeleton-shimmer mb-2" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                    <div class="h-4 w-3/4 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  </div>
+                </div>
+                <div class="h-px w-full my-6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                <div class="h-5 w-28 rounded skeleton-shimmer mb-4" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-full skeleton-shimmer flex-shrink-0" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3.5 w-2/3 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                    <div class="h-3 w-1/3 rounded skeleton-shimmer" :class="isDark ? 'skeleton-shimmer-dark' : 'skeleton-shimmer-light'"></div>
+                  </div>
+                </div>
+              </div>
+              <span class="sr-only">Cargando detalles del ticket...</span>
             </div>
 
             <div v-else-if="ticketDetails" class="flex w-full min-h-0">
@@ -3679,6 +3748,35 @@
 
 .animate-slide-in {
   animation: slide-in 0.3s ease-out;
+}
+
+/* Skeleton loading (shimmer) para el modal de detalles del ticket */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-shimmer.skeleton-shimmer-light {
+  background-image: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 37%, #e5e7eb 63%);
+}
+
+.skeleton-shimmer.skeleton-shimmer-dark {
+  background-image: linear-gradient(90deg, #374151 25%, #4b5563 37%, #374151 63%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none;
+  }
 }
 </style>
 
@@ -6362,16 +6460,30 @@ const loadTicketMessages = async (ticketId) => {
 
   console.log(`📨 [loadTicketMessages] Iniciando carga de mensajes para ticket ${ticketId}`)
 
+  const parseMessageDate = (value) => {
+    if (!value) return 0
+    if (typeof value === 'number' || /^\d+$/.test(value)) {
+      return Number(value) * 1000
+    }
+    const time = new Date(String(value).replace(' ', 'T')).getTime()
+    return isNaN(time) ? 0 : time
+  }
+
+  const sortMessagesDesc = (messages) => {
+    if (!Array.isArray(messages)) return []
+    return [...messages].sort((a, b) => parseMessageDate(b.datec) - parseMessageDate(a.datec))
+  }
+
   const mapMessages = (messages) => {
     if (!Array.isArray(messages)) return []
-    return messages.map(msg => ({
+    return sortMessagesDesc(messages.map(msg => ({
       id: msg.id || msg.rowid || msg.ref || Date.now() + Math.random(),
       fk_user_author_name: msg.author?.name || msg.author?.login || msg.user_create || msg.fk_user_author_name || msg.fk_user_create || 'Sistema',
       datec: msg.date_creation || msg.datec || msg.datep || msg.date,
       message: msg.message || msg.note || msg.content || msg.label || '',
       type: msg.type || (msg.author?.type === 'email' ? 'email' : 'message'),
       private: msg.private === 1 || msg.private === '1' || msg.private === true || msg.percent === -1
-    }))
+    })))
   }
 
   // 1) Endpoint enriquecido del módulo
@@ -6464,14 +6576,14 @@ const loadTicketMessages = async (ticketId) => {
     }
 
     if (messages) {
-      ticketDetails.value.messages = messages.map(evt => ({
+      ticketDetails.value.messages = sortMessagesDesc(messages.map(evt => ({
         id: evt.id || evt.rowid || evt.ref || Date.now() + Math.random(),
         fk_user_author_name: evt.user_name || evt.user_author || evt.fk_user_author_name || evt.author?.name || evt.author?.login || 'Sistema',
         datec: evt.datec || evt.datep || evt.date_creation || evt.date,
         message: evt.note || evt.message || evt.label || '',
         type: evt.code?.startsWith('TICKET_MSG_SENTBYMAIL') ? 'email' : 'message',
         private: evt.percent === -1 || evt.code?.includes('PRIVATE') || evt.private === 1 || evt.private === '1' || evt.private === true
-      }))
+      })))
       messagesKey.value = Date.now()
       await nextTick()
       console.log(`✅ [loadTicketMessages] ${ticketDetails.value.messages.length} mensajes cargados desde agendaevents`)
@@ -7345,6 +7457,7 @@ const viewTicketDetails = async (ticket) => {
   selectedTicket.value = ticket
   ticketDetails.value = null
   loading.value = true
+  loadingDetails.value = true
   showModal.value = true
   showFullDescription.value = false // Reset description state
   
@@ -7545,7 +7658,20 @@ const closeModal = async () => {
 
 const formatDate = (dateString) => {
   if (!dateString) return '-'
-  return new Date(dateString * 1000).toLocaleDateString('es-ES')
+
+  let date
+
+  if (typeof dateString === 'number' || /^\d+$/.test(dateString)) {
+    // Unix timestamp en segundos
+    date = new Date(Number(dateString) * 1000)
+  } else {
+    // Cadena de fecha, ej: 'YYYY-MM-DD HH:MM:SS' o formato ISO
+    date = new Date(String(dateString).replace(' ', 'T'))
+  }
+
+  if (isNaN(date.getTime())) return '-'
+
+  return date.toLocaleDateString('es-ES')
 }
 
 // Estados de tickets (constantes de Dolibarr)

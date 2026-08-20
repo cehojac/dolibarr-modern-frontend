@@ -143,18 +143,18 @@ class DoliProxyController extends Controller
 
         $client = PleskHttpClient::withDolibarrToken($token);
 
-        // Construir URL completa con parámetros por defecto para tickets
+        // Construir URL completa con parámetros por defecto para tickets (solo en GET)
         $queryParams = [];
         
-        // Si es una solicitud de tickets, agregar parámetros por defecto
-        if (str_contains($url, '/tickets')) {
+        // Si es una solicitud GET de tickets, agregar parámetros por defecto
+        if ($method === 'GET' && str_contains($url, '/tickets')) {
             $queryParams['sortfield'] = 't.datec';
             $queryParams['sortorder'] = 'DESC';
             $queryParams['limit'] = '500';
         }
         
-        // Si es una solicitud de tareas, agregar parámetros por defecto
-        if (str_contains($url, '/tasks')) {
+        // Si es una solicitud GET de tareas, agregar parámetros por defecto
+        if ($method === 'GET' && str_contains($url, '/tasks')) {
             $queryParams['limit'] = '500';
         }
         
