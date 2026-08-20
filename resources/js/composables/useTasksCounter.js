@@ -22,15 +22,15 @@ export function useTasksCounter() {
 
     loading.value = true
     try {
+      // IMPORTANTE: fk_user_assign_login NO es una columna SQL real en Dolibarr
+      // (es una propiedad calculada solo disponible en la respuesta JSON). Incluirla
+      // en sqlfilters provoca un error 500/503 en el endpoint de Dolibarr.
+      // Por eso solo filtramos server-side por fk_user_assign (columna real) y
+      // dejamos el match por login para el filtrado en cliente (ver más abajo).
       const sqlClauses = []
 
       if (userId) {
         sqlClauses.push(`(t.fk_user_assign:=:${userId})`)
-      }
-
-      if (userLogin) {
-        const sanitizedLogin = String(userLogin).replace(/'/g, "''")
-        sqlClauses.push(`(t.fk_user_assign_login:=:'${sanitizedLogin}')`)
       }
 
       sqlClauses.push('(t.progress:<:100)')

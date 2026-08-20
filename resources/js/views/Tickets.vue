@@ -284,7 +284,7 @@
         <div>
           <select
             v-model="showOnlyMyTickets"
-            @change="applyFilters"
+            @change="handleUserFilterChange"
             class="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             :class="isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'"
           >
@@ -4255,6 +4255,12 @@ const cancelTimeEntry = () => {
 
 // Filter by unassigned tickets
 const filterByUnassigned = () => {
+  // Si ya está activo, lo desactivamos para volver al filtro por defecto
+  if (showUnassignedOnly.value) {
+    clearFilters()
+    return
+  }
+
   // Limpiar otros filtros
   selectedTercero.value = null
   selectedUser.value = null
@@ -4272,6 +4278,12 @@ const filterByUnassigned = () => {
 
 // Filter by assigned tickets
 const filterByAssigned = () => {
+  // Si ya está en "Mis Tickets" sin otros filtros, lo desactivamos
+  if (showOnlyMyTickets.value && !selectedUser.value) {
+    clearFilters()
+    return
+  }
+
   // Limpiar otros filtros
   selectedTercero.value = null
   selectedUser.value = null
@@ -6954,8 +6966,9 @@ const selectUserFilter = (user) => {
   userSearch.value = `${user.firstname} ${user.lastname}`
   showUserDropdown.value = false
   
-  // IMPORTANTE: Desactivar "Mis Tickets" para mostrar todos los tickets del usuario seleccionado
+  // IMPORTANTE: Desactivar "Mis Tickets" y "Sin asignar" para mostrar todos los tickets del usuario seleccionado
   showOnlyMyTickets.value = false
+  showUnassignedOnly.value = false
   
   applyFilters()
 }
@@ -7285,6 +7298,12 @@ const ticketInterventions = computed(() => {
 // Methods
 const handleSearch = () => {
   currentPage.value = 1
+}
+
+const handleUserFilterChange = () => {
+  // Al cambiar entre "Mis Tickets" y "Todos los Tickets", salir del filtro sin asignar
+  showUnassignedOnly.value = false
+  applyFilters()
 }
 
 const applyFilters = () => {
