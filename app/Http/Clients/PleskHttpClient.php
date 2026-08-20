@@ -31,7 +31,10 @@ class PleskHttpClient
                 CURLOPT_DNS_CACHE_TIMEOUT => 120,
                 CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
             ]
-        ])->retry(2, 1000, throw: false);
+        ])
+        // Solo 1 reintento (antes 2): con Dolibarr ya saturado, reintentar de más
+        // amplifica la carga justo cuando el servidor necesita respirar.
+        ->retry(1, 1000, throw: false);
     }
     
     /**

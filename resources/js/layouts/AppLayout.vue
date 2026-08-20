@@ -243,6 +243,7 @@ import { useTasksCounter } from '../composables/useTasksCounter'
 import { useAgendaCounter } from '../composables/useAgendaCounter'
 import { usePermissions } from '../composables/usePermissions'
 import { useApiCache } from '../composables/useApiCache'
+import { sleep } from '../utils/delay'
 import Breadcrumbs from '../components/Breadcrumbs.vue'
 
 const router = useRouter()
@@ -375,11 +376,14 @@ const bootstrapLayoutData = async () => {
     return
   }
 
-  await Promise.allSettled([
-    fetchAssignedTicketsCount(),
-    fetchAssignedTasksCount(),
-    fetchOverdueEventsCount()
-  ])
+  // Escalonamos las peticiones (en vez de Promise.allSettled simultáneo) para
+  // evitar ráfagas de peticiones concurrentes contra Dolibarr que pueden saturar
+  // LiteSpeed/PHP y provocar 503/timeouts justo tras el login.
+  await fetchAssignedTicketsCount().catch(() => {})
+  await sleep(150)
+  await fetchAssignedTasksCount().catch(() => {})
+  await sleep(150)
+  await fetchOverdueEventsCount().catch(() => {})
 
   startCounterRefreshes()
   prefetchProjects()
