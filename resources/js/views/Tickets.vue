@@ -7578,10 +7578,14 @@ const viewTicketDetails = async (ticket) => {
     await Promise.all([
       fetchAvailableUsers(),
       fetchAvailableContacts(detailData.fk_soc),
-      fetchCompanyInfo(detailData.fk_soc),
-      loadEmailTemplates(),
-      loadSubstitutionVariables()
+      fetchCompanyInfo(detailData.fk_soc)
     ])
+
+    // Plantillas de email y variables de sustitución no son críticas para mostrar
+    // el detalle del ticket (solo se usan al redactar una respuesta) y pueden
+    // tardar/timeoutear. Se cargan en segundo plano sin bloquear el modal.
+    loadEmailTemplates()
+    loadSubstitutionVariables()
     
   } catch (error) {
     // Fallback robusto: usar endpoint nativo si el enriquecido no existe o falla
@@ -7609,10 +7613,14 @@ const viewTicketDetails = async (ticket) => {
         fetchAvailableUsers(),
         fetchAvailableContacts(ticketDetails.value.fk_soc || ticket.fk_soc),
         fetchCompanyInfo(ticketDetails.value.fk_soc || ticket.fk_soc),
-        loadEmailTemplates(),
-        loadSubstitutionVariables(),
         loadTicketMessages(ticket.id)
       ])
+
+      // Plantillas de email y variables de sustitución no son críticas para
+      // mostrar el detalle del ticket (solo se usan al redactar una respuesta)
+      // y pueden tardar/timeoutear. Se cargan en segundo plano sin bloquear el modal.
+      loadEmailTemplates()
+      loadSubstitutionVariables()
     } catch (nativeError) {
       console.error('❌ [viewTicketDetails fallback] Error en flujo nativo:', nativeError)
 
