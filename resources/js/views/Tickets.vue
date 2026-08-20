@@ -3714,6 +3714,7 @@ const {
   updateTicketStatus,
   updateTicketField
 } = useTicketDetails()
+
 const { refreshCounter: updateTicketsCounter } = useTicketsCounter()
 const { getProjectName, preloadProjectsFromItems } = useProjects()
 
@@ -4072,59 +4073,26 @@ const saveTimeEntry = async () => {
     //  console.log('🔗 PASO 3: Vinculando intervención al ticket...')
     
     try {
-      // ALTERNATIVA 1: Usar API nativa de Dolibarr objectlinks
-      //  console.log('🔗 ALTERNATIVA 1: Intentando con API nativa objectlinks...')
-      
-      const objectLinksData = {
-        fk_source: selectedTicket.value.id.toString(),
-        sourcetype: "ticket",
-        fk_target: interventionId.toString(),
-        targettype: "fichinter"
+      // Vinculación real en BD a través del módulo personalizado (el nativo objectlinks
+      // siempre responde 500 en este entorno, por lo que se omite para evitar ruido/latencia)
+      await http.post(`/api/doli/dolibarrmodernfrontendapi/link/${selectedTicket.value.id}/${interventionId}`)
+    } catch (customError) {
+      // console.error('❌ Vinculación con módulo personalizado falló:', customError.response?.data || customError.message)
+      // No es fatal: la marca en note_private (más abajo) sigue permitiendo detectar el vínculo
+    }
+
+    // IMPORTANTE: Dolibarr solo devuelve `linkedObjectsIds` al pedir una intervención individual
+    // (GET /interventions/{id}), NUNCA en el listado masivo (GET /interventions) que usa
+    // fetchAllTicketInterventions. Por eso SIEMPRE marcamos también note_private, que sí viaja
+    // en el listado, para que la intervención aparezca de forma fiable en el modal del ticket.
+    try {
+      const referenceData = {
+        note_private: `[TICKET_LINK]\nTicket: ${selectedTicket.value.ref} (ID: ${selectedTicket.value.id})\nFecha: ${new Date().toLocaleString('es-ES')}\nDuración: ${Math.floor(recordedTime.value / 60)}m ${recordedTime.value % 60}s\nEstado: Vinculado automáticamente desde cronómetro\n[/TICKET_LINK]`
       }
-      
-      //  console.log('🔗 Datos objectlinks:', objectLinksData)
-      const linkResponse = await http.post(`/api/doli/objectlinks`, objectLinksData)
-      //  console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con API nativa')
-      //  console.log('   Link result:', linkResponse.data)
-      
-    } catch (objectLinksError) {
-      // console.warn('❌ ALTERNATIVA 1 FALLÓ - Intentando módulo personalizado...')
-      // console.warn('   ObjectLinks error status:', objectLinksError.response?.status)
-      // console.warn('   ObjectLinks error data:', objectLinksError.response?.data)
-      
-      // ALTERNATIVA 2: Usar módulo personalizado a través del proxy
-      try {
-        //  console.log('🔗 ALTERNATIVA 2: Usando módulo personalizado a través del proxy...')
-        
-        const customLinkResponse = await http.post(`/api/doli/dolibarrmodernfrontendapi/link/${selectedTicket.value.id}/${interventionId}`)
-         // console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
-         // console.log('   Custom link result:', customLinkResponse.data)
-        
-      } catch (customError) {
-        // console.error('❌ ALTERNATIVA 2 TAMBIÉN FALLÓ')
-        // console.error('   Custom error status:', customError.response?.status)
-        // console.error('   Custom error data:', customError.response?.data)
-        // console.error('   Custom error message:', customError.message)
-        
-        // ALTERNATIVA 3: Nota privada como último recurso
-        try {
-           // console.log('🔗 ALTERNATIVA 3: Usando nota privada como último recurso...')
-          
-          const referenceData = {
-            note_private: `[TICKET_LINK]\nTicket: ${selectedTicket.value.ref} (ID: ${selectedTicket.value.id})\nFecha: ${new Date().toLocaleString('es-ES')}\nDuración: ${Math.floor(recordedTime.value / 60)}m ${recordedTime.value % 60}s\nEstado: Vinculado automáticamente desde cronómetro\n[/TICKET_LINK]`
-          }
-          
-           // console.log('📋 Datos de referencia:', referenceData)
-          const referenceResponse = await http.put(`/api/doli/interventions/${interventionId}`, referenceData)
-           // console.log('✅ PASO 3 COMPLETADO - Referencia añadida en nota privada')
-           // console.log('   Reference result:', referenceResponse.data)
-          
-        } catch (referenceError) {
-          // console.error('❌ TODAS LAS ALTERNATIVAS FALLARON')
-          // console.error('   Reference error:', referenceError.response?.data)
-          throw new Error('Todas las alternativas de vinculación fallaron')
-        }
-      }
+      await http.put(`/api/doli/interventions/${interventionId}`, referenceData)
+    } catch (referenceError) {
+      // console.error('❌ No se pudo marcar note_private:', referenceError.response?.data)
+      throw new Error('No se pudo vincular la intervención al ticket')
     }
     //  console.log('-'.repeat(60))
 
@@ -4158,6 +4126,11 @@ const saveTimeEntry = async () => {
     // Refresh interventions
     if (authStore.user?.id) {
       await fetchUserInterventions(true)
+    }
+
+    // Refrescar también la lista de intervenciones del ticket abierto en el modal
+    if (selectedTicket.value?.id) {
+      await fetchAllTicketInterventions(selectedTicket.value.id)
     }
     
      // console.log('🎉 PROCESO COMPLETADO EXITOSAMENTE')
@@ -4734,61 +4707,29 @@ const saveManualIntervention = async () => {
     // PASO 3: Vincular intervención al ticket (igual que el timer)
     //  console.log('🔗 PASO 3: Vinculando intervención al ticket...')
     
+    const ticketId = selectedTicket.value.id || ticketDetails.value.id
+
     try {
-      // ALTERNATIVA 1: Usar API nativa de Dolibarr objectlinks
-      //  console.log('🔗 ALTERNATIVA 1: Intentando con API nativa objectlinks...')
-      
-      const objectLinksData = {
-        fk_source: (selectedTicket.value.id || ticketDetails.value.id).toString(),
-        sourcetype: "ticket",
-        fk_target: interventionId.toString(),
-        targettype: "fichinter"
+      // Vinculación real en BD a través del módulo personalizado (el nativo objectlinks
+      // siempre responde 500 en este entorno, por lo que se omite para evitar ruido/latencia)
+      await http.post(`/api/doli/dolibarrmodernfrontendapi/link/${ticketId}/${interventionId}`)
+    } catch (customError) {
+      // console.error('❌ Vinculación con módulo personalizado falló:', customError.response?.data || customError.message)
+      // No es fatal: la marca en note_private (más abajo) sigue permitiendo detectar el vínculo
+    }
+
+    // IMPORTANTE: Dolibarr solo devuelve `linkedObjectsIds` al pedir una intervención individual
+    // (GET /interventions/{id}), NUNCA en el listado masivo (GET /interventions) que usa
+    // fetchAllTicketInterventions. Por eso SIEMPRE marcamos también note_private, que sí viaja
+    // en el listado, para que la intervención aparezca de forma fiable en el modal del ticket.
+    try {
+      const referenceData = {
+        note_private: `[TICKET_LINK]\nTicket: ${selectedTicket.value.ref || ticketDetails.value.ref} (ID: ${ticketId})\nFecha: ${new Date().toLocaleString('es-ES')}\nTipo: Intervención manual\nEstado: Vinculado automáticamente desde formulario manual\n[/TICKET_LINK]`
       }
-      
-      //  console.log('🔗 Datos objectlinks:', objectLinksData)
-      const linkResponse = await http.post(`/api/doli/objectlinks`, objectLinksData)
-      //  console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con API nativa')
-      //  console.log('   Link result:', linkResponse.data)
-      
-    } catch (objectLinksError) {
-      // console.warn('❌ ALTERNATIVA 1 FALLÓ - Intentando módulo personalizado...')
-      // console.warn('   ObjectLinks error status:', objectLinksError.response?.status)
-      // console.warn('   ObjectLinks error data:', objectLinksError.response?.data)
-      
-      // ALTERNATIVA 2: Usar módulo personalizado a través del proxy
-      try {
-        //  console.log('🔗 ALTERNATIVA 2: Usando módulo personalizado a través del proxy...')
-        
-        const ticketId = selectedTicket.value.id || ticketDetails.value.id
-        const customLinkResponse = await http.post(`/api/doli/dolibarrmodernfrontendapi/link/${ticketId}/${interventionId}`)
-         // console.log('✅ PASO 3 COMPLETADO - Vinculación exitosa con módulo personalizado')
-         // console.log('   Custom link result:', customLinkResponse.data)
-        
-      } catch (customError) {
-        // console.error('❌ ALTERNATIVA 2 TAMBIÉN FALLÓ')
-        // console.error('   Custom error status:', customError.response?.status)
-        // console.error('   Custom error data:', customError.response?.data)
-        // console.error('   Custom error message:', customError.message)
-        
-        // ALTERNATIVA 3: Nota privada como último recurso
-        try {
-           // console.log('🔗 ALTERNATIVA 3: Usando nota privada como último recurso...')
-          
-          const referenceData = {
-            note_private: `[TICKET_LINK]\nTicket: ${selectedTicket.value.ref || ticketDetails.value.ref} (ID: ${selectedTicket.value.id || ticketDetails.value.id})\nFecha: ${new Date().toLocaleString('es-ES')}\nTipo: Intervención manual\nEstado: Vinculado automáticamente desde formulario manual\n[/TICKET_LINK]`
-          }
-          
-           // console.log('📋 Datos de referencia:', referenceData)
-          const referenceResponse = await http.put(`/api/doli/interventions/${interventionId}`, referenceData)
-           // console.log('✅ PASO 3 COMPLETADO - Referencia añadida en nota privada')
-           // console.log('   Reference result:', referenceResponse.data)
-          
-        } catch (referenceError) {
-          // console.error('❌ TODAS LAS ALTERNATIVAS FALLARON')
-          // console.error('   Reference error:', referenceError.response?.data)
-          // console.warn('⚠️ La intervención se creó pero no se pudo vincular al ticket')
-        }
-      }
+      await http.put(`/api/doli/interventions/${interventionId}`, referenceData)
+    } catch (referenceError) {
+      // console.error('❌ No se pudo marcar note_private:', referenceError.response?.data)
+      // console.warn('⚠️ La intervención se creó pero no se pudo vincular al ticket')
     }
     //  console.log('-'.repeat(60))
 
@@ -4828,14 +4769,13 @@ const saveManualIntervention = async () => {
       }
     }
     
-    // Forzar actualización de las intervenciones del ticket actual
-    try {
-       // console.log('🔄 Forzando actualización de intervenciones para el ticket actual...')
-      // Trigger reactivity by accessing the computed property
-      const currentInterventions = userInterventionsForTicket.value
-       // console.log('📋 Intervenciones actuales del ticket:', currentInterventions.length)
-    } catch (error) {
-      // console.warn('Error al actualizar intervenciones del ticket:', error)
+    // Forzar actualización de las intervenciones del ticket actual (lista realmente renderizada en el modal)
+    if (selectedTicket.value?.id) {
+      try {
+        await fetchAllTicketInterventions(selectedTicket.value.id)
+      } catch (error) {
+        // console.warn('Error al actualizar intervenciones del ticket:', error)
+      }
     }
 
      // console.log('✅ PROCESO COMPLETADO EXITOSAMENTE')
@@ -5793,7 +5733,8 @@ const sendComment = async () => {
         await Promise.all([
           fetchTicketFollowers(ticketId),
           fetchTicketReminders(ticketId),
-          fetchCompanyInfo(response.data.fk_soc)
+          fetchCompanyInfo(response.data.fk_soc),
+          loadTicketMessages(ticketId)
         ])
         
         // Log mensajes después de recargar
@@ -6244,64 +6185,304 @@ const fetchAllTicketInterventions = async (ticketId) => {
   
   loadingAllInterventions.value = true
   try {
-    // console.log('🔍 Obteniendo todas las intervenciones para ticket:', ticketId)
-    
-    // Usar el mismo endpoint que funciona, pero obtener todas las intervenciones
+    const linkedInterventionIds = new Set()
+
+    const addInterventionId = (value) => {
+      if (value === undefined || value === null || value === '') return
+      linkedInterventionIds.add(String(value))
+    }
+
+    // 1) IDs desde endpoint dedicado del módulo
+    try {
+      const dedicatedResponse = await http.get(`/api/doli/dolibarrmodernfrontendapi/ticket/${ticketId}/interventions`)
+      const dedicatedData = dedicatedResponse.data
+      const dedicatedList = Array.isArray(dedicatedData)
+        ? dedicatedData
+        : Array.isArray(dedicatedData?.interventions)
+          ? dedicatedData.interventions
+          : []
+
+      dedicatedList.forEach(item => {
+        addInterventionId(item?.intervention_id || item?.id || item?.fk_target)
+      })
+    } catch (dedicatedError) {
+      // console.warn('Endpoint dedicado de intervenciones no disponible:', dedicatedError.response?.status)
+    }
+
+    const extractNativeLinkedInterventionIds = (linkedObjects) => {
+      if (!linkedObjects || typeof linkedObjects !== 'object') return
+
+      const interventionBuckets = Object.entries(linkedObjects).filter(([key]) =>
+        /fichinter|intervention/i.test(String(key))
+      )
+
+      interventionBuckets.forEach(([, bucket]) => {
+        if (bucket && typeof bucket === 'object') {
+          Object.values(bucket).forEach(addInterventionId)
+        }
+      })
+    }
+
+    // 2) IDs nativos desde linkedObjectsIds del ticket (Dolibarr no siempre lo
+    // devuelve poblado en el GET del ticket, así que esto es best-effort)
+    let ticketSocId = null
+    try {
+      const ticketResponse = await http.get(`/api/doli/tickets/${ticketId}`)
+      ticketSocId = ticketResponse.data?.socid || ticketResponse.data?.fk_soc || null
+      extractNativeLinkedInterventionIds(ticketResponse.data?.linkedObjectsIds)
+    } catch (nativeTicketError) {
+      // console.warn('No se pudo leer el ticket nativo:', nativeTicketError.response?.status)
+    }
+
+    if (!ticketSocId) {
+      ticketSocId = ticketDetails.value?.socid || ticketDetails.value?.fk_soc
+        || selectedTicket.value?.socid || selectedTicket.value?.fk_soc || null
+    }
+
+    // 4) Si tenemos IDs (módulo/nativos), cargar cada intervención por ID (datos completos)
+    const interventionsById = new Map()
+
+    if (linkedInterventionIds.size > 0) {
+      const detailPromises = [...linkedInterventionIds].map(interventionId =>
+        http.get(`/api/doli/interventions/${interventionId}`, {
+          params: {
+            properties: 'id,ref,status,duration,datee,datem,desc,note_private,lines,fk_user_author,fk_user_create,user_creation_id'
+          }
+        }).catch(() => null)
+      )
+
+      const detailResponses = await Promise.all(detailPromises)
+      detailResponses
+        .filter(resp => resp && resp.data)
+        .forEach(resp => interventionsById.set(String(resp.data.id), resp.data))
+    }
+
+    // 5) SIEMPRE combinar con el listado genérico (cubre vínculos antiguos que no
+    // aparecen ni en el endpoint dedicado ni en linkedObjectsIds del ticket).
     const response = await http.get('/api/doli/interventions', {
       params: {
         sortfield: 't.rowid',
         sortorder: 'DESC',
         limit: 1000,
-        properties: 'id,linkedObjectsIds,ref,status,duration,datee,datem,desc,lines,fk_user_author,fk_user_create,user_creation_id'
+        properties: 'id,socid,linkedObjectsIds,fk_element,elementtype,ref,status,duration,datee,datem,desc,note_private,lines,fk_user_author,fk_user_create,user_creation_id'
       }
     })
 
-    // console.log('📦 Respuesta de intervenciones:', response.data?.length || 0, 'intervenciones totales')
-    
-    // Debug: Ver estructura de una intervención
-    if (response.data && response.data.length > 0) {
-      // console.log('🔍 Estructura de intervención ejemplo:', response.data[0])
-    }
-
     if (response.data && Array.isArray(response.data)) {
-      // Filtrar intervenciones que están vinculadas a este ticket
-      const filteredInterventions = response.data.filter(intervention => {
-        // Método 1: Verificar vinculación por linkedObjectsIds
+      const currentTicketRef = String(
+        ticketDetails.value?.ref || selectedTicket.value?.ref || ''
+      ).trim()
+
+      const cheapMatch = (intervention) => {
+        // Método 1: Vinculación estructural nativa (intervenciones antiguas)
+        if (
+          String(intervention.fk_element || '') === String(ticketId) &&
+          /ticket/i.test(String(intervention.elementtype || ''))
+        ) {
+          return true
+        }
+
+        // Método 2: Verificar vinculación por linkedObjectsIds (si el bulk lo trae)
         if (intervention.linkedObjectsIds && intervention.linkedObjectsIds.ticket && typeof intervention.linkedObjectsIds.ticket === 'object') {
           const ticketIds = Object.values(intervention.linkedObjectsIds.ticket)
-          const matches = ticketIds.some(id => String(id) === String(ticketId))
-          if (matches) return true
+          if (ticketIds.some(id => String(id) === String(ticketId))) return true
         }
-        
-        // Método 2: Verificar vinculación por nota privada
+
+        // Método 3: Verificar vinculación por nota privada
         if (intervention.note_private) {
-          const noteMatch = intervention.note_private.includes(`[TICKET_LINK]`) && 
+          const noteMatch = intervention.note_private.includes(`[TICKET_LINK]`) &&
                            intervention.note_private.includes(`(ID: ${ticketId})`)
           if (noteMatch) return true
         }
-        
-        // Método 3: Verificar vinculación por descripción
+
+        // Método 4: Verificar vinculación por descripción
         if (intervention.desc && intervention.desc.includes(`(ID: ${ticketId})`)) {
           return true
         }
-        
+
+        // Método 5: Verificar por ref de ticket en texto libre
+        if (currentTicketRef) {
+          const descHasRef = String(intervention.desc || '').includes(currentTicketRef)
+          const noteHasRef = String(intervention.note_private || '').includes(currentTicketRef)
+          if (descHasRef || noteHasRef) return true
+        }
+
         return false
-      })
-      
-      // Enriquecer intervenciones con información de usuarios
-      const enrichedInterventions = await enrichInterventionsWithUserInfo(filteredInterventions)
-      allTicketInterventions.value = enrichedInterventions
-      // console.log('✅ Intervenciones filtradas para ticket', ticketId, ':', allTicketInterventions.value.length)
-    } else {
-      allTicketInterventions.value = []
-      // console.log('❌ No se recibieron datos de intervenciones')
+      }
+
+      const cheapMatches = response.data.filter(cheapMatch)
+      cheapMatches.forEach(item => interventionsById.set(String(item.id), item))
+
+      // 6) Verificación profunda: para intervenciones del mismo cliente que no
+      // matchearon por métodos "baratos", consultar su propio linkedObjectsIds
+      // (Dolibarr solo lo popula al pedir el objeto individualmente).
+      if (ticketSocId) {
+        const deepCandidates = response.data
+          .filter(item => !interventionsById.has(String(item.id)))
+          .filter(item => String(item.socid || '') === String(ticketSocId))
+          .slice(0, 60)
+
+        const deepResults = await Promise.all(
+          deepCandidates.map(item =>
+            http.get(`/api/doli/interventions/${item.id}`, {
+              params: { properties: 'id,linkedObjectsIds' }
+            }).then(r => ({ id: item.id, linkedObjectsIds: r.data?.linkedObjectsIds })).catch(() => null)
+          )
+        )
+
+        deepResults
+          .filter(Boolean)
+          .forEach(({ id, linkedObjectsIds }) => {
+            const ticketBucket = linkedObjectsIds?.ticket
+            if (ticketBucket && typeof ticketBucket === 'object') {
+              const matches = Object.values(ticketBucket).some(v => String(v) === String(ticketId))
+              if (matches) {
+                const fullItem = response.data.find(i => String(i.id) === String(id))
+                if (fullItem) interventionsById.set(String(id), fullItem)
+              }
+            }
+          })
+      }
     }
+
+    const mergedInterventions = [...interventionsById.values()]
+      .sort((a, b) => Number(b?.id || 0) - Number(a?.id || 0))
+
+    allTicketInterventions.value = await enrichInterventionsWithUserInfo(mergedInterventions)
   } catch (error) {
     // console.error('❌ Error al obtener intervenciones del ticket:', error)
     allTicketInterventions.value = []
   } finally {
     loadingAllInterventions.value = false
   }
+}
+
+const loadTicketMessages = async (ticketId) => {
+  if (!ticketId || !ticketDetails.value) return
+
+  console.log(`📨 [loadTicketMessages] Iniciando carga de mensajes para ticket ${ticketId}`)
+
+  const mapMessages = (messages) => {
+    if (!Array.isArray(messages)) return []
+    return messages.map(msg => ({
+      id: msg.id || msg.rowid || msg.ref || Date.now() + Math.random(),
+      fk_user_author_name: msg.author?.name || msg.author?.login || msg.user_create || msg.fk_user_author_name || msg.fk_user_create || 'Sistema',
+      datec: msg.date_creation || msg.datec || msg.datep || msg.date,
+      message: msg.message || msg.note || msg.content || msg.label || '',
+      type: msg.type || (msg.author?.type === 'email' ? 'email' : 'message'),
+      private: msg.private === 1 || msg.private === '1' || msg.private === true || msg.percent === -1
+    }))
+  }
+
+  // 1) Endpoint enriquecido del módulo
+  try {
+    console.log(`📨 [loadTicketMessages] Intentando endpoint enriquecido: /api/doli/dolibarrmodernfrontendapi/tickets/${ticketId}/messages`)
+    const response = await http.get(`/api/doli/dolibarrmodernfrontendapi/tickets/${ticketId}/messages`)
+    console.log('📦 [loadTicketMessages] Respuesta enriquecida:', response.status, response.data)
+
+    let messages = null
+    if (response.data && Array.isArray(response.data.messages)) {
+      messages = response.data.messages
+    } else if (Array.isArray(response.data)) {
+      messages = response.data
+    }
+
+    if (messages) {
+      ticketDetails.value.messages = [...mapMessages(messages)]
+      messagesKey.value = Date.now()
+      await nextTick()
+      console.log(`✅ [loadTicketMessages] ${ticketDetails.value.messages.length} mensajes cargados desde endpoint enriquecido`)
+      console.log('📋 [loadTicketMessages] Primer mensaje mapeado:', ticketDetails.value.messages[0])
+      return
+    }
+  } catch (enrichedError) {
+    console.warn('⚠️ [loadTicketMessages] Endpoint enriquecido falló:', enrichedError?.response?.status, enrichedError?.response?.data || enrichedError.message)
+    if (enrichedError?.response?.status === 401) {
+      ticketDetails.value.messages = []
+    }
+  }
+
+  // 2) Fallback nativo /tickets/{id}/messages
+  try {
+    console.log(`📨 [loadTicketMessages] Intentando endpoint nativo: /api/doli/tickets/${ticketId}/messages`)
+    const response = await http.get(`/api/doli/tickets/${ticketId}/messages`)
+    console.log('📦 [loadTicketMessages] Respuesta nativa:', response.status, response.data)
+
+    let messages = null
+    if (response.data && Array.isArray(response.data.messages)) {
+      messages = response.data.messages
+    } else if (Array.isArray(response.data)) {
+      messages = response.data
+    }
+
+    if (messages) {
+      ticketDetails.value.messages = [...mapMessages(messages)]
+      messagesKey.value = Date.now()
+      await nextTick()
+      console.log(`✅ [loadTicketMessages] ${ticketDetails.value.messages.length} mensajes cargados desde endpoint nativo`)
+      return
+    }
+  } catch (nativeError) {
+    console.warn('⚠️ [loadTicketMessages] Endpoint nativo falló:', nativeError?.response?.status, nativeError?.response?.data || nativeError.message)
+  }
+
+  // 3) Fallback: obtener ticket nativo y ver si incluye mensajes
+  try {
+    console.log(`📨 [loadTicketMessages] Intentando GET /api/doli/tickets/${ticketId}`)
+    const response = await http.get(`/api/doli/tickets/${ticketId}`)
+    console.log('📦 [loadTicketMessages] Respuesta ticket nativo:', response.status, response.data)
+
+    let messages = null
+    if (response.data && Array.isArray(response.data.messages)) {
+      messages = response.data.messages
+    }
+
+    if (messages) {
+      ticketDetails.value.messages = [...mapMessages(messages)]
+      messagesKey.value = Date.now()
+      await nextTick()
+      console.log(`✅ [loadTicketMessages] ${ticketDetails.value.messages.length} mensajes cargados desde ticket nativo`)
+      return
+    }
+  } catch (finalError) {
+    console.warn('⚠️ [loadTicketMessages] Fallback final falló:', finalError?.response?.status, finalError?.response?.data || finalError.message)
+  }
+
+  // 4) Fallback: obtener todos los eventos de agenda/actioncomm del ticket
+  try {
+    const filters = `(a.fk_element:=:${ticketId})and(a.elementtype:=:'ticket')`
+    const url = `/api/doli/agendaevents?sqlfilters=${encodeURIComponent(filters)}&sortfield=a.datec&sortorder=ASC&limit=1000`
+    console.log(`📨 [loadTicketMessages] Intentando agendaevents: ${url}`)
+    const response = await http.get(url)
+    console.log('📦 [loadTicketMessages] Respuesta agendaevents:', response.status, response.data)
+
+    let messages = null
+    if (response.data && Array.isArray(response.data)) {
+      messages = response.data
+    } else if (response.data && Array.isArray(response.data.data)) {
+      messages = response.data.data
+    }
+
+    if (messages) {
+      ticketDetails.value.messages = messages.map(evt => ({
+        id: evt.id || evt.rowid || evt.ref || Date.now() + Math.random(),
+        fk_user_author_name: evt.user_name || evt.user_author || evt.fk_user_author_name || evt.author?.name || evt.author?.login || 'Sistema',
+        datec: evt.datec || evt.datep || evt.date_creation || evt.date,
+        message: evt.note || evt.message || evt.label || '',
+        type: evt.code?.startsWith('TICKET_MSG_SENTBYMAIL') ? 'email' : 'message',
+        private: evt.percent === -1 || evt.code?.includes('PRIVATE') || evt.private === 1 || evt.private === '1' || evt.private === true
+      }))
+      messagesKey.value = Date.now()
+      await nextTick()
+      console.log(`✅ [loadTicketMessages] ${ticketDetails.value.messages.length} mensajes cargados desde agendaevents`)
+      return
+    }
+  } catch (agendaError) {
+    console.warn('⚠️ [loadTicketMessages] Fallback agendaevents falló:', agendaError?.response?.status, agendaError?.response?.data || agendaError.message)
+  }
+
+  ticketDetails.value.messages = []
+  console.log('⚠️ [loadTicketMessages] No se encontraron mensajes en ningún endpoint')
 }
 
 // Función para enriquecer intervenciones con información de usuarios
@@ -7270,11 +7451,6 @@ const viewTicketDetails = async (ticket) => {
       loadSubstitutionVariables()
     ])
     
-    // Initialize notes and description with existing values
-    privateNote.value = ticketDetails.value.note_private || ''
-    publicNote.value = ticketDetails.value.note_public || ''
-    taskDescription.value = ticketDetails.value.description || ''
-    
   } catch (error) {
     // Fallback robusto: usar endpoint nativo si el enriquecido no existe o falla
     try {
@@ -7302,17 +7478,27 @@ const viewTicketDetails = async (ticket) => {
         fetchAvailableContacts(ticketDetails.value.fk_soc || ticket.fk_soc),
         fetchCompanyInfo(ticketDetails.value.fk_soc || ticket.fk_soc),
         loadEmailTemplates(),
-        loadSubstitutionVariables()
+        loadSubstitutionVariables(),
+        loadTicketMessages(ticket.id)
       ])
-
-      privateNote.value = ticketDetails.value.note_private || ''
-      publicNote.value = ticketDetails.value.note_public || ''
-      taskDescription.value = ticketDetails.value.description || ''
     } catch (nativeError) {
-      ticketDetails.value = {
-        ...ticket,
-        messages: []
+      console.error('❌ [viewTicketDetails fallback] Error en flujo nativo:', nativeError)
+
+      const existingDetails = ticketDetails.value
+      const existingMessages = Array.isArray(existingDetails?.messages) ? existingDetails.messages : []
+
+      if (existingDetails) {
+        ticketDetails.value = {
+          ...existingDetails,
+          messages: existingMessages
+        }
+      } else {
+        ticketDetails.value = {
+          ...ticket,
+          messages: []
+        }
       }
+
       ticketFollowers.value = []
       internalFollowers.value = []
       externalFollowers.value = []

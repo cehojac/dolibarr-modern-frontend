@@ -41,7 +41,7 @@ export function useInterventions() {
           sortorder: 'DESC',
           limit: 1000,
           sqlfilters: `(t.fk_user_author:=:${userId})`,
-          properties: 'id,linkedObjectsIds,ref,status,duration,datee,datem,desc,lines,desc'
+          properties: 'id,linkedObjectsIds,ref,status,duration,datee,datem,desc,note_private,lines'
         }
       })
 
