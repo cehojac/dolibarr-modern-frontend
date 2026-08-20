@@ -448,6 +448,7 @@ import { useTercerosCounter } from '../composables/useTercerosCounter'
 import { useProductsCounter } from '../composables/useProductsCounter'
 import { useAgendaCounter } from '../composables/useAgendaCounter'
 import { useInvoicesCounter } from '../composables/useInvoicesCounter'
+import { sleep } from '../utils/delay'
 import { usePermissions } from '../composables/usePermissions'
 import { useTicketDetails } from '../composables/useTicketDetails'
 import PermissionGuard from '../components/PermissionGuard.vue'
@@ -579,22 +580,25 @@ const loadTodos = async () => {
   loading.value = true
   try {
     
-    // Load all required data in parallel using enriched endpoints with fallbacks
-    const [ticketsResponse, tasksResponse, tercerosResponse, projectsResponse, usersResponse] = await Promise.all([
-      http.get('/api/doli/dolibarrmodernfrontendapi/tickets/enriched?limit=500&include_contacts=0')
-        .catch(err => {
-          console.warn('⚠️ Enriched tickets endpoint failed, using native:', err.message)
-          return http.get('/api/doli/tickets?limit=500').catch(() => ({ data: [] }))
-        }),
-      http.get('/api/doli/dolibarrmodernfrontendapi/tasks/enriched?limit=500&include_contacts=0&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
-        .catch(err => {
-          console.warn('⚠️ Enriched tasks endpoint failed, using native:', err.message)
-          return http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)').catch(() => ({ data: [] }))
-        }),
-      http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] })),
-      http.get('/api/doli/projects?limit=2000').catch(() => ({ data: [] })),
-      http.get('/api/doli/users').catch(() => ({ data: [] }))
-    ])
+    // Cargamos los datos de forma escalonada (en vez de Promise.all simultáneo)
+    // para evitar ráfagas de peticiones concurrentes pesadas contra Dolibarr.
+    const ticketsResponse = await http.get('/api/doli/dolibarrmodernfrontendapi/tickets/enriched?limit=500&include_contacts=0')
+      .catch(err => {
+        console.warn('⚠️ Enriched tickets endpoint failed, using native:', err.message)
+        return http.get('/api/doli/tickets?limit=500').catch(() => ({ data: [] }))
+      })
+    await sleep(150)
+    const tasksResponse = await http.get('/api/doli/dolibarrmodernfrontendapi/tasks/enriched?limit=500&include_contacts=0&sqlfilters=(t.progress:<:100)or(t.progress:is:null)')
+      .catch(err => {
+        console.warn('⚠️ Enriched tasks endpoint failed, using native:', err.message)
+        return http.get('/api/doli/tasks?limit=500&sqlfilters=(t.progress:<:100)or(t.progress:is:null)').catch(() => ({ data: [] }))
+      })
+    await sleep(150)
+    const tercerosResponse = await http.get('/api/doli/thirdparties?limit=1000&status=1').catch(() => ({ data: [] }))
+    await sleep(150)
+    const projectsResponse = await http.get('/api/doli/projects?limit=2000').catch(() => ({ data: [] }))
+    await sleep(150)
+    const usersResponse = await http.get('/api/doli/users').catch(() => ({ data: [] }))
 
 
     // Create lookup maps for enrichment
@@ -744,15 +748,23 @@ const bootstrapDashboardData = async () => {
     return
   }
 
-  await Promise.allSettled([
-    fetchAssignedTicketsCount(),
-    fetchAssignedTasksCount(),
-    fetchTercerosCount(),
-    fetchProductsCount(),
-    fetchOverdueEventsCount(),
-    fetchOverdueInvoicesCount(),
-    loadTodos()
-  ])
+  // NOTA: fetchAssignedTicketsCount/fetchAssignedTasksCount/fetchOverdueEventsCount
+  // NO se llaman aquí porque AppLayout.vue (que siempre envuelve este componente)
+  // ya las ejecuta en su propio bootstrapLayoutData() y actualizan los mismos refs
+  // singleton compartidos (ticketsCountComposable/tasksCountComposable/overdueEventsCount).
+  // Duplicar estas llamadas solo generaba peticiones redundantes contra Dolibarr.
+  //
+  // Además, escalonamos estas peticiones (en vez de Promise.allSettled simultáneo)
+  // y damos un pequeño margen para no solapar con el bootstrap de AppLayout.vue,
+  // reduciendo la ráfaga de peticiones concurrentes que saturaba LiteSpeed/PHP.
+  await sleep(300)
+  await fetchTercerosCount().catch(() => {})
+  await sleep(150)
+  await fetchProductsCount().catch(() => {})
+  await sleep(150)
+  await fetchOverdueInvoicesCount().catch(() => {})
+  await sleep(150)
+  await loadTodos()
 }
 
 const sortBy = (field) => {
