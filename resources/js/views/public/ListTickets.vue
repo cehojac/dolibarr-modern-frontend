@@ -903,14 +903,14 @@ const verifyEmailForThirdparty = async (socid, email) => {
 
 // Buscar todos los tickets donde el email está involucrado
 const findTicketsByEmail = async (email) => {
-  const allTickets = []
+  const ticketsById = new Map()
   const companyNames = {} // Cache de nombres de terceros
   
   const sanitizedEmail = email.replace(/'/g, "''")
-  
-  // 1. Buscar todos los tickets por origin_email (Dolibarr devuelve todos los estados)
   const publicHeaders = { 'X-Public-Request': 'true' }
   
+  // 1. Buscar todos los tickets por origin_email (cubre tickets creados desde
+  // el formulario público, donde origin_email sí se rellena)
   try {
     console.log('📧 Buscando tickets por origin_email:', email)
     const response = await http.get('/api/doli/tickets', {
@@ -924,41 +924,83 @@ const findTicketsByEmail = async (email) => {
     })
     
     if (response.data && Array.isArray(response.data)) {
-      allTickets.push(...response.data)
-      // Log distribución de estados para debug
-      const statusCount = {}
-      allTickets.forEach(t => {
-        const s = t.fk_statut || 'unknown'
-        statusCount[s] = (statusCount[s] || 0) + 1
-      })
-      console.log(`✅ ${allTickets.length} tickets encontrados. Estados:`, statusCount)
+      response.data.forEach(t => ticketsById.set(t.id, t))
+      console.log(`✅ ${response.data.length} tickets encontrados por origin_email`)
     }
   } catch (error) {
-    console.warn('⚠️ Error buscando tickets:', error.message)
+    console.warn('⚠️ Error buscando tickets por origin_email:', error.message)
   }
   
-  // 2. Resolver el contacto para envío de mensajes (1 sola query)
-  if (!currentContact.value) {
+  // 2. Resolver el tercero/contacto por email y traer también sus tickets por
+  // socid. origin_email suele quedar vacío en tickets creados por el staff a
+  // nombre de un tercero, así que esta vía cubre esos casos (comportamiento
+  // previo a la regresión del issue #18).
+  const socidsToFetch = new Set()
+  
+  try {
+    const thirdpartiesResponse = await http.get('/api/doli/thirdparties', {
+      params: {
+        sqlfilters: `(t.email:=:'${sanitizedEmail}')`,
+        limit: 10
+      },
+      headers: publicHeaders
+    })
+    if (thirdpartiesResponse.data && Array.isArray(thirdpartiesResponse.data)) {
+      thirdpartiesResponse.data
+        .filter(tp => tp.email && tp.email.toLowerCase() === email.toLowerCase())
+        .forEach(tp => socidsToFetch.add(tp.id))
+      console.log(`🏢 ${thirdpartiesResponse.data.length} tercero(s) encontrados por email`)
+    }
+  } catch (error) {
+    console.warn('⚠️ Error buscando tercero por email:', error.message)
+  }
+  
+  try {
+    const contactsResponse = await http.get('/api/doli/contacts', {
+      params: {
+        sqlfilters: `(t.email:=:'${sanitizedEmail}')`,
+        limit: 10
+      },
+      headers: publicHeaders
+    })
+    if (contactsResponse.data && Array.isArray(contactsResponse.data)) {
+      const match = contactsResponse.data.find(
+        c => c.email && c.email.toLowerCase() === email.toLowerCase()
+      )
+      if (match) {
+        currentContact.value = currentContact.value || match
+        console.log('👤 Contacto resuelto:', match.firstname, match.lastname)
+        if (match.socid) socidsToFetch.add(match.socid)
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Error resolviendo contacto:', error.message)
+  }
+  
+  for (const sid of socidsToFetch) {
     try {
-      const contactsResponse = await http.get('/api/doli/contacts', {
-        params: { email: email, limit: 10 }
+      const ticketsResponse = await http.get('/api/doli/tickets', {
+        params: {
+          socid: sid,
+          sortfield: 't.datec',
+          sortorder: 'DESC',
+          limit: 200
+        },
+        headers: publicHeaders
       })
-      if (contactsResponse.data && Array.isArray(contactsResponse.data)) {
-        const match = contactsResponse.data.find(
-          c => c.email && c.email.toLowerCase() === email.toLowerCase()
-        )
-        if (match) {
-          currentContact.value = match
-          console.log('👤 Contacto resuelto:', match.firstname, match.lastname)
-        }
+      if (ticketsResponse.data && Array.isArray(ticketsResponse.data)) {
+        ticketsResponse.data.forEach(t => ticketsById.set(t.id, t))
+        console.log(`✅ ${ticketsResponse.data.length} tickets encontrados para socid ${sid}`)
       }
     } catch (error) {
-      console.warn('⚠️ Error resolviendo contacto:', error.message)
+      console.warn(`⚠️ Error buscando tickets para socid ${sid}:`, error.message)
     }
   }
   
+  const allTickets = Array.from(ticketsById.values())
+  
   if (allTickets.length === 0) {
-    console.log('� No se encontraron tickets')
+    console.log('❌ No se encontraron tickets')
     return []
   }
   
@@ -1234,7 +1276,7 @@ const sendMessage = async () => {
     if (!currentContact.value && searchEmail.value) {
       console.log('👤 Obteniendo contacto para email:', searchEmail.value)
       const contactResponse = await http.get('/api/doli/contacts', {
-        params: { email: searchEmail.value },
+        params: { sqlfilters: `(t.email:=:'${searchEmail.value.replace(/'/g, "''")}')` },
         headers: {
           'X-Public-Request': 'true'
         }
