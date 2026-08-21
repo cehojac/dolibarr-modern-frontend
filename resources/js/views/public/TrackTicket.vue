@@ -602,7 +602,7 @@ const sendMessage = async () => {
         sqlfilters: `(t.email:=:'${searchEmail.value}')`,
       })
       const contactResponse = await http.get('/api/doli/contacts', {
-        params: { email: searchEmail.value },
+        params: { sqlfilters: `(t.email:=:'${searchEmail.value.replace(/'/g, "''")}')` },
         headers: {
           'X-Public-Request': 'true'
         }

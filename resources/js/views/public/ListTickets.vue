@@ -939,13 +939,17 @@ const findTicketsByEmail = async (email) => {
   
   try {
     const thirdpartiesResponse = await http.get('/api/doli/thirdparties', {
-      params: { email: email, limit: 10 },
+      params: {
+        sqlfilters: `(t.email:=:'${sanitizedEmail}')`,
+        limit: 10
+      },
       headers: publicHeaders
     })
     if (thirdpartiesResponse.data && Array.isArray(thirdpartiesResponse.data)) {
       thirdpartiesResponse.data
         .filter(tp => tp.email && tp.email.toLowerCase() === email.toLowerCase())
         .forEach(tp => socidsToFetch.add(tp.id))
+      console.log(`🏢 ${thirdpartiesResponse.data.length} tercero(s) encontrados por email`)
     }
   } catch (error) {
     console.warn('⚠️ Error buscando tercero por email:', error.message)
@@ -953,7 +957,10 @@ const findTicketsByEmail = async (email) => {
   
   try {
     const contactsResponse = await http.get('/api/doli/contacts', {
-      params: { email: email, limit: 10 },
+      params: {
+        sqlfilters: `(t.email:=:'${sanitizedEmail}')`,
+        limit: 10
+      },
       headers: publicHeaders
     })
     if (contactsResponse.data && Array.isArray(contactsResponse.data)) {
@@ -1269,7 +1276,7 @@ const sendMessage = async () => {
     if (!currentContact.value && searchEmail.value) {
       console.log('👤 Obteniendo contacto para email:', searchEmail.value)
       const contactResponse = await http.get('/api/doli/contacts', {
-        params: { email: searchEmail.value },
+        params: { sqlfilters: `(t.email:=:'${searchEmail.value.replace(/'/g, "''")}')` },
         headers: {
           'X-Public-Request': 'true'
         }
