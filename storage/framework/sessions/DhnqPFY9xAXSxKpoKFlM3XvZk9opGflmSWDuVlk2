@@ -1,1 +1,0 @@
-a:3:{s:6:"_token";s:40:"USo1IN5EsELU7LQDj3fy0GFYj5K8VUsxMz22aqld";s:9:"_previous";a:2:{s:3:"url";s:173:"http://localhost:8000/api/doli/dolibarrmodernfrontendapi/tasks/enriched?include_contacts=0&limit=200&sortfield=t.rowid&sortorder=DESC&sqlfilters=%28t.progress%3A%3C%3A100%29";s:5:"route";N;}s:6:"_flash";a:2:{s:3:"old";a:0:{}s:3:"new";a:0:{}}}
