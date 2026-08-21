@@ -304,9 +304,11 @@
                 <p class="font-medium text-gray-900 dark:text-white mb-1">
                   {{ event.title }}
                 </p>
-                <p v-if="event.description" class="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                  {{ event.description }}
-                </p>
+                <div
+                  v-if="event.description"
+                  class="text-gray-600 dark:text-gray-400 text-sm mb-2 prose prose-sm dark:prose-invert max-w-none"
+                  v-html="event.description"
+                ></div>
                 <p class="text-xs text-gray-500 dark:text-gray-500">
                   {{ formatDateTime(event.date) }}
                 </p>
