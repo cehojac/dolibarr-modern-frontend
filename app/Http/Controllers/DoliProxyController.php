@@ -29,7 +29,7 @@ class DoliProxyController extends Controller
         
         // Verificar si es una búsqueda pública de terceros, contactos o usuarios
         $isPublicThirdpartyRoute = (str_starts_with($path, 'thirdparties') || str_starts_with($path, 'contacts') || str_starts_with($path, 'users')) 
-            && ($request->has('email') || $request->has('thirdparty_ids') || $request->header('X-Public-Request') === 'true');
+            && ($request->has('email') || $request->header('X-Public-Request') === 'true');
         
         // Verificar si es una búsqueda de contacto por email específico
         $isPublicContactEmailRoute = preg_match('/contacts\/email\//', $path) 
@@ -315,6 +315,7 @@ class DoliProxyController extends Controller
             'upload',
             'download',
             'delete',
+            'contacts',
         ];
 
         foreach ($nonCacheablePatterns as $pattern) {

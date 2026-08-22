@@ -78,8 +78,8 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Exportar</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Acciones Masivas</button>
         <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadPartners">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -117,27 +117,36 @@
                 </div>
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Empresa</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Contacto Principal</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Categorías</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Email</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Teléfono</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Estado</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Tipo Alianza</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Tipo Relación</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Inicio Alianza</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex items-center justify-center space-x-2">
-                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <span class="text-sm">Cargando socios...</span>
+              <td colspan="9" class="px-6 py-4">
+                <div v-for="i in 5" :key="i" class="flex items-center space-x-4 py-2">
+                  <div class="w-8 h-8 rounded-full" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 rounded w-1/4" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                    <div class="h-2 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  </div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
                 </div>
               </td>
             </tr>
             <tr v-else-if="filteredPartners.length === 0">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <span class="text-sm">No se encontraron socios</span>
+              <td colspan="9" class="px-6 py-16 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p class="text-sm font-medium">No se encontraron socios</p>
+                <p class="text-xs mt-1">Prueba a cambiar los filtros de búsqueda</p>
               </td>
             </tr>
             <tr v-else v-for="partner in paginatedPartners" :key="partner.id" class="hover:bg-gray-50 transition-colors" :class="isDark ? 'hover:bg-gray-700' : ''">
@@ -169,7 +178,7 @@
               
               <!-- Contacto Principal -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ getPrimaryContact(partner) }}
+                {{ partner.categories || '-' }}
               </td>
               
               <!-- Email -->
@@ -203,8 +212,8 @@
               <!-- Tipo Alianza -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full"
-                      :class="getPartnershipTypeClass(partner)">
-                  {{ getPartnershipType(partner) }}
+                      :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'">
+                  {{ partner.project_count > 0 ? 'Con Proyectos' : 'Sin Proyectos' }}
                 </span>
               </td>
               
@@ -323,18 +332,9 @@ const itemsPerPage = ref(25)
 // Métricas computadas
 const totalPartners = computed(() => partners.value.length)
 const activePartners = computed(() => partners.value.filter(p => p.status == 1).length)
-const strategicPartners = computed(() => {
-  // Simular socios estratégicos
-  return partners.value.filter(p => parseInt(p.id) % 4 === 0).length
-})
-const jointProjects = computed(() => {
-  // Simular proyectos conjuntos
-  return Math.floor(partners.value.length * 0.6)
-})
-const partnershipValue = computed(() => {
-  // Simular valor de alianzas
-  return partners.value.length * 45000
-})
+const strategicPartners = computed(() => partners.value.filter(p => p.categories && p.categories.length > 0).length)
+const jointProjects = computed(() => partners.value.reduce((sum, p) => sum + (p.project_count || 0), 0))
+const partnershipValue = computed(() => partners.value.reduce((sum, p) => sum + (p.partnership_value || 0), 0))
 
 // Computed properties
 const filteredPartners = computed(() => {
@@ -382,17 +382,28 @@ const visiblePages = computed(() => {
 })
 
 // Methods
+let searchTimeout = null
 const loadPartners = async () => {
   loading.value = true
   try {
-     console.log('🔄 Cargando socios...')
-    // Filtrar terceros que son tanto cliente como proveedor (socios)
-    const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.client:=:1)AND(t.fournisseur:=:1)AND(t.status:=:1)')
+    const response = await http.get('/api/doli/dolibarrmodernfrontendapi/partners/enriched')
     partners.value = response.data || []
-     console.log('✅ Socios cargados:', partners.value.length)
   } catch (error) {
-    console.error('❌ Error loading partners:', error)
-    partners.value = []
+    console.warn('Endpoint enriquecido no disponible, usando endpoint estándar...')
+    try {
+      const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.client:=:1)AND(t.fournisseur:=:1)AND(t.status:=:1)')
+      partners.value = (response.data || []).map(p => ({
+        ...p,
+        project_count: 0,
+        client_revenue: 0,
+        supplier_spending: 0,
+        partnership_value: 0,
+        categories: null
+      }))
+    } catch (err2) {
+      console.error('Error loading partners:', err2)
+      partners.value = []
+    }
   } finally {
     loading.value = false
   }
@@ -403,39 +414,11 @@ const getInitials = (name) => {
   return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
 }
 
-const getPrimaryContact = (partner) => {
-  // Simular contacto principal
-  const contacts = ['Director General', 'Gerente Comercial', 'Responsable Alianzas', 'CEO', 'Director Estratégico']
-  return contacts[parseInt(partner.id) % contacts.length]
-}
-
-const getPartnershipType = (partner) => {
-  const types = ['Estratégico', 'Comercial', 'Tecnológico', 'Distribución', 'Joint Venture']
-  return types[parseInt(partner.id) % types.length]
-}
-
-const getPartnershipTypeClass = (partner) => {
-  const type = getPartnershipType(partner)
-  const classes = {
-    'Estratégico': 'bg-purple-100 text-purple-800',
-    'Comercial': 'bg-blue-100 text-blue-800',
-    'Tecnológico': 'bg-green-100 text-green-800',
-    'Distribución': 'bg-orange-100 text-orange-800',
-    'Joint Venture': 'bg-indigo-100 text-indigo-800'
-  }
-  return classes[type] || 'bg-gray-100 text-gray-800'
-}
-
 const formatDate = (dateString) => {
   if (!dateString) return '-'
-  
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
   } catch (error) {
     return dateString
   }
@@ -451,7 +434,10 @@ const formatCurrency = (amount) => {
 }
 
 const handleSearch = () => {
-  currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+  }, 300)
 }
 
 const viewPartner = (partner) => {

@@ -14,58 +14,34 @@
 
     <!-- Métricas Cards -->
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-      <!-- Total Suppliers -->
       <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalSuppliers }}</p>
-            <p class="text-sm font-medium text-blue-500">Total Proveedores</p>
-            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ totalSuppliers }}</p>
-          </div>
+        <div>
+          <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalSuppliers }}</p>
+          <p class="text-sm font-medium text-blue-500">Total Proveedores</p>
         </div>
       </div>
-      
-      <!-- Active Suppliers -->
       <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ activeSuppliers }}</p>
-            <p class="text-sm font-medium text-green-500">Activos</p>
-            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ activeSuppliers }}</p>
-          </div>
+        <div>
+          <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ activeSuppliers }}</p>
+          <p class="text-sm font-medium text-green-500">Activos</p>
         </div>
       </div>
-      
-      <!-- Preferred Suppliers -->
       <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ preferredSuppliers }}</p>
-            <p class="text-sm font-medium text-purple-500">Preferidos</p>
-            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ preferredSuppliers }}</p>
-          </div>
+        <div>
+          <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ preferredSuppliers }}</p>
+          <p class="text-sm font-medium text-purple-500">Con Categoría</p>
         </div>
       </div>
-      
-      <!-- Orders This Month -->
       <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ordersThisMonth }}</p>
-            <p class="text-sm font-medium text-blue-500">Pedidos Este Mes</p>
-            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ ordersThisMonth }}</p>
-          </div>
+        <div>
+          <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ ordersThisMonth }}</p>
+          <p class="text-sm font-medium text-blue-500">Pedidos Este Mes</p>
         </div>
       </div>
-      
-      <!-- Monthly Spending -->
       <div class="rounded-xl p-4 border" :class="isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ formatCurrency(monthlySpending) }}</p>
-            <p class="text-sm font-medium text-orange-500">Gasto Mensual</p>
-            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Mes actual</p>
-          </div>
+        <div>
+          <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ formatCurrency(monthlySpending) }}</p>
+          <p class="text-sm font-medium text-orange-500">Gasto Mensual</p>
         </div>
       </div>
     </div>
@@ -103,8 +79,8 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Exportar</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Acciones Masivas</button>
         <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadSuppliers">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -142,27 +118,36 @@
                 </div>
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Empresa</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Contacto</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Categorías</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Email</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Teléfono</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Estado</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Categoría</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Pedidos Mes</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Última Compra</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex items-center justify-center space-x-2">
-                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <span class="text-sm">Cargando proveedores...</span>
+              <td colspan="9" class="px-6 py-4">
+                <div v-for="i in 5" :key="i" class="flex items-center space-x-4 py-2">
+                  <div class="w-8 h-8 rounded-full" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 rounded w-1/4" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                    <div class="h-2 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  </div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
                 </div>
               </td>
             </tr>
             <tr v-else-if="filteredSuppliers.length === 0">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <span class="text-sm">No se encontraron proveedores</span>
+              <td colspan="9" class="px-6 py-16 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+                <p class="text-sm font-medium">No se encontraron proveedores</p>
+                <p class="text-xs mt-1">Prueba a cambiar los filtros de búsqueda</p>
               </td>
             </tr>
             <tr v-else v-for="supplier in paginatedSuppliers" :key="supplier.id" class="hover:bg-gray-50 transition-colors" :class="isDark ? 'hover:bg-gray-700' : ''">
@@ -194,7 +179,7 @@
               
               <!-- Contacto -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ getPrimaryContact(supplier) }}
+                {{ supplier.categories || '-' }}
               </td>
               
               <!-- Email -->
@@ -222,17 +207,14 @@
                 </label>
               </td>
               
-              <!-- Categoría -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full"
-                      :class="getSupplierCategoryClass(supplier)">
-                  {{ getSupplierCategory(supplier) }}
-                </span>
+              <!-- Pedidos Mes -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
+                {{ supplier.orders_this_month || 0 }}
               </td>
               
               <!-- Última Compra -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ getLastPurchase(supplier) }}
+                {{ supplier.last_purchase_date ? formatDate(supplier.last_purchase_date) : '-' }}
               </td>
               
               <!-- Acciones -->
@@ -345,18 +327,9 @@ const itemsPerPage = ref(25)
 // Métricas computadas
 const totalSuppliers = computed(() => suppliers.value.length)
 const activeSuppliers = computed(() => suppliers.value.filter(s => s.status == 1).length)
-const preferredSuppliers = computed(() => {
-  // Simular proveedores preferidos basado en ID
-  return suppliers.value.filter(s => parseInt(s.id) % 5 === 0).length
-})
-const ordersThisMonth = computed(() => {
-  // Simular pedidos del mes
-  return Math.floor(suppliers.value.length * 0.3)
-})
-const monthlySpending = computed(() => {
-  // Simular gasto mensual
-  return suppliers.value.length * 2850.75
-})
+const preferredSuppliers = computed(() => suppliers.value.filter(s => s.categories && s.categories.length > 0).length)
+const ordersThisMonth = computed(() => suppliers.value.reduce((sum, s) => sum + (s.orders_this_month || 0), 0))
+const monthlySpending = computed(() => suppliers.value.reduce((sum, s) => sum + (s.monthly_spending || 0), 0))
 
 // Computed properties
 const filteredSuppliers = computed(() => {
@@ -404,17 +377,27 @@ const visiblePages = computed(() => {
 })
 
 // Methods
+let searchTimeout = null
 const loadSuppliers = async () => {
   loading.value = true
   try {
-     console.log('🔄 Cargando proveedores...')
-    // Filtrar solo proveedores (fournisseur = 1) y activos
-    const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.fournisseur:=:1)AND(t.status:=:1)')
+    const response = await http.get('/api/doli/dolibarrmodernfrontendapi/suppliers/enriched')
     suppliers.value = response.data || []
-     console.log('✅ Proveedores cargados:', suppliers.value.length)
   } catch (error) {
-    console.error('❌ Error loading suppliers:', error)
-    suppliers.value = []
+    console.warn('Endpoint enriquecido no disponible, usando endpoint estándar...')
+    try {
+      const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.fournisseur:=:1)AND(t.status:=:1)')
+      suppliers.value = (response.data || []).map(s => ({
+        ...s,
+        orders_this_month: 0,
+        monthly_spending: 0,
+        last_purchase_date: null,
+        categories: null
+      }))
+    } catch (err2) {
+      console.error('Error loading suppliers:', err2)
+      suppliers.value = []
+    }
   } finally {
     loading.value = false
   }
@@ -425,48 +408,11 @@ const getInitials = (name) => {
   return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
 }
 
-const getPrimaryContact = (supplier) => {
-  // Simular contacto principal
-  const contacts = ['Roberto Silva', 'Carmen Ruiz', 'Antonio Vega', 'Isabel Torres', 'Miguel Sánchez']
-  return contacts[parseInt(supplier.id) % contacts.length]
-}
-
-const getSupplierCategory = (supplier) => {
-  const categories = ['Proveedor', 'Proveedor Preferido', 'Distribuidor', 'Mayorista']
-  const index = parseInt(supplier.id) % categories.length
-  return categories[index]
-}
-
-const getSupplierCategoryClass = (supplier) => {
-  const category = getSupplierCategory(supplier)
-  const classes = {
-    'Proveedor': 'bg-orange-100 text-orange-800',
-    'Proveedor Preferido': 'bg-purple-100 text-purple-800',
-    'Distribuidor': 'bg-blue-100 text-blue-800',
-    'Mayorista': 'bg-green-100 text-green-800'
-  }
-  return classes[category] || 'bg-gray-100 text-gray-800'
-}
-
-const getLastPurchase = (supplier) => {
-  // Simular última compra
-  const days = [7, 15, 30, 45, 60, 90]
-  const randomDays = days[parseInt(supplier.id) % days.length]
-  const date = new Date()
-  date.setDate(date.getDate() - randomDays)
-  return formatDate(date.toISOString())
-}
-
 const formatDate = (dateString) => {
   if (!dateString) return '-'
-  
   try {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
+    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
   } catch (error) {
     return dateString
   }
@@ -482,7 +428,10 @@ const formatCurrency = (amount) => {
 }
 
 const handleSearch = () => {
-  currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+  }, 300)
 }
 
 const viewSupplier = (supplier) => {

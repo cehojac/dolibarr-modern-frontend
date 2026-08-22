@@ -78,8 +78,8 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Exportar</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Acciones Masivas</button>
         <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadContacts">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -128,16 +128,25 @@
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex items-center justify-center space-x-2">
-                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <span class="text-sm">Cargando contactos...</span>
+              <td colspan="9" class="px-6 py-4">
+                <div v-for="i in 5" :key="i" class="flex items-center space-x-4 py-2">
+                  <div class="w-8 h-8 rounded-full" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 rounded w-1/4" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                    <div class="h-2 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  </div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
                 </div>
               </td>
             </tr>
             <tr v-else-if="filteredContacts.length === 0">
-              <td colspan="9" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <span class="text-sm">No se encontraron contactos</span>
+              <td colspan="9" class="px-6 py-16 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p class="text-sm font-medium">No se encontraron contactos</p>
+                <p class="text-xs mt-1">Prueba a cambiar los filtros de búsqueda</p>
               </td>
             </tr>
             <tr v-else v-for="contact in paginatedContacts" :key="contact.id" class="hover:bg-gray-50 transition-colors" :class="isDark ? 'hover:bg-gray-700' : ''">
@@ -165,7 +174,7 @@
               
               <!-- Empresa -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ getCompanyName(contact) }}
+                {{ contact.company_name || '-' }}
               </td>
               
               <!-- Cargo -->
@@ -204,8 +213,8 @@
               <!-- Tipo -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full"
-                      :class="getContactTypeClass(contact)">
-                  {{ getContactType(contact) }}
+                      :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'">
+                  {{ contact.contact_type_label || contact.poste || 'Sin tipo' }}
                 </span>
               </td>
               
@@ -318,10 +327,7 @@ const itemsPerPage = ref(25)
 // Métricas computadas
 const totalContacts = computed(() => contacts.value.length)
 const activeContacts = computed(() => contacts.value.filter(c => c.statut == 1).length)
-const primaryContacts = computed(() => {
-  // Simular contactos principales
-  return contacts.value.filter(c => parseInt(c.id) % 3 === 0).length
-})
+const primaryContacts = computed(() => contacts.value.filter(c => c.fk_contact_type != null).length)
 const newThisMonth = computed(() => {
   const now = new Date()
   const thisMonth = now.getMonth()
@@ -381,16 +387,25 @@ const visiblePages = computed(() => {
 })
 
 // Methods
+let searchTimeout = null
 const loadContacts = async () => {
   loading.value = true
   try {
-     console.log('🔄 Cargando contactos...')
-    const response = await http.get('/api/doli/contacts?limit=1000&sqlfilters=(t.statut:=:1)')
+    const response = await http.get('/api/doli/dolibarrmodernfrontendapi/contacts/enriched')
     contacts.value = response.data || []
-     console.log('✅ Contactos cargados:', contacts.value.length)
   } catch (error) {
-    console.error('❌ Error loading contacts:', error)
-    contacts.value = []
+    console.warn('Endpoint enriquecido no disponible, usando endpoint estándar...')
+    try {
+      const response = await http.get('/api/doli/contacts?limit=1000&sqlfilters=(t.statut:=:1)')
+      contacts.value = (response.data || []).map(c => ({
+        ...c,
+        company_name: null,
+        contact_type_label: null
+      }))
+    } catch (err2) {
+      console.error('Error loading contacts:', err2)
+      contacts.value = []
+    }
   } finally {
     loading.value = false
   }
@@ -415,31 +430,11 @@ const getFullName = (contact) => {
   return `${firstname} ${lastname}`.trim() || 'Sin nombre'
 }
 
-const getCompanyName = (contact) => {
-  // Simular nombre de empresa basado en el ID del contacto
-  const companies = ['Empresa A', 'Corporación B', 'Industrias C', 'Servicios D', 'Tecnología E']
-  return companies[parseInt(contact.id) % companies.length]
-}
-
-const getContactType = (contact) => {
-  const types = ['Principal', 'Secundario', 'Técnico', 'Comercial', 'Administrativo']
-  return types[parseInt(contact.id) % types.length]
-}
-
-const getContactTypeClass = (contact) => {
-  const type = getContactType(contact)
-  const classes = {
-    'Principal': 'bg-blue-100 text-blue-800',
-    'Secundario': 'bg-gray-100 text-gray-800',
-    'Técnico': 'bg-green-100 text-green-800',
-    'Comercial': 'bg-purple-100 text-purple-800',
-    'Administrativo': 'bg-yellow-100 text-yellow-800'
-  }
-  return classes[type] || 'bg-gray-100 text-gray-800'
-}
-
 const handleSearch = () => {
-  currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+  }, 300)
 }
 
 const viewContact = (contact) => {

@@ -19,8 +19,8 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalProspects }}</p>
-            <p class="text-sm font-medium text-blue-500">Total Prospects</p>
-            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ totalProspects }}</p>
+            <p class="text-sm font-medium text-blue-500">Total Prospectos</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Prospectos totales</p>
           </div>
         </div>
       </div>
@@ -30,8 +30,8 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ activeProspects }}</p>
-            <p class="text-sm font-medium text-green-500">Active Prospects</p>
-            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ activeProspects }}</p>
+            <p class="text-sm font-medium text-green-500">Activos</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Prospectos activos</p>
           </div>
         </div>
       </div>
@@ -41,8 +41,8 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ convertedThisMonth }}</p>
-            <p class="text-sm font-medium text-blue-500">Converted This Month</p>
-            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Total: {{ convertedThisMonth }}</p>
+            <p class="text-sm font-medium text-blue-500">Convertidos Este Mes</p>
+            <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Convertidos a clientes</p>
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ conversionRate }}%</p>
-            <p class="text-sm font-medium text-purple-500">Conversion Rate</p>
+            <p class="text-sm font-medium text-purple-500">Tasa Conversión</p>
             <p class="text-xs" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Tasa de conversión</p>
           </div>
         </div>
@@ -66,13 +66,13 @@
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          New Prospect
+          Nuevo Prospecto
         </button>
         <button class="border px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
           </svg>
-          Import Prospects
+          Importar Prospectos
         </button>
       </div>
       
@@ -80,7 +80,7 @@
         <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
-        Filters
+        Filtros
       </button>
     </div>
 
@@ -92,8 +92,8 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Exportar</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Acciones Masivas</button>
         <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadProspects">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -106,7 +106,7 @@
           v-model="searchQuery"
           @input="handleSearch"
           type="text"
-          placeholder="Search prospects..."
+          placeholder="Buscar prospectos..."
           class="border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           :class="isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'bg-white'"
         >
@@ -132,32 +132,41 @@
               </th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
                 <div class="flex items-center">
-                  Company
+                  Empresa
                   <svg class="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Contact Person</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Persona Contacto</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Email</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Phone</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Prospect Level</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Date Created</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Teléfono</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Estado</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Nivel Prospecto</th>
+              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Fecha Creación</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex items-center justify-center space-x-2">
-                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <span class="text-sm">Cargando clientes potenciales...</span>
+              <td colspan="8" class="px-6 py-4">
+                <div v-for="i in 5" :key="i" class="flex items-center space-x-4 py-2">
+                  <div class="w-8 h-8 rounded-full" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-3 rounded w-1/4" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                    <div class="h-2 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  </div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
                 </div>
               </td>
             </tr>
             <tr v-else-if="filteredProspects.length === 0">
-              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <span class="text-sm">No se encontraron clientes potenciales</span>
+              <td colspan="8" class="px-6 py-16 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <p class="text-sm font-medium">No se encontraron clientes potenciales</p>
+                <p class="text-xs mt-1">Prueba a cambiar los filtros de búsqueda</p>
               </td>
             </tr>
             <tr v-else v-for="prospect in paginatedProspects" :key="prospect.id" class="hover:bg-gray-50 transition-colors" :class="isDark ? 'hover:bg-gray-700' : ''">
@@ -179,7 +188,7 @@
               
               <!-- Contact Person -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ getContactPerson(prospect) }}
+                {{ [prospect.contact_firstname, prospect.contact_lastname].filter(Boolean).join(' ') || '-' }}
               </td>
               
               <!-- Email -->
@@ -206,8 +215,8 @@
               <!-- Prospect Level -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full"
-                      :class="getProspectLevelClass(prospect.fk_stcomm)">
-                  {{ getProspectLevelText(prospect.fk_stcomm) }}
+                      :class="isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'">
+                  {{ prospect.prospect_level || 'Sin nivel' }}
                 </span>
               </td>
               
@@ -271,9 +280,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
 import http from '../../utils/http'
 
+const router = useRouter()
 const { isDark } = useTheme()
 
 // Reactive data
@@ -291,8 +302,14 @@ const itemsPerPage = ref(25)
 const totalProspects = computed(() => prospects.value.length)
 const activeProspects = computed(() => prospects.value.filter(p => p.status == 1).length)
 const convertedThisMonth = computed(() => {
-  // Simular conversiones del mes actual
-  return Math.floor(totalProspects.value * 0.12)
+  const now = new Date()
+  const thisMonth = now.getMonth()
+  const thisYear = now.getFullYear()
+  return prospects.value.filter(p => {
+    if (!p.datec) return false
+    const date = new Date(p.datec)
+    return date.getMonth() === thisMonth && date.getFullYear() === thisYear
+  }).length
 })
 const conversionRate = computed(() => {
   if (totalProspects.value === 0) return 0
@@ -345,36 +362,42 @@ const visiblePages = computed(() => {
 })
 
 // Methods
+let searchTimeout = null
 const loadProspects = async () => {
   loading.value = true
   try {
-     console.log('🔄 Cargando clientes potenciales...')
-    // Filtrar solo clientes potenciales (client = 2)
-    const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.client:=:2)')
+    const response = await http.get('/api/doli/dolibarrmodernfrontendapi/prospects/enriched')
     prospects.value = response.data || []
-     console.log('✅ Clientes potenciales cargados:', prospects.value.length)
   } catch (error) {
-    console.error('❌ Error loading prospects:', error)
-    prospects.value = []
+    console.warn('Endpoint enriquecido no disponible, usando endpoint estándar...')
+    try {
+      const response = await http.get('/api/doli/thirdparties?limit=1000&sqlfilters=(t.client:=:2)')
+      prospects.value = (response.data || []).map(p => ({
+        ...p,
+        prospect_level: null,
+        contact_firstname: null,
+        contact_lastname: null,
+        contact_email: null,
+        proposal_count: 0,
+        last_activity_date: null
+      }))
+    } catch (err2) {
+      console.error('Error loading prospects:', err2)
+      prospects.value = []
+    }
   } finally {
     loading.value = false
   }
 }
 
-const getContactPerson = (prospect) => {
-  // Simular persona de contacto
-  const names = ['John Smith', 'Maria Garcia', 'David Johnson', 'Sarah Wilson', 'Michael Brown']
-  return names[parseInt(prospect.id) % names.length] || 'N/A'
-}
-
 const getStatusClass = (status) => {
   return status == 1 
-    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    ? (isDark.value ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800')
+    : (isDark.value ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800')
 }
 
 const getStatusText = (status) => {
-  return status == 1 ? 'Active' : 'Inactive'
+  return status == 1 ? 'Activo' : 'Inactivo'
 }
 
 const getProspectLevelClass = (level) => {
@@ -418,11 +441,14 @@ const formatDate = (dateString) => {
 }
 
 const handleSearch = () => {
-  currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+  }, 300)
 }
 
 const viewProspectDetails = (prospect) => {
-   console.log('View prospect:', prospect)
+  router.push(`/terceros/clientes/${prospect.id}`)
 }
 
 // Pagination methods

@@ -17,31 +17,31 @@
       <!-- Total Proposals -->
       <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-white' : 'text-gray-900'">{{ totalProposals }}</div>
-        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Total Proposals</div>
+        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-500'">Total Presupuestos</div>
       </div>
       
       <!-- Draft Proposals -->
       <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-gray-400' : 'text-gray-600'">{{ draftProposals }}</div>
-        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Draft</div>
+        <div class="text-sm" :class="isDark ? 'text-gray-400' : 'text-gray-600'">Borrador</div>
       </div>
       
       <!-- Validated Proposals -->
       <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-blue-400' : 'text-blue-600'">{{ validatedProposals }}</div>
-        <div class="text-sm" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Validated</div>
+        <div class="text-sm" :class="isDark ? 'text-blue-400' : 'text-blue-600'">Validado</div>
       </div>
       
       <!-- Signed Proposals -->
       <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-green-400' : 'text-green-600'">{{ signedProposals }}</div>
-        <div class="text-sm" :class="isDark ? 'text-green-400' : 'text-green-600'">Signed</div>
+        <div class="text-sm" :class="isDark ? 'text-green-400' : 'text-green-600'">Firmado</div>
       </div>
       
       <!-- Refused Proposals -->
       <div class="rounded-lg border p-4" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'">
         <div class="text-2xl font-bold" :class="isDark ? 'text-red-400' : 'text-red-600'">{{ refusedProposals }}</div>
-        <div class="text-sm" :class="isDark ? 'text-red-400' : 'text-red-600'">Refused</div>
+        <div class="text-sm" :class="isDark ? 'text-red-400' : 'text-red-600'">Rechazado</div>
       </div>
     </div>
 
@@ -52,13 +52,13 @@
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-          New Proposal
+          Nuevo Presupuesto
         </button>
         <button class="border px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors" :class="isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'">
           <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          Templates
+          Plantillas
         </button>
       </div>
       
@@ -66,7 +66,7 @@
         <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
         </svg>
-        Filters
+        Filtros
       </button>
     </div>
 
@@ -78,8 +78,8 @@
           <option :value="50">50</option>
           <option :value="100">100</option>
         </select>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Export</button>
-        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Bulk Actions</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Exportar</button>
+        <button class="text-sm transition-colors" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'">Acciones Masivas</button>
         <button class="transition-colors" :class="isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'" @click="loadProposals">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -92,7 +92,7 @@
           v-model="searchQuery"
           @input="handleSearch"
           type="text"
-          placeholder="Search proposals..."
+          placeholder="Buscar presupuestos..."
           class="border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           :class="isDark ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' : 'bg-white'"
         >
@@ -116,27 +116,34 @@
                   </svg>
                 </div>
               </th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Customer</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Valid Until</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Amount (Excl. Tax)</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Amount (Incl. Tax)</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Actions</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Cliente</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Fecha</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Válido Hasta</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Importe (Sin IVA)</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Importe (Con IVA)</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Estado</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" :class="isDark ? 'text-gray-400' : ''">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y" :class="isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'">
             <tr v-if="loading">
-              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <div class="flex items-center justify-center space-x-2">
-                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <span class="text-sm">Cargando presupuestos...</span>
+              <td colspan="8" class="px-6 py-4">
+                <div v-for="i in 5" :key="i" class="flex items-center space-x-4 py-2">
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="h-3 rounded w-1/4" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
+                  <div class="h-3 rounded w-1/6" :class="isDark ? 'bg-gray-700' : 'bg-gray-200'"></div>
                 </div>
               </td>
             </tr>
             <tr v-else-if="filteredProposals.length === 0">
-              <td colspan="8" class="px-6 py-8 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
-                <span class="text-sm">No se encontraron presupuestos</span>
+              <td colspan="8" class="px-6 py-16 text-center" :class="isDark ? 'text-gray-400' : 'text-gray-500'">
+                <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p class="text-sm font-medium">No se encontraron presupuestos</p>
+                <p class="text-xs mt-1">Prueba a cambiar los filtros de búsqueda</p>
               </td>
             </tr>
             <tr v-else v-for="proposal in paginatedProposals" :key="proposal.id" class="hover:bg-gray-50 transition-colors" :class="isDark ? 'hover:bg-gray-700' : ''">
@@ -144,7 +151,8 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <button 
                   @click="viewProposalDetails(proposal)"
-                  class="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  class="font-medium text-sm transition-colors"
+                  :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
                 >
                   {{ proposal.ref }}
                 </button>
@@ -152,7 +160,7 @@
               
               <!-- Customer -->
               <td class="px-6 py-4 whitespace-nowrap text-sm" :class="isDark ? 'text-gray-300' : 'text-gray-900'">
-                {{ getThirdpartyName(proposal.socid) }}
+                {{ proposal.customer_name || 'Cliente desconocido' }}
               </td>
               
               <!-- Date -->
@@ -178,18 +186,18 @@
               <!-- Status -->
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full"
-                      :class="getStatusClass(proposal.statut)">
-                  {{ getStatusText(proposal.statut) }}
+                      :class="getStatusClass(proposal.statut ?? proposal.fk_statut)">
+                  {{ getStatusText(proposal.statut ?? proposal.fk_statut) }}
                 </span>
               </td>
-              
               <!-- Actions -->
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end space-x-2">
                   <button 
                     @click="viewProposalDetails(proposal)"
-                    class="text-blue-600 hover:text-blue-800 transition-colors"
-                    title="View"
+                    :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'"
+                    class="transition-colors"
+                    title="Ver"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -198,8 +206,9 @@
                   </button>
                   <button 
                     @click="editProposal(proposal)"
-                    class="text-yellow-600 hover:text-yellow-800 transition-colors"
-                    title="Edit"
+                    :class="isDark ? 'text-yellow-400 hover:text-yellow-300' : 'text-yellow-600 hover:text-yellow-800'"
+                    class="transition-colors"
+                    title="Editar"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -207,8 +216,9 @@
                   </button>
                   <button 
                     @click="downloadProposal(proposal)"
-                    class="text-green-600 hover:text-green-800 transition-colors"
-                    title="Download PDF"
+                    :class="isDark ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-800'"
+                    class="transition-colors"
+                    title="Descargar PDF"
                   >
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -272,15 +282,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '../../composables/useTheme'
-import { useThirdparties } from '../../composables/useThirdparties'
-import { useProjects } from '../../composables/useProjects'
 import { useDateFormatter } from '../../composables/useDateFormatter'
 import http from '../../utils/http'
 
+const router = useRouter()
 const { isDark } = useTheme()
-const { loadAllThirdparties, getThirdpartyName } = useThirdparties()
-const { preloadProjectsFromItems, getProjectName } = useProjects()
 const { formatDate: formatDoliDate } = useDateFormatter()
 
 // Reactive data
@@ -296,10 +304,10 @@ const itemsPerPage = ref(25)
 
 // Métricas computadas
 const totalProposals = computed(() => proposals.value.length)
-const draftProposals = computed(() => proposals.value.filter(p => p.statut == 0).length)
-const validatedProposals = computed(() => proposals.value.filter(p => p.statut == 1).length)
-const signedProposals = computed(() => proposals.value.filter(p => p.statut == 2).length)
-const refusedProposals = computed(() => proposals.value.filter(p => p.statut == 3).length)
+const draftProposals = computed(() => proposals.value.filter(p => (p.statut ?? p.fk_statut) == 0).length)
+const validatedProposals = computed(() => proposals.value.filter(p => (p.statut ?? p.fk_statut) == 1).length)
+const signedProposals = computed(() => proposals.value.filter(p => (p.statut ?? p.fk_statut) == 2).length)
+const refusedProposals = computed(() => proposals.value.filter(p => (p.statut ?? p.fk_statut) == 3).length)
 
 // Computed properties
 const filteredProposals = computed(() => {
@@ -346,67 +354,52 @@ const visiblePages = computed(() => {
 })
 
 // Methods
+let searchTimeout = null
 const loadProposals = async () => {
   loading.value = true
   try {
-    // 1. Cargar TODOS los terceros primero (solo una vez)
-    await loadAllThirdparties()
-    
-    // 2. Cargar presupuestos
-    console.log('🔄 Cargando presupuestos...')
-    const response = await http.get('/api/doli/proposals?limit=1000&sortfield=t.ref&sortorder=DESC')
-    const proposalsData = response.data || []
-    console.log('✅ Presupuestos cargados:', proposalsData.length)
-    
-    // 3. Precargar proyectos en segundo plano
-    preloadProjectsFromItems(proposalsData, 'fk_project').then(() => {
-      console.log('✅ Proyectos cargados en caché')
-    }).catch(error => {
-      console.warn('⚠️ Error cargando proyectos:', error)
-    })
-    
-    // 4. Enriquecer presupuestos con nombres de terceros (desde caché, instantáneo)
-    proposals.value = proposalsData.map(proposal => {
-      if (proposal.socid) {
-        proposal.thirdparty_name = getThirdpartyName(proposal.socid)
-      }
-      return proposal
-    })
-    
-    console.log('✅ Presupuestos enriquecidos con nombres de terceros')
-    
+    const response = await http.get('/api/doli/dolibarrmodernfrontendapi/proposals/enriched')
+    proposals.value = response.data || []
   } catch (error) {
-    console.error('❌ Error loading proposals:', error)
-    proposals.value = []
+    console.warn('Endpoint enriquecido no disponible, usando endpoint estándar...')
+    try {
+      const response = await http.get('/api/doli/proposals?limit=1000&sortfield=t.ref&sortorder=DESC')
+      proposals.value = (response.data || []).map(p => ({
+        ...p,
+        statut: p.fk_statut ?? p.statut,
+        customer_name: p.thirdparty_name || p.socid_name || null,
+        project_ref: null,
+        project_title: null
+      }))
+    } catch (err2) {
+      console.error('Error loading proposals:', err2)
+      proposals.value = []
+    }
   } finally {
     loading.value = false
   }
 }
 
-const getCustomerName = (proposal) => {
-  return proposal.thirdparty_name || proposal.socid_name || 'Cliente desconocido'
-}
-
 const getStatusClass = (status) => {
   const statusClasses = {
-    0: 'bg-gray-100 text-gray-800',     // Draft
-    1: 'bg-blue-100 text-blue-800',    // Validated
-    2: 'bg-green-100 text-green-800',  // Signed
-    3: 'bg-red-100 text-red-800',      // Refused
-    4: 'bg-yellow-100 text-yellow-800' // Billed
+    0: isDark.value ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800',
+    1: isDark.value ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800',
+    2: isDark.value ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800',
+    3: isDark.value ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800',
+    4: isDark.value ? 'bg-yellow-900 text-yellow-200' : 'bg-yellow-100 text-yellow-800'
   }
-  return statusClasses[status] || 'bg-gray-100 text-gray-800'
+  return statusClasses[status] || (isDark.value ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800')
 }
 
 const getStatusText = (status) => {
   const statusTexts = {
-    0: 'Draft',
-    1: 'Validated',
-    2: 'Signed',
-    3: 'Refused',
-    4: 'Billed'
+    0: 'Borrador',
+    1: 'Validado',
+    2: 'Firmado',
+    3: 'Rechazado',
+    4: 'Facturado'
   }
-  return statusTexts[status] || 'Unknown'
+  return statusTexts[status] || 'Desconocido'
 }
 
 const formatCurrency = (amount) => {
@@ -419,19 +412,34 @@ const formatCurrency = (amount) => {
 }
 
 const handleSearch = () => {
-  currentPage.value = 1
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+  }, 300)
 }
 
 const viewProposalDetails = (proposal) => {
-   console.log('View proposal:', proposal)
+  router.push(`/comercial/presupuestos/${proposal.id}`)
 }
 
 const editProposal = (proposal) => {
-   console.log('Edit proposal:', proposal)
+  router.push(`/comercial/presupuestos/${proposal.id}/edit`)
 }
 
-const downloadProposal = (proposal) => {
-   console.log('Download proposal:', proposal)
+const downloadProposal = async (proposal) => {
+  try {
+    const response = await http.get(`/api/doli/proposals/${proposal.id}/download`, { responseType: 'blob' })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `presupuesto-${proposal.ref}.pdf`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Error downloading proposal:', error)
+  }
 }
 
 // Pagination methods
